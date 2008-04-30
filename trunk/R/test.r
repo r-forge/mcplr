@@ -1,11 +1,11 @@
 ### test
-load("WPT.RData")
+load("../data/WPT.RData")
+source("allGenerics.r")
 source("classes.r")
 source("mcplprepare.r")
 source("relist.r")
 source("SLFN.r")
 source("R_W.r")
-source("DLRM.r")
 source("RBFN.r")
 source("LuceChoiceModel.r")
 source("GaussianMixtureModel.r")
@@ -13,14 +13,14 @@ source("GaussianModel.r")
 source("GCM.r")
 
 # test Rescorla Wagner
-
 dat <- subset(WPT,id=="C")
 lmod <- rescorlaWagner(y~x1+x2+x3+x4,data=dat,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,-1)),intercept=FALSE,base=1,fix=list(beta=FALSE,ws=TRUE,lambda=TRUE))
 rmod <- new("LuceChoiceModel",
   y = matrix(model.matrix(~dat$r)[,2],ncol=1),
   x = as.matrix(predict(lmod)),
   parameters = list(beta=1),
-  family = binomial())
+  family = binomial(),
+  nTimes=nTimes(200))
 rmod <- estimate(rmod)
 tMod <- new("McplModel",
   learningModel = lmod,

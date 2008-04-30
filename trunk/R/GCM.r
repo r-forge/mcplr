@@ -1,7 +1,6 @@
 ################################################################################
 ### GCM.r
-### Generalized Context Model (GCM, after Nosofsky, 1989)
-### Attention Learning GCM (ALGCM, after Speekenbrink)
+### Generalized Context Model (GCM, after Nosofsky, 1986)
 ###
 ### This implementation allows for a continuous criterion and includes
 ###     additional `sampling' functions, such that more recent exemplars

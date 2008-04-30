@@ -1,0 +1,32 @@
+import(methods)
+
+importFrom(stats, predict)
+importFrom(stats4, AIC, BIC, logLik, plot, summary)
+
+export(
+	alcove,	
+	gcm,
+	rescorlaWagner,
+	slfn
+)
+
+exportClasses(
+	LearningModel,
+	ResponseModel,
+	McplModel
+)
+
+exportMethods(
+	logLik,
+	AIC,
+	AICc,
+	BIC,
+	RSquare,
+	estimate,
+	fit,
+	setPars,
+	getPars,
+	predict,
+	show,
+	summary
+)

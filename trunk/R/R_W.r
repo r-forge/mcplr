@@ -112,7 +112,7 @@ setMethod("predict",signature(object="RescorlaWagner"),
   }
 )
 
-rescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,0),ws=0),data,alpha,beta,ws=0,intercept=TRUE,base=NULL,ntimes=NULL,replicate=TRUE,fixed,parStruct,subset) {
+rescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,0),ws=0),data,intercept=TRUE,base=NULL,ntimes=NULL,replicate=TRUE,fixed,parStruct,subset) {
   if(!intercept) remi <- TRUE else remi <- FALSE
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remi) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remi)
   x <- dat$x
