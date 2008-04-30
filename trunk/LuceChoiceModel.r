@@ -46,8 +46,8 @@ setMethod("estimate",signature(object="LuceChoiceModel"),
 setMethod("predict",signature(object="LuceChoiceModel"),
   function(object,...) {
     beta <- object@parameters$beta
-    #out <- object@family$linkinv(beta*object@x)
-    out <- t(apply(object@x,1,function(x) exp(x)/sum(exp(x))))
+    out <- object@family$linkinv(beta*object@x)
+    #out <- apply(object@x,1,function(x) exp(x)/sum(exp(x)))
     if(!is.matrix(out)) out <- matrix(out,ncol=1)
     out
   }

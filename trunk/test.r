@@ -15,7 +15,7 @@ source("GCM.r")
 # test Rescorla Wagner
 
 dat <- subset(WPT,id=="C")
-lmod <- rescorlaWagner(y~x1+x2+x3+x4,data=dat,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,-1)),intercept=FALSE,base=1,fix=list(beta=TRUE,ws=TRUE,lambda=TRUE))
+lmod <- rescorlaWagner(y~x1+x2+x3+x4,data=dat,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,-1)),intercept=FALSE,base=1,fix=list(beta=FALSE,ws=TRUE,lambda=TRUE))
 rmod <- new("LuceChoiceModel",
   y = matrix(model.matrix(~dat$r)[,2],ncol=1),
   x = as.matrix(predict(lmod)),
@@ -25,7 +25,7 @@ rmod <- estimate(rmod)
 tMod <- new("McplModel",
   learningModel = lmod,
   responseModel = rmod)
-tmp <- estimate(tMod,unconstrained=T)
+tmp <- estimate(tMod)
 
 # test SLFN
 dat <- subset(WPT,id=="C")
