@@ -1,0 +1,105 @@
+\documentclass[doc]{apa}
+\usepackage[utopia]{mathdesign}
+\usepackage{graphicx,apacite,amsmath,rotating,verbatim,epsfig,subfigure}
+\usepackage{dcolumn}
+
+\title{mcplR: An R package to fit categorization and other multiple cue probability learning models}
+\author{Maarten Speekenbrink}
+\affiliation{Department of Psychology \\ University College London}
+
+\abstract{
+
+}
+
+\ifapamodedoc{%
+\leftheader{Speekenbrink}
+\rightheader{MCPLR}
+\acknowledgements{This research was supported by the ESRC Centre for Economic Learning and Social Evolution (ELSE).
+
+Address correspondence to M. Speekenbrink, Department of Psychology, University College London, Gower Street, London WC1E 6BT, England, e-mail: \texttt{m.speekenbrink@ucl.ac.uk}}
+}
+
+\ifapamodejou{%
+\leftheader{Speekenbrink}
+\rightheader{MCPLR}
+\acknowledgements{Address correspondence to M. Speekenbrink, Department of Psychology, University College London, Gower Street, London WC1E 6BT, England, e-mail: \texttt{m.speekenbrink@ucl.ac.uk}}
+}
+
+\ifapamodeman{%
+	\note{
+	\vspace{6em}
+	\begin{flushleft}
+    Dr. M. Speekenbrink\\
+    Department of Psychology\\
+    University College London \\
+    Gower Street \\
+    London WC1E 6BT \\ 
+    England\\
+    Tel:  +44 (0) 20 7679 7572 \\
+    Fax: +44 (0) 20 7436 4276 \\
+    E-mail: m.speekenbrink@ucl.ac.uk\\
+   \end{flushleft}}}
+{% else, i.e., in jou and doc mode 
+\note{Draft of \today}}
+
+\journal{To be submitted}
+
+\renewcommand{\vec}[1]{\text{\bf{#1}}}
+\newcommand{\mat}[1]{\text{\bf{#1}}}
+\newcommand{\tr}{\text{tr}}
+\newcommand{\logit}[1]{\log \left( \frac{#1}{1 - #1} \right)}
+\newcommand{\logodds}[2]{\log \left( \frac{#1}{#2} \right)}
+\newcommand{\slogit}[1]{\log( \tfrac{#1}{1 - #1})}
+\newcommand{\mean}[1]{\overline{#1}}
+\newcommand{\sign}{\text{sgn}}
+\newcommand{\tif}{\text{ if }}
+
+\newcommand{\greekv}[1]{\mbox{\boldmath$#1$}}
+\newcommand{\greekm}[1]{\mbox{\boldmath$#1$}}
+\newcommand{\thetab}{\mbox{\boldmath$\theta$}}
+\newcommand{\betab}{\mbox{\boldmath$\beta$}}
+\newcommand{\mub}{\mbox{\boldmath$\mu$}}
+\newcommand{\Sigmab}{\mbox{\boldmath$\Sigma$}}
+\newcommand{\sigmab}{\mbox{\boldmath$\sigma$}}
+\newcommand{\MSE}{\text{MS}_e}
+\newcommand{\diag}{\text{diag}}
+\newcommand{\mtr}{^{\textsf{T}}}
+
+\newcommand{\code}[1]{{\ttfamily{#1}}}
+
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+
+\begin{document}
+\maketitle
+
+Multiple cue probability learning tasks require the prediction of a criterion variable on the basis of a number of cues which are imperfectly related to the criterion. When the criterion is a nominal variable, it is also common to speak of category learning tasks. 
+
+A large number of formal models have been proposed to describe how people learn to perform in MCPL tasks. We describe here an R package in which a number of these have been implemented. The package has been designed such that users can relatively easily add new models. 
+
+We will describe the features of the package through the package's implementation of the Generalized Context Model. We will also briefly illustrate how to specify a new model. 
+
+\section{MCPL models}
+
+At the heart of the mcplR package is the class \code{McplModel}, which contains a slot for a \code{LearningModel} and a slot for a \code{ResponseModel}. Both these are derived from a general \code{McplBaseModel}, which contains a slot for a dependent variable (y), a slot for a (matrix with) predictor variables (x), and a slot for a list with parameters. For a \code{LearningModel}, the criterion will usually be the dependent variable, and the cues the predictor variables. For a \code{ResponseModel}, the dependent variable will usually be the response variable, and the predictor variables (some function of) the predictions of the learning model. Both learning and response model can contain free variables.
+
+\section{Implementation of the GCM}
+
+A GCM can be specified by the function \code{gcm(formula,data,parameters,...)}. This function creates an object of the class \code{GcmModel}, extending the \code{McplModel} class. The model's parameters can then be estimated by the function \code{estimate(mod,...)}, where \code{mod} is the model specified by the \code{gcm} function. Starting values for the parameters can be given by the \code{parameters} argument. If this argument is not given, default starting values will be used.
+
+\subsection{Learning Model}
+
+The GCM 
+
+\subsection{Response Model}
+
+\begin{equation}
+P(R = j|\vec{x}) = \frac{\exp \lambda S}{\sum \exp \lambda S}
+\end{equation}
+Note that that $S$ is given by the learning model. Hence, the learning model contains a single free parameter, $\lambda$.
+
+\subsection{Estimation}
+
+The freely estimable parameters of the GCM are collected in the parameter vector $\greekv{\theta} = (,\lambda)$. Maximum likelihood estimates of these parameters are obtained by numerical maximisation of the likelihood $P(R|\greekv{\theta})$, specified in the response model. By default, numerical optimization is done by the Nelder-Mead simplex algorithm as implemented in the \code{optim} function of \code{R}. Other estimation procedures can be specified at the level of specific classes deriving from \code{McplModel}. There is also a switch to allow conditional maximisation of the response model parameters. In some cases, maximum likelihood estimates of the response model parameters can be derived in closed form (conditional on the learning model parameters), so that conditional estimation can decrease the computation required.
+
+
+\end{document}
