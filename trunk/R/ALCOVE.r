@@ -1,6 +1,7 @@
 setClass("ALCOVE",
-  contains="GcmNominal",
+  contains="LearningModel",
   representation(
+    weights="list",
     humble="logical",
     exemplar.locations="list"
   )
@@ -80,4 +81,21 @@ ALCOVE.fit <- function(y,x,e,eta_w,eta_a,r=1,q=1,spf=1,lambda=1,w.start,a.start,
        
     return(list(call=call,response=y,predictor=x,predict=exp(lambda*pred)/rowSums(exp(lambda*pred)),output=pred,a=a,w=w,control=list(eta_w=eta_w,eta_a=eta_a,specificity=spf)))
         
+}
+
+ALCOVE <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),humble=TRUE,exemplar.locations,random.locations=TRUE,n.locations=10,fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL) {
+  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=TRUE)
+  x <- dat$x
+  y <- dat$y
+  
+  if(is.null(ntimes) | replicate) {
+    if(is.null(parameters$eta_w) parameters$eta_w <- .05
+    if(is.null(parameters$eta_a) parameters$eta_a <- .05
+    if(is.null(parameters$r)) parameters$r <- 1
+    if(is.null(parameters$q)) parameters$q <- 1
+    if(is.null(parameters$spf)) parameters$spf <- 1
+  }
+  
+  
+
 }
