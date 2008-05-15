@@ -83,7 +83,7 @@ ALCOVE.fit <- function(y,x,e,eta_w,eta_a,r=1,q=1,spf=1,lambda=1,w.start,a.start,
         
 }
 
-ALCOVE <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),humble=TRUE,exemplar.locations,random.locations=TRUE,n.locations=10,fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL) {
+alcove <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),humble=TRUE,exemplar.locations,random.locations=TRUE,n.locations=10,fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL) {
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=TRUE)
   x <- dat$x
   y <- dat$y

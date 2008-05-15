@@ -37,8 +37,9 @@ similarities. See the package manual for more information.
 The model implemented by \code{gcm} extends the original GCM (Nosofsky, 1986) 
 by allowing (1) a continuous criterion, and (2) memory decay of exemplars.
 }
-\value{A (fitted) object of class \code{LearningModel}}
-\references{Nosofsky, R. (1986). }
+\value{A (fitted) object of class \code{GcmInterval}, \code{GcmNominal}, 
+  \code{GcmUnconstrainedInterval} or \code{GcmUnconstrainedNominal}}
+\references{Nosofsky, R. (1986). Speekenbrink, M. \& Shanks, D.R. }
 \examples{
 ## open weather prediction data
 data(WP)
