@@ -89,8 +89,8 @@ alcove <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),hu
   y <- dat$y
   
   if(is.null(ntimes) | replicate) {
-    if(is.null(parameters$eta_w) parameters$eta_w <- .05
-    if(is.null(parameters$eta_a) parameters$eta_a <- .05
+    if(is.null(parameters$eta_w)) parameters$eta_w <- .05
+    if(is.null(parameters$eta_a)) parameters$eta_a <- .05
     if(is.null(parameters$r)) parameters$r <- 1
     if(is.null(parameters$q)) parameters$q <- 1
     if(is.null(parameters$spf)) parameters$spf <- 1

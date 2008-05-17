@@ -22,7 +22,6 @@ gcm(formula,level=c("nominal","interval"),distance=gcm.distance("cityblock"),
   matrix.}
 \item{sampling}{a function which returns a T*T matrix with sampling weights. 
  See \code{gcm.sampling} for more details.}
-for more details }
 \item{parameters}{an (optional) list with (starting) values of the parameters. 
  If no values are supplied, defaults are used. }
 }
@@ -37,15 +36,16 @@ similarities. See the package manual for more information.
 The model implemented by \code{gcm} extends the original GCM (Nosofsky, 1986) 
 by allowing (1) a continuous criterion, and (2) memory decay of exemplars.
 }
-\value{A (fitted) object of class \code{LearningModel}}
-\references{Nosofsky, R. (1986). }
+\value{A (fitted) object of class \code{GcmInterval}, \code{GcmNominal}, 
+  \code{GcmUnconstrainedInterval} or \code{GcmUnconstrainedNominal}}
+\references{Nosofsky, R. (1986). Speekenbrink, M. \& Shanks, D.R. }
 \examples{
 ## open weather prediction data
 data(WP)
 ## initialize model
 mod <- gcm(y~x1+x2+x3+x4-1,data=WP)
 ## estimate free parameters
-mod <- estimate(mod,unconstrained=T)
-summary(mod,unconstrained=T)
+mod <- estimate(mod)
+summary(mod)
 }
 \keyword{models}

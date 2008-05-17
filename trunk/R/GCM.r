@@ -551,7 +551,7 @@ gcm <- function(formula,level="nominal",distance=gcm.distance("cityblock"),simil
   nTimes <- nTimes(ntimes)
   
   if(level=="nominal") {
-    if(is(object@parStruct@constraints,"LinConstraintsList") || is(object@parStruct@constraints,"BoxConstraintsList") {
+    if(is(object@parStruct@constraints,"LinConstraintsList") || is(object@parStruct@constraints,"BoxConstraintsList")) {
       mod <- new("GcmNominal",
         x=x,
         y=y,
@@ -576,7 +576,7 @@ gcm <- function(formula,level="nominal",distance=gcm.distance("cityblock"),simil
    } 
   }
   if(level=="interval") {
-    if(is(object@parStruct@constraints,"LinConstraintsList") || is(object@parStruct@constraints,"BoxConstraintsList") {
+    if(is(object@parStruct@constraints,"LinConstraintsList") || is(object@parStruct@constraints,"BoxConstraintsList")) {
       mod <- new("GcmInterval",
       x=x,
       y=y,

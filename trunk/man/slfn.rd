@@ -29,7 +29,7 @@ not add an intercept.}
 dummy coding will be used by default. That is, for a criterion with n levels, a
 dummy matrix will be used with n columns. By setting base to an integer k,
 1 <= k <= n, column k will be removed from the matrix.}
-
+}
 \details{The \code{slfn} function sets up a simple ANN useful for deriving
 online model predictions etc.}
 \value{A (fitted) object of class \code{SLFN} extending \code{LearningModel}}
@@ -40,8 +40,8 @@ data(WP)
 ## initialize model
 mod <- slfn(y~x1+x2+x3+x4-1,type="logistic",data=WP)
 ## estimate free parameters
-mod <- estimate(mod,unconstrained=T)
-summary(mod,unconstrained=T)
+mod <- estimate(mod)
+summary(mod)
 
 ## TODO: add other activation function
 

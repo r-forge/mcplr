@@ -53,7 +53,7 @@ setMethod("setPars",signature(object="GaussianMixtureModel"),
 # If object@parameters$sd usually contains a single value sd
 
 setMethod("logLik",signature(object="GaussianMixtureModel"),
-  function(object,ntimes=NULL,default=log(1/100),discrete=FALSE,...) {
+  function(object,ntimes=NULL,discrete=FALSE,...) {
 #    d <- object@x
 #    for(i in 1:nrow(d)) d[i,] <- dnorm(object@r[i,],mean=object@x[i,],sd=object@sd[i,])
     #if(is.null(ntimes)) ntimes <- unlist(lapply(object@weights,nrow))
@@ -78,12 +78,15 @@ setMethod("logLik",signature(object="GaussianMixtureModel"),
       #rmv <- unique(c(discount,zw))
       #d <- d[,-rmv]
       d <- d[,-zw]
-      LL[case] <- sum(log(colSums(d))) + length(zw)*default
+      d <- colSums(d)
+      miss <- is.na(d)
+      LL[case] <- sum(log(d[!miss])) #+ length(zw)*default
       zwt <- zwt+length(zw)
-      nobs <- nobs + ncol(d) + length(zw)
+      nobs <- nobs + length(d) - sum(miss)
     }
     out <- sum(LL)
-    attr(out,"datapoints set to default (",default,")") <- zwt
+    attr(out,"nobs") <- nobs
+    #attr(out,"datapoints set to default (",default,")") <- zwt
 #    if(!is.null(discount)) attr(out,"nobs") <- nobs
     out
   }

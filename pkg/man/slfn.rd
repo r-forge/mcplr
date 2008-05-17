@@ -13,23 +13,23 @@ ntimes=NULL,replicate=T,subset)
 \arguments{
 \item{formula}{an object of class \code{formula} (or one that can be coerced to
  that class): a symbolic description of the model to be fitted. For more details
- of model speecification, see \code{lm} or \code{glm}.}
-\item{parameters}{a list with starting values for the parameters. see details.}
-\item{type}{the name of a default activation function. Currently only linear and
+ of model specification, see \code{lm} or \code{glm}.}
+\item{parameters}{a list with starting values for the parameters. See details.}
+\item{type}{the name of the activation function. Currently, only linear and
 logistic activation functions are implemented. See Example on how to use other
 activation functions.}
-\item{data}{optional data file.}
+\item{data}{(optional) data frame.}
 \item{window.size}{an integer >= 0 specifying the number of previous data points
 used to compute the gradient (in addition to the current data point).}
 \item{intercept}{logical. If set to FALSE, the intercept term will be removed
-if included in the model through the formula. If the
+if included in the model through the model formula. If the
 formula specifies to remove the intercept (via -1), setting this to TRUE will
 not add an intercept.}
 \item{base}{if the criterion (rhs of formula) is a factor, an overparametrized
 dummy coding will be used by default. That is, for a criterion with n levels, a
 dummy matrix will be used with n columns. By setting base to an integer k,
 1 <= k <= n, column k will be removed from the matrix.}
-
+}
 \details{The \code{slfn} function sets up a simple ANN useful for deriving
 online model predictions etc.}
 \value{A (fitted) object of class \code{SLFN} extending \code{LearningModel}}
@@ -40,8 +40,8 @@ data(WP)
 ## initialize model
 mod <- slfn(y~x1+x2+x3+x4-1,type="logistic",data=WP)
 ## estimate free parameters
-mod <- estimate(mod,unconstrained=T)
-summary(mod,unconstrained=T)
+mod <- estimate(mod)
+summary(mod)
 
 ## TODO: add other activation function
 

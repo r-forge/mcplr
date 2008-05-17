@@ -22,7 +22,6 @@ gcm(formula,level=c("nominal","interval"),distance=gcm.distance("cityblock"),
   matrix.}
 \item{sampling}{a function which returns a T*T matrix with sampling weights. 
  See \code{gcm.sampling} for more details.}
-for more details }
 \item{parameters}{an (optional) list with (starting) values of the parameters. 
  If no values are supplied, defaults are used. }
 }
@@ -46,7 +45,7 @@ data(WP)
 ## initialize model
 mod <- gcm(y~x1+x2+x3+x4-1,data=WP)
 ## estimate free parameters
-mod <- estimate(mod,unconstrained=T)
-summary(mod,unconstrained=T)
+mod <- estimate(mod)
+summary(mod)
 }
 \keyword{models}

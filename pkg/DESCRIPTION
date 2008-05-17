@@ -1,4 +1,4 @@
-Package: trunk
+Package: mcplr
 Version: 0.1-0
 Date: 2008-03-23
 Title: Multiple Cue Probability Learning in R
@@ -8,5 +8,6 @@ Depends: R (>= 2.6.0), stats4, methods
 Description: mcplR offers a flexible (S4) framework to investigate multiple cue probability learning (MCPL). 
   mcplR incorporates a number of learning models (Rescorla-Wagner, GCM, ALCOVE, etc) in a general state-space framework, 
   where new models can be easily added.
+Collate: AllGenerics.r classes.r bdiag.r relist.r mcplprepare.r LuceChoiceModel.r GaussianMixtureModel.r GaussianModel.r GCM.r SLFN.r
 License: GPL (>=2)
 URL: http://mcplr.r-forge.r-project.org/

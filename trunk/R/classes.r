@@ -5,7 +5,7 @@
 ### contraints = list
 
 setClass("ConstraintsList",
-  contains="list"
+#  contains="list"
 )
 
 setClass("BoxConstraintsList",
@@ -41,6 +41,7 @@ setClass("NTimes",
     et="integer"
   )
 )
+
 nTimes <- function(ntimes) {
   lt <- length(ntimes)
   et <- cumsum(ntimes)
