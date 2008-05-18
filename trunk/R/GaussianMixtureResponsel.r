@@ -2,7 +2,7 @@
 # 1. allow matrix of means and sds
 # 2. fix constructor function
 
-setClass("GaussianMixtureModel",
+setClass("GaussianMixtureResponse",
   contains="ResponseModel",
   representation(
     weights="list",
@@ -11,7 +11,7 @@ setClass("GaussianMixtureModel",
   )
 )
 
-setMethod("getPars",signature(object="GaussianMixtureModel"),
+setMethod("getPars",signature(object="GaussianMixtureResponse"),
   function(object,which="all",unconstrained=FALSE,...) {
     if(unconstrained) {
       pars <- object@parameters
@@ -32,7 +32,7 @@ setMethod("getPars",signature(object="GaussianMixtureModel"),
   }
 )
 
-setMethod("setPars",signature(object="GaussianMixtureModel"),
+setMethod("setPars",signature(object="GaussianMixtureResponse"),
   function(object,pars,unconstrained=FALSE,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
     #object <- callNextMethod()
@@ -52,7 +52,7 @@ setMethod("setPars",signature(object="GaussianMixtureModel"),
 # sd matrix is a regression matrix for sd.
 # If object@parameters$sd usually contains a single value sd
 
-setMethod("logLik",signature(object="GaussianMixtureModel"),
+setMethod("logLik",signature(object="GaussianMixtureResponse"),
   function(object,ntimes=NULL,discrete=FALSE,...) {
 #    d <- object@x
 #    for(i in 1:nrow(d)) d[i,] <- dnorm(object@r[i,],mean=object@x[i,],sd=object@sd[i,])
@@ -92,7 +92,7 @@ setMethod("logLik",signature(object="GaussianMixtureModel"),
   }
 )
 
-setMethod("predict",signature(object="GaussianMixtureModel"),
+setMethod("predict",signature(object="GaussianMixtureResponse"),
   function(object,...) {
     res <- object@y
     for(case in 1:object@nTimes@cases) {
@@ -102,7 +102,7 @@ setMethod("predict",signature(object="GaussianMixtureModel"),
     res
   }
 )
-setMethod("fit",signature(object="GaussianMixtureModel"),
+setMethod("fit",signature(object="GaussianMixtureResponse"),
   function(object,...) {
     for(case in 1:object@nTimes@cases) {
       if(object@parStruct@replicate) pars <- object@parameters else pars <- object@parameters[[case]]
@@ -182,7 +182,7 @@ setMethod("fit",signature(object="GaussianMixtureModel"),
     object
   }
 )
-setMethod("estimate",signature(object="GaussianMixtureModel"),
+setMethod("estimate",signature(object="GaussianMixtureResponse"),
   function(object,method="Nelder-Mead",unconstrained=FALSE,...) {
     #if(!is.null(object@parameters$sd)) object@parameters$sd <- log(object@parameters$sd)
     pstart <- getPars(object,which="free",unconstrained=unconstrained,...)
@@ -239,12 +239,12 @@ setMethod("estimate",signature(object="GaussianMixtureModel"),
   }
 )
 
-gaussianMixture <- function(formula,ncomponent=2,data,subset,weights,ntimes=NULL) {
+gaussianMixtureResponse <- function(formula,ncomponent=2,data,subset,weights,ntimes=NULL) {
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=TRUE)
   x <- dat$x
   y <- dat$y
   if(ncol(x)!=0) ncomponent <- ncol(x)
-  mod <- new("GaussianMixtureModel",
+  mod <- new("GaussianMixtureResponse",
     y = y
   )
 }
