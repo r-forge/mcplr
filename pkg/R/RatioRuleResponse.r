@@ -1,14 +1,14 @@
-setClass("LuceChoiceModel",
+setClass("RatioRuleResponse",
   contains="ResponseModel",
   representation(
     family="ANY"
   )
 )
-setMethod("estimate",signature(object="LuceChoiceModel"),
+setMethod("estimate",signature(object="RatioRuleResponse"),
   function(object,...) {
     mf <- match.call()
     pstart <- unlist(object@parameters)
-    if(length(pstart)!=1) stop("Luce Choice Rule must have a single parameter")
+    if(length(pstart)!=1) stop("Ratio Rule response must have a single parameter")
     if(ncol(object@y) == 1) {
       # use glm.fit
       fit <- glm.fit(x=object@x,y=object@y,family=object@family,...)
@@ -43,7 +43,7 @@ setMethod("estimate",signature(object="LuceChoiceModel"),
     object
   }
 )
-setMethod("predict",signature(object="LuceChoiceModel"),
+setMethod("predict",signature(object="RatioRuleResponse"),
   function(object,...) {
     beta <- object@parameters$beta
     out <- object@family$linkinv(beta*object@x)
@@ -53,7 +53,7 @@ setMethod("predict",signature(object="LuceChoiceModel"),
   }
 )
 
-setMethod("logLik",signature(object="LuceChoiceModel"),
+setMethod("logLik",signature(object="RatioRuleResponse"),
   function(object,eps=.Machine$double.eps,...) {
     pred <- predict(object,type="response",...)
     if(ncol(as.matrix(pred))==1) {
