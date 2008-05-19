@@ -72,15 +72,15 @@ Address correspondence to M. Speekenbrink, Department of Psychology, University 
 \begin{document}
 \maketitle
 
-Multiple cue probability learning tasks require the prediction of a criterion variable on the basis of a number of cues which are imperfectly related to the criterion. This class of task is quite general. A numerical criterion variable is often used in Social Judgement Theory. When the criterion is a nominal variable, it is also common to speak of category learning tasks. 
+Multiple cue probability learning tasks require the prediction of a criterion variable on the basis of a number of cues which are probabilistically related to the criterion. This class of task is quite general. A numerical criterion variable is often used in Social Judgement Theory. When the criterion is a nominal variable, it is also common to speak of category learning tasks. 
 
-A large number of formal models have been proposed to describe how people learn to perform in MCPL tasks. We describe here an R package in which a number of these have been implemented. The package has been designed such that users can relatively easily add new models. 
+A large number of formal models have been proposed to describe how people learn to perform in MCPL tasks. We describe here an R package in which a number of these have been implemented, and which has been designed such that users can relatively easily add the remaining models. 
 
-We will describe the features of the package through the package's implementation of the Generalized Context Model. We will also briefly illustrate how to specify a new model. 
+We will describe the features of the package through the package's implementation of the Generalized Context Model (GCM). We will also briefly illustrate how to specify a new model. 
 
 \section{MCPL models}
 
-At the heart of the mcplR package is the class \code{McplModel}. An \code{McplModel} contains two important submodels, namely a \code{LearningModel} and a \code{ResponseModel}. Both these are derived from a general \code{McplBaseModel}, which contains a slot for a dependent variable (y), a slot for a (matrix with) predictor variables (x), and a slot for a list with parameters. For a \code{LearningModel}, the criterion will usually be the dependent variable, and the cues the predictor variables. For a \code{ResponseModel}, the dependent variable will usually be the response variable, and the predictor variables (some function of) the predictions of the learning model. Both learning and response model can contain free variables.
+At the heart of the mcplR package is the class \code{McplModel}. An \code{McplModel} contains of two submodels, namely a \code{LearningModel} and a \code{ResponseModel}. Both these are derived from a general \code{McplBaseModel}, which contains a slot for a dependent variable ($y$), a slot for predictor variables ($x$), and a slot for a list with parameters. For a \code{LearningModel}, the criterion will usually be the dependent variable, and the cues the predictor variables. For a \code{ResponseModel}, the dependent variable will usually be the response variable, and the predictor variables (some function of) the predictions of the learning model. Both learning and response model can contain free variables.
 
 \section{Implementation of the GCM}
 
@@ -92,10 +92,11 @@ The GCM
 
 \subsection{Response Model}
 
+The GCM assumes that responses follow Luce's ratio rule, such that
 \begin{equation}
-P(R = j|\vec{x}) = \frac{\exp \lambda S}{\sum \exp \lambda S}
+P(R = j|\vec{x}) = \frac{V_j^\lambda}{\sum_k V_k^\lambda}
 \end{equation}
-Note that that $S$ is given by the learning model. Hence, the learning model contains a single free parameter, $\lambda$.
+Note that that the value of $V_j$ is given by the learning model. The response model thus contains a single free parameter, $\lambda$.
 
 \subsection{Estimation}
 
