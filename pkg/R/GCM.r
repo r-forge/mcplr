@@ -604,7 +604,7 @@ gcm <- function(formula,level="nominal",distance=gcm.distance("cityblock"),simil
   mod
 }
 
-setMethod("lFr",signature(x="Gcm",y="GaussianMixtureModel"), 
+setMethod("lFr",signature(x="Gcm",y="GaussianMixtureResponse"), 
   function(x,y,...) {
     for(case in 1:x@nTimes@cases) {
       y@weights[[case]] <- x@weights[[case]]

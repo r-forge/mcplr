@@ -1,7 +1,7 @@
-setClass("GaussianModel",
+setClass("GaussianResponse",
   contains="ResponseModel"
 )
-setMethod("estimate",signature(object="GaussianModel"),
+setMethod("estimate",signature(object="GaussianResponse"),
 	function(object) {
     pars <- object@parameters
     pars$sd <- sd(object@x-object@y)
@@ -10,12 +10,12 @@ setMethod("estimate",signature(object="GaussianModel"),
     return(object)
 	}
 )
-setMethod("predict","GaussianModel",
+setMethod("predict","GaussianResponse",
 	function(object,type="link") {
     object@x
   }
 )
-setMethod("logLik","GaussianModel",
+setMethod("logLik","GaussianResponse",
   function(object) {
     mu <- predict(object,type=response)
     sum(dnorm(x=object@y,mean=mu,sd=object@parameters$sd,log=TRUE))
@@ -23,13 +23,13 @@ setMethod("logLik","GaussianModel",
   }
 )
 
-gaussianModel <- function(formula,parameters=list(sd=1),data,subset,ntimes=NULL) {
+gaussianResponse <- function(formula,parameters=list(sd=1),data,subset,ntimes=NULL) {
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,remove.intercept=TRUE)
   y <- dat$y
   x <- dat$x
   if(is.null(ntimes)) ntimes <- nrow(y)
   nTimes <- nTimes(ntimes)
-  new("GaussianModel",
+  new("GaussianResponse",
     y = y,
     x = x,
     parameters=parameters,
