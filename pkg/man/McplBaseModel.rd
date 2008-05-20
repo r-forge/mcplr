@@ -7,10 +7,10 @@
 \alias{ResponseModel-class}
 
 \alias{getReplication}
-\alias{getReplication,mcplr-method}
+\alias{getReplication,McplBaseModel-method}
 
-#\alias{ntimes}
-#\alias{ntimes,depmix-method}
+\alias{ntimes}
+\alias{ntimes,McplBaseModel-method}
 
 \title{Class "McplBaseModel"}
 

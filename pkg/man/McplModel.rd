@@ -4,11 +4,8 @@
 
 \alias{McplModel-class}
 
-# \alias{getReplication}
-# \alias{getReplication,mcplr-method}
-
-# \alias{ntimes}
-# \alias{ntimes,depmix-method}
+\alias{getReplication,McplModel-method}
+\alias{ntimes,McplModel-method}
 
 \title{Class "McplModel"}
 
@@ -39,6 +36,6 @@
     \item{summary}{\code{signature(object = "McplModel")}: Generate object summary.}
   }
 }
-\author{Maatren Speekenbrink}
+\author{Maarten Speekenbrink}
 
 \keyword{classes}
