@@ -77,7 +77,7 @@ setMethod("logLik",signature(object="GaussianMixtureResponse"),
       d <- w*d
       #rmv <- unique(c(discount,zw))
       #d <- d[,-rmv]
-      d <- d[,-zw]
+      if(length(zw)>0) d <- d[,-zw]
       d <- colSums(d)
       miss <- is.na(d)
       LL[case] <- sum(log(d[!miss])) #+ length(zw)*default
