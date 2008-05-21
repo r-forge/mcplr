@@ -207,7 +207,7 @@ setMethod("getPars",signature(object="Gcm"),
 )
 
 setMethod("getPars",signature(object="GcmUnconstrained"),
-  function(object,which="all",unconstrained=FALSE,...) {
+  function(object,which="all",...) {
     gP.u <- function(pars) {
       pr <- pars$r
       pq <- pars$q
