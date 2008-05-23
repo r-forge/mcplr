@@ -1,16 +1,17 @@
 ### test
-load("../data/WPT.RData")
-source("allGenerics.r")
-source("classes.r")
-source("mcplprepare.r")
-source("relist.r")
-source("SLFN.r")
-source("R_W.r")
-source("RBFN.r")
-source("LuceChoiceModel.r")
-source("GaussianMixtureModel.r")
-source("GaussianModel.r")
-source("GCM.r")
+library("stats4")
+load("data/WPT.rda")
+source("R/allGenerics.R")
+source("R/classes.R")
+source("R/mcplprepare.R")
+source("R/relist.R")
+source("R/RatioRuleResponse.R")
+source("R/GaussianMixtureResponse.R")
+source("R/GaussianResponse.R")
+source("R/GCM.R")
+source("R/SLFN.R")
+source("R/RescorlaWagner.R")
+source("R/RBFN.R")
 
 # test Rescorla Wagner
 dat <- subset(WPT,id=="C")
@@ -66,8 +67,6 @@ tMod = new("McplModel",
 tmp <- estimate(tMod,unconstrained=T)
 
 # test GCM
-source("GaussianMixtureModel.r")
-source("GCM.r")
 dat <- subset(WPT,id=="C")
 mod <- gcm(y~x1+x2+x3+x4,data=dat)
 logLik(mod)
@@ -75,7 +74,6 @@ mod <- estimate(mod,unconstrained=TRUE,method="Nelder-Mead")
 logLik(mod)
 logLik(setPars(mod,c(0.31243147,0.32985646,0.06847703,0.28923503,6.044744)))
 # use constrained estimation
-source("bdiag.r")
 nw <- 3
 A <- bdiag(list(rbind(diag(nw),rep(-1,nw)),1))
 b <- c(rep(0,nw),-1-1e-10,0)
