@@ -41,9 +41,9 @@ by allowing (1) a continuous criterion, and (2) memory decay of exemplars.
 \references{Nosofsky, R. (1986). Speekenbrink, M. \& Shanks, D.R. }
 \examples{
 ## open weather prediction data
-data(WP)
+data(WPT)
 ## initialize model
-mod <- gcm(y~x1+x2+x3+x4-1,data=WP)
+mod <- gcm(y~x1+x2+x3+x4-1,data=WPT)
 ## estimate free parameters
 mod <- estimate(mod)
 summary(mod)

@@ -33,6 +33,32 @@ setClass("ParStruct",
   )
 )
 
+makeParStruct <- function(parameters,replicate=TRUE,fixed=NULL,ntimes=NULL,
+                constraints=NULL) {
+    parStruct <- new("ParStruct")
+    if(replicate) parStruct@replicate <- TRUE else parStruct@replicate <- FALSE
+    if(is.null(ntimes) | replicate) {
+      fix <- rep(FALSE,length(unlist(parameters)))
+      fix <- relist(fix,skeleton=parameters)
+    } else {
+      fix <- rep(FALSE,length(unlist(parameters[[1]])))
+      fix <- relist(fix,skeleton=parameters[[1]])
+    }
+    if(!is.null(fixed)) {
+      for(i in 1:length(fix)) {
+        if(!is.null(fixed[[names(fix)[i]]]) && fixed[[names(fix)[i]]]) fix[[i]] <- rep(TRUE,length(fix[[i]]))
+      }
+    }
+    if(is.null(ntimes) | replicate) {
+      parStruct@fix <- unlist(fix)
+    } else {
+      fix <- rep(list(fix,length(ntimes)))
+      parStruct@fix <- unlist(fix)
+    }
+    parStruct
+}
+
+
 setClass("NTimes",
   representation(
     n="integer",
@@ -68,7 +94,7 @@ setMethod("getPars",signature(object="McplBaseModel"),
   # Note:
   # if one element in parameters corresponding to id[i] is free, so
   #   is this parameter!
-  function(object,which="all",...) {
+  function(object,which="all",internal=FALSE,...) {
     pars <- unlist(object@parameters)
     switch(which,
       free = {
@@ -96,7 +122,7 @@ setMethod("getPars",signature(object="McplBaseModel"),
   }
 )
 setMethod("setPars",signature(object="McplBaseModel"),
-  function(object,pars,...,rval=c("object","parameters")) {
+  function(object,pars,internal=FALSE,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
     oldpars <- unlist(object@parameters)
     if(length(pars) > 0) {
@@ -258,6 +284,48 @@ setMethod("summary",signature(object="McplBaseModel"),
     }
   }
 )
+
+setMethod("estimate",signature(object="McplBaseModel"),
+  function(object,method="Nelder-Mead",...) {
+    MLoptfun <- function(pars,object,...) {
+      object@parameters <- setPars(object,pars,...,rval="parameters",internal=TRUE)
+      object <- fit(object,...)
+      -logLik(object)
+    }
+    LSoptfun <- function(pars,object,...) {
+      object@parameters <- setPars(object,pars,...,rval="parameters",internal=TRUE)
+      object <- fit(object,...)
+      sum((predict(object)-object@y)^2)
+    }
+    pars <- getPars(object,which="free",...,internal=TRUE)
+    if(hasMethod("logLik",is(object))) optfun <- MLoptfun else optfun <- LSoptfun
+    if(!is.null(object@parStruct@constraints)) {
+      switch(is(object@parStruct@constraints),
+        "LinConstraintsList" = {
+          A <- object@parStruct@constraints@Amat
+          b <- object@parStruct@constraints@bvec
+          opt <- constrOptim(theta=pars,f=optfun,grad=NULL,ui=A,ci=b,object=object,...)
+          object@parameters <- setPars(object,opt$par,...,rval="parameters",internal=TRUE)
+        },
+        "BoxConstraintsList" = {
+          opt <- optim(pars,fn=optfun,method="L-BFGS-B",object=object,min=object@parStruct@constraints@min,max=object@parStruct@constraints@min,...)
+          object@parameters <- setPars(object,opt$par,...,rval="parameters",internal=TRUE)
+        },
+        {
+          warning("This extension of ConstraintsList is not implemented; using default optimisation.")
+          opt <- optim(pars,fn=optfun,method=method,object=object,...)
+          object@parameters <- setPars(object,opt$par,...,rval="parameters",internal=TRUE)
+        }
+       )
+    } else {
+      opt <- optim(pars,fn=optfun,method=method,object=object,...)
+      object@parameters <- setPars(object,opt$par,...,rval="parameters",internal=TRUE)
+    }
+    object <- fit(object,...)
+    object
+  }
+)
+       
 setMethod("summary",signature(object="LearningModel"),
   function(object,...) {
     cat("Learning Model, class:",is(object)[1],"\n\n")
@@ -290,16 +358,16 @@ setClass("McplModel",
 )
 
 setMethod("getPars",signature(object="McplModel"),
-  function(object,which="all",...) {
+  function(object,which="all",internal=FALSE,...) {
     pars <- list()
-    pars[[1]] <- getPars(object@learningModel,which=which,...)
-    pars[[2]] <- getPars(object@responseModel,which=which,...)
+    pars[[1]] <- getPars(object@learningModel,which=which,internal=internal,...)
+    pars[[2]] <- getPars(object@responseModel,which=which,internal=internal,...)
     pars <- as.relistable(pars)
     unlist(pars)
   }
 )
 setMethod("setPars",signature(object="McplModel"),
-  function(object,pars,parid=NULL,...,rval=c("object","parameters")) {
+  function(object,pars,parid=NULL,internal=FALSE,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
     if(is.null(attr(pars,"skeleton"))) {
       parv <- getPars(object,which="free",...)
@@ -319,14 +387,14 @@ setMethod("setPars",signature(object="McplModel"),
     if(length(parl)==1) length(parl) <- 2 # WATCH ME!
     switch(rval,
       object = {
-        if(!is.null(parl[[1]])) object@learningModel <- setPars(object@learningModel,parl[[1]],rval=rval,...)
-        if(!is.null(parl[[2]])) object@responseModel <- setPars(object@responseModel,parl[[2]],rval=rval,...)
+        if(!is.null(parl[[1]])) object@learningModel <- setPars(object@learningModel,parl[[1]],internal=internal,rval=rval,...)
+        if(!is.null(parl[[2]])) object@responseModel <- setPars(object@responseModel,parl[[2]],internal=internal,rval=rval,...)
         object
       },
       parameters = {
         outpar <- vector(mode="list",length=2)
-        if(!is.null(parl[[1]])) outpar[[1]] <- setPars(object@learningModel,parl[[1]],rval=rval,...)
-        if(!is.null(parl[[1]])) outpar[[2]] <- setPars(object@responseModel,parl[[2]],rval=rval,...)
+        if(!is.null(parl[[1]])) outpar[[1]] <- setPars(object@learningModel,parl[[1]],internal=internal,rval=rval,...)
+        if(!is.null(parl[[1]])) outpar[[2]] <- setPars(object@responseModel,parl[[2]],internal=internal,rval=rval,...)
         outpar
       })
     #object@learningModel <- setPars(object@learningModel,parl[[1]],rval="object",...)
@@ -432,10 +500,10 @@ setMethod("estimate",signature(object="McplModel"),
     optfun <- function(pars,object,CML,CML.method,...) {
       if(CML) {
         #object@learningModel <- setPars(object@learningModel,pars,...)
-        object@learningModel@parameters <- setPars(object@learningModel,pars,rval="parameters",...)
+        object@learningModel@parameters <- setPars(object@learningModel,pars,internal=TRUE,...,rval="parameters")
       #} else object <- setPars(object,pars,...)
       } else {
-        parl <- setPars(object,pars,rval="parameters",...)
+        parl <- setPars(object,pars,internal=TRUE,rval="parameters",...)
         if(!is.null(parl[[1]])) object@learningModel@parameters <- parl[[1]]
         if(!is.null(parl[[2]])) object@responseModel@parameters <- parl[[2]]
       }
@@ -444,23 +512,23 @@ setMethod("estimate",signature(object="McplModel"),
       if(CML) object@responseModel <- estimate(object@responseModel,method=CML.method,...) else object@responseModel <- fit(object@responseModel,...)
       object@learningModel <- rFl(object,...)
       out <- -logLik(object,...)
-      if(CML) attr(out,"rPars") <- getPars(object@responseModel,...)
+      if(CML) attr(out,"rPars") <- getPars(object@responseModel,internal=TRUE,...)
       out
     }
     if(CML) {
-      pars <- getPars(object@learningModel,which="free",...)
-    } else pars <- getPars(object,which="free",...)
+      pars <- getPars(object@learningModel,which="free",internal=TRUE,...)
+    } else pars <- getPars(object,which="free",internal=TRUE,...)
     # TODO: get and use contraints!
     opt <- optim(par=pars,fn=optfun,object=object,CML=CML,CML.method=CML.method,...)
     if(CML) {
       #object@learningModel <- setPars(object@learningModel,opt$par,...)
-      object@learningModel@parameters <- setPars(object@learningModel,opt$par,rval="parameters",...)
+      object@learningModel@parameters <- setPars(object@learningModel,opt$par,internal=TRUE,...,rval="parameters")
       tmp <- optfun(pars=opt$par,object=object,CML=CML,CML.method=CML.method,...)
       #object@responseModel <- setPars(object@responseModel,attr(tmp,"rPars"),...)
-      object@responseModel@parameters <- setPars(object@responseModel,attr(tmp,"rPars"),rval="parameters",...)
+      object@responseModel@parameters <- setPars(object@responseModel,attr(tmp,"rPars"),internal=TRUE,...,rval="parameters")
     #} else object <- setPars(object,opt$par,...)
     } else {
-      parl <- setPars(object,opt$par,rval="parameters",...)
+      parl <- setPars(object,opt$par,internal=TRUE,rval="parameters",...)
       if(!is.null(parl[[1]])) object@learningModel@parameters <- parl[[1]]
       if(!is.null(parl[[2]])) object@responseModel@parameters <- parl[[2]]
     }

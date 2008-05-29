@@ -36,9 +36,9 @@ online model predictions etc.}
 \references{Gluck, M & Bower, G. (1988). }
 \examples{
 ## open weather prediction data
-data(WP)
+data(WPT)
 ## initialize model
-mod <- slfn(y~x1+x2+x3+x4-1,type="logistic",data=WP)
+mod <- slfn(y~x1+x2+x3+x4-1,type="logistic",data=WPT)
 ## estimate free parameters
 mod <- estimate(mod)
 summary(mod)

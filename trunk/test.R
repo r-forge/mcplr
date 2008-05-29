@@ -16,12 +16,7 @@ source("R/RBFN.R")
 # test Rescorla Wagner
 dat <- subset(WPT,id=="C")
 lmod <- rescorlaWagner(y~x1+x2+x3+x4,data=dat,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,-1)),intercept=FALSE,base=1,fix=list(beta=FALSE,ws=TRUE,lambda=TRUE))
-rmod <- new("LuceChoiceModel",
-  y = matrix(model.matrix(~dat$r)[,2],ncol=1),
-  x = as.matrix(predict(lmod)),
-  parameters = list(beta=1),
-  family = binomial(),
-  nTimes=nTimes(200))
+rmod <- ratioRuleResponse(r~1,data=dat,base=1,ntimes=200)
 rmod <- estimate(rmod)
 tMod <- new("McplModel",
   learningModel = lmod,
@@ -30,23 +25,17 @@ tmp <- estimate(tMod)
 
 # test SLFN
 dat <- subset(WPT,id=="C")
-mod <- slfn(y~x1+x2+x3+x4,parameters=list(eta=.3,alpha=.001),type="logistic",data=dat,intercept=FALSE,base=1)
+lmod <- slfn(y~x1+x2+x3+x4,parameters=list(eta=.3,alpha=.001),type="logistic",data=dat,intercept=FALSE,base=1)
 #rbfnmod <- rbfn(y~x1+x2+x3+x4,eta=.3,location=lapply(apply(expand.grid(rep(list(c(0,1)),4)),1,list),unlist),scale=rep(list(diag(4)),16),type="logistic",data=dat,intercept=FALSE,base=1)
-mod <- fit(mod)
-mod@parStruct@fix <- c(TRUE,FALSE,TRUE,TRUE)
-lcm <- new("LuceChoiceModel")
-lcm@y <- matrix(model.matrix(~dat$r)[,2],ncol=1)
-lcm@x <- as.matrix(predict(mod))
-lcm@parameters <- list(beta=1)
-lcm@family <- binomial()
-lcm@parStruct@fix <- TRUE
-lcm@nTimes <- nTimes(200)
-tmp <- estimate(lcm)
-logLik(tmp)
+lmod <- fit(lmod)
+lmod@parStruct@fix <- c(FALSE,FALSE,TRUE,TRUE)
+rmod <- ratioRuleResponse(r~predict(lmod)-1,data=dat,base=1,ntimes=200)
+rmod <- estimate(rmod)
+logLik(rmod)
 tMod <- new("McplModel",
-  learningModel = mod,
-  responseModel = lcm)
-tmp <- estimate(tMod,unconstrained=T)
+  learningModel = lmod,
+  responseModel = rmod)
+tmp <- estimate(tMod)
 
 # now with a redundant parameterisation
 dat <- subset(WPT,id=="C")
@@ -64,7 +53,7 @@ mod@parStruct@fix <- c(FALSE,FALSE,FALSE,TRUE)
 tMod = new("McplModel",
   learningModel = mod,
   responseModel = lcm)
-tmp <- estimate(tMod,unconstrained=T)
+tmp <- estimate(tMod)
 
 # test GCM
 dat <- subset(WPT,id=="C")

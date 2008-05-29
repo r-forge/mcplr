@@ -10,7 +10,7 @@ setClass("SLFN",
 )
 
 setMethod("setPars",signature(object="SLFN"),
-  function(object,pars,unconstrained=FALSE,...,rval=c("object","parameters")) {
+  function(object,pars,internal=FALSE,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
     sP.u <- function(pars,fixl) {
       if(!is.null(pars$eta) && !fixl$eta) pars$eta <- exp(pars$eta)
@@ -19,9 +19,9 @@ setMethod("setPars",signature(object="SLFN"),
       pars
     }
     #object <- callNextMethod()
-    parl <- callNextMethod(object=object,pars=pars,rval="parameters",unconstrained=unconstrained,...)
+    parl <- callNextMethod(object=object,pars=pars,internal=internal,...,rval="parameters")
     if(length(object@parStruct@fix)>0) fixl <- relist(object@parStruct@fix,skeleton=object@parameters) else fixl <- relist(rep(FALSE,length(unlist(object@parameters))),skeleton=object@parameters)
-    if(unconstrained) {
+    if(internal && is.null(object@parStruct@constraints)) {
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases) parl[[case]] <- sP.u(parl[[case]],fixl[[case]])
       } else {
@@ -40,14 +40,14 @@ setMethod("setPars",signature(object="SLFN"),
 )
 
 setMethod("getPars",signature(object="SLFN"),
-  function(object,which="all",unconstrained=FALSE,...) {
+  function(object,which="all",internal=FALSE,...) {
     gP.u <- function(pars) {
       pars$alpha <- log(pars$alpha)
       pars$eta <- log(pars$eta)
       pars$beta <- log(pars$beta/(1-pars$beta))
       pars
     }
-    if(unconstrained) {
+    if(internal && is.null(object@parStruct@constraints)) {
       pars <- object@parameters
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases) pars[[case]] <- gP.u(pars[[case]])
@@ -61,7 +61,7 @@ setMethod("getPars",signature(object="SLFN"),
         }
       }
     } else {
-      pars <- callNextMethod(object=object,which=which,unconstrained=unconstrained,...)
+      pars <- callNextMethod(object=object,which=which,internal=internal,...)
       #pars <- callNextMethod()
     }
     return(pars)
@@ -92,10 +92,10 @@ setMethod("fit","SLFN",
   }
 )
 slfn.fit <- function(y,x,ws,eta,alpha,beta,grad,window.size=0) {
-  if(!all(alpha) >= 0) stop("negative alpha not allowed")
+  if(!all(alpha >= 0)) stop("negative alpha not allowed")
   if(!all(beta >= 0)) stop("negative beta not allowed")
   if(!all(beta <= 1)) stop("beta must be maximum 1")
-  if(!all(eta) >= 0) stop("negative eta not allowed")
+  if(!all(eta >= 0)) stop("negative eta not allowed")
   if(window.size < 0) stop("negative window.size not allowed")
   #x <- as.matrix(x)
   nt <- nrow(x)
@@ -195,3 +195,4 @@ setMethod("predict",signature(object="SLFN"),
     return(pred)
   }
 )
+

@@ -1,4 +1,4 @@
-\name{GaussianMixtureResponse-class}
+\name{GaussianMixtureResponse}
 \docType{class}
 \alias{GaussianMixtureResponse-class}
 \alias{estimate,GaussianMixtureResponse-method}

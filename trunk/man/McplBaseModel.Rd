@@ -6,15 +6,24 @@
 \alias{LearningModel-class}
 \alias{ResponseModel-class}
 
-\alias{getReplication}
+%\alias{getReplication}
+\alias{AIC,McplBaseModel-method}
+\alias{AICc,McplBaseModel-method}
+\alias{BIC,McplBaseModel-method}
+\alias{estimate,McplBaseModel-method}
+\alias{fit,McplBaseModel-method}
+\alias{getPars,McplBaseModel-method}
 \alias{getReplication,McplBaseModel-method}
-
-\alias{ntimes}
+\alias{logLik,McplBaseModel-method}
 \alias{ntimes,McplBaseModel-method}
+\alias{RSquare,McplBaseModel-method}
+\alias{show,McplBaseModel-method}
+\alias{summary,McplBaseModel-method}
+%\alias{ntimes}
 
 \title{Class "McplBaseModel"}
 
-\description{Basic class underlying \code{\link{LearningModel}} and \code{\link{ResponseModel}}.}
+\description{Basic class underlying \code{\link{LearningModel-class}} and \code{\link{ResponseModel-class}}.}
 
 \section{Slots}{
 
