@@ -482,6 +482,7 @@ setMethod("AIC",signature(object="McplModel"),
       AIC(logLik(object,...,k=k))
     } else {
       AIC(object=object@responseModel,k=k,npar=npar)
+    }
   }
 )
 setMethod("AICc",signature(object="McplModel"),

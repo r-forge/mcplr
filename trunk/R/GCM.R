@@ -266,21 +266,21 @@ setMethod("estimate",signature(object="GCMlearning"),
     }
     if(!is.unconstrained(object,...)) {
       pars <- getPars(object,which="free",internal=TRUE,,...)
-      switch(is(object@parStruct@constraints),
+      object@parameters <- switch(is(object@parStruct@constraints)[1],
         "LinConstraintsList" = {
           A <- object@parStruct@constraints@Amat
           b <- object@parStruct@constraints@bvec
           opt <- constrOptim(theta=pars,f=optfun,grad=NULL,ui=A,ci=b,object=object,repar=FALSE,...)
-          object@parameters <- setPars(object,opt$par,internal=TRUE,...,rval="parameters")
+          setPars(object,opt$par,internal=TRUE,...,rval="parameters")
         },
         "BoxConstraintsList" = {
           opt <- optim(pars,fn=optfun,method="L-BFGS-B",object=object,min=object@parStruct@constraints@min,max=object@parStruct@constraints@min,repar=FALSE,...)
-          object@parameters <- setPars(object,opt$par,internal=TRUE,...,rval="parameters")
+          setPars(object,opt$par,internal=TRUE,...,rval="parameters")
         },
         {
           warning("This extension of ConstraintsList is not implemented; using default optimisation.")
           opt <- optim(pars,fn=optfun,method=method,object=object,repar=FALSE,...)
-          object@parameters <- setPars(object,opt$par,internal=TRUE,...,rval="parameters")
+          setPars(object,opt$par,internal=TRUE,...,rval="parameters")
         }
       )
     } else {
