@@ -19,7 +19,7 @@ setMethod("estimate",signature(object="RatioRuleResponse"),
       object <- fit(object,...)
     } else {
       optfun <- function(par,object,...) {
-        beta <- exp(par$beta)
+        beta <- exp(par[1])
         p <- predict(object,type="response")
         p <- p^beta
         p <- p/rowSums(p)
@@ -56,6 +56,7 @@ setMethod("predict",signature(object="RatioRuleResponse"),
 setMethod("logLik",signature(object="RatioRuleResponse"),
   function(object,eps=.Machine$double.eps,...) {
     pred <- predict(object,type="response",...)
+    nt <- NROW(pred)
     if(ncol(as.matrix(pred))==1) {
       pred <- rowSums(cbind(pred*object@y,(1-pred)*(1-object@y)))
     } else {
@@ -70,6 +71,9 @@ setMethod("logLik",signature(object="RatioRuleResponse"),
     #} else {
       LL <- sum(log(pred))
     #}
+    attr(LL,"nobs") <- nt
+    attr(LL,"df") <- length(getPars(object,which="free"))
+    class(LL) <- "logLik"
     LL
   }
 )
@@ -116,7 +120,7 @@ ratioRuleResponse <- function(formula,parameters=list(beta=1),
   if(missing(parStruct)) {
     tfix <- NULL
     if(!missing(fixed)) tfix <- fixed
-    parStruct <- makeParStruct(parameters,replicate=replicate,
+    parStruct <- ParStruct(parameters,replicate=replicate,
                     fixed=tfix,ntimes=ntimes)
   }
 

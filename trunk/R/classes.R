@@ -33,7 +33,7 @@ setClass("ParStruct",
   )
 )
 
-makeParStruct <- function(parameters,replicate=TRUE,fixed=NULL,ntimes=NULL,
+ParStruct <- function(parameters,replicate=TRUE,fixed=NULL,ntimes=NULL,
                 constraints=NULL) {
     parStruct <- new("ParStruct")
     if(replicate) parStruct@replicate <- TRUE else parStruct@replicate <- FALSE
@@ -158,31 +158,33 @@ setMethod("setPars",signature(object="McplBaseModel"),
 )
 setMethod("AIC",signature(object="McplBaseModel"),
   function(object,npar,...,k=2) {
-    logL <- logLik(object)
-    if(missing(npar)) npar <- length(getPars(object,which="free",...))
-    nobs <- attr(logL,"nobs")
-    if(is.null(nobs)) nobs <- nrow(object@y)
-    -2*logL + k*npar
+    logL <- logLik(object,...)
+    if(missing(npar)) return(AIC(logL,...,k=k)) else {
+      nobs <- attr(logL,"nobs")
+      if(is.null(nobs)) nobs <- nrow(object@y)
+      return(-2*logL + k*npar)
+    }
   }
 )
+
 setMethod("AICc",signature(object="McplBaseModel"),
   function(object,npar,...) {
-    logL <- logLik(object)
+    logL <- logLik(object,...)
     if(missing(npar)) npar <- length(getPars(object,which="free",...))
     nobs <- attr(logL,"nobs")
     if(is.null(nobs)) nobs <- nrow(object@y)
     -2*logL + (2*nobs*npar)/(nobs-npar-1)
   }
 )
-setMethod("BIC",signature(object="McplBaseModel"),
-  function(object,npar,...) {
-    logL <- logLik(object)
-    if(missing(npar)) npar <- length(getPars(object,which="free",...))
-    nobs <- attr(logL,"nobs")
-    if(is.null(nobs)) nobs <- nrow(object@y)
-    -2*logL + npar*log(nobs)
-  }
-)
+#setMethod("BIC",signature(object="McplBaseModel"),
+#  function(object,npar,...) {
+#    logL <- logLik(object)
+#    if(missing(npar)) npar <- length(getPars(object,which="free",...))
+#    nobs <- attr(logL,"nobs")
+#    if(is.null(nobs)) nobs <- nrow(object@y)
+#    -2*logL + npar*log(nobs)
+#  }
+#)
 setMethod("RSquare",signature(object="McplBaseModel"),
   function(object,...) {
     p <- predict(object,type="response",...)
@@ -465,15 +467,21 @@ setMethod("fit",signature(object="McplModel"),
 setMethod("logLik",signature(object="McplModel"),
   function(object,from=c("responseModel","learningModel"),...) {
     from <- match.arg(from)
-    switch(from,
+    LL <- switch(from,
       responseModel = logLik(object@responseModel,...),
       learningModel = logLik(object@learningModel,...))
+    attr(LL,"df") <- switch(from,
+      responseModel = length(getPars(object,which="free",...)),
+      learningModel = length(getPars(object@learningModel,which="free",...)))
+    return(LL)
   }
 )
 setMethod("AIC",signature(object="McplModel"),
   function(object,npar,...,k=2) {
-    if(missing(npar)) npar <- length(getPars(object,which="free",...))
-    AIC(object=object@responseModel,k=2,npar=npar)
+    if(missing(npar)) {
+      AIC(logLik(object,...,k=k))
+    } else {
+      AIC(object=object@responseModel,k=k,npar=npar)
   }
 )
 setMethod("AICc",signature(object="McplModel"),
