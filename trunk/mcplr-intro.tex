@@ -74,7 +74,7 @@ Address correspondence to M. Speekenbrink, Department of Psychology, University 
 
 Multiple cue probability learning tasks require the prediction of a criterion variable on the basis of a number of cues which are probabilistically related to the criterion. This class of task is quite general. A numerical criterion variable is often used in Social Judgement Theory. When the criterion is a nominal variable, it is also common to speak of category learning tasks. 
 
-A large number of formal models have been proposed to describe how people learn to perform in MCPL tasks. We describe here an R package in which a number of these have been implemented, and which has been designed such that users can relatively easily add the remaining models. 
+A large number of formal models have been proposed to describe how people learn to perform MCPL tasks. We describe here an R package in which a number of these have been implemented, and which has been designed such that users can relatively easily add other models. 
 
 We will describe the features of the package through the package's implementation of the Generalized Context Model (GCM). We will also briefly illustrate how to specify a new model. 
 
@@ -84,7 +84,14 @@ At the heart of the mcplR package is the class \code{McplModel}. An \code{McplMo
 
 \section{Implementation of the GCM}
 
-A GCM can be specified by the function \code{gcm(formula,data,parameters,...)}. This function creates an object of the class \code{GcmModel}, extending the \code{McplModel} class. The model's parameters can then be estimated by the function \code{estimate(mod,...)}, where \code{mod} is the model specified by the \code{gcm} function. Starting values for the parameters can be given by the \code{parameters} argument. If this argument is not given, default starting values will be used.
+A GCM can be specified by the function \code{GCM(formula,data,parameters,...)}. This function creates an object of the class \code{GCM}, extending the \code{LearningModel} class. To estimate the model's parameters, we can call the \code{estimate(object,...)} method. This will result in estimates which maximize the likelihood of the criterion. However, we will often want to use the \code{GCM} model as part of an \code{McplModel}. The ``classical'' GCM \cite{Nosofsky86} uses
+\begin{equation}
+P(R=j) = \frac{S_j^\lambda}{\sum_{k=1}^K S_k^\lambda}
+\end{equation}
+which is implemented in \code{mcplR} by a \code{RatioRuleResponse} model. This can be created by calling \code{RatioRuleResponse(formula,...)}. 
+
+
+, where \code{mod} is the model specified by the \code{GCM} function. Starting values for the parameters can be given by the \code{parameters} argument. If this argument is not given, default starting values will be used.
 
 \subsection{Learning Model}
 

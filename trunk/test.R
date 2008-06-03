@@ -16,57 +16,54 @@ source("R/RBFN.R")
 
 # test Rescorla Wagner
 dat <- subset(WPT,id=="C")
-lmod <- rescorlaWagner(y~x1+x2+x3+x4,data=dat,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,-1)),intercept=FALSE,base=1,fix=list(beta=FALSE,ws=TRUE,lambda=TRUE))
-rmod <- ratioRuleResponse(r~1,data=dat,base=1,ntimes=200)
+lmod <- RescorlaWagner(y~x1+x2+x3+x4,data=dat,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,-1)),intercept=FALSE,base=1,fix=list(beta=FALSE,ws=TRUE,lambda=TRUE))
+rmod <- RatioRuleResponse(r~1,data=dat,base=1,ntimes=200)
 rmod <- estimate(rmod)
-tMod <- new("McplModel",
-  learningModel = lmod,
-  responseModel = rmod)
-tmp <- estimate(tMod)
+logLik(rmod)
+tMod <- McplModel(learningModel = lmod,responseModel = rmod)
+tMod <- estimate(tMod)
+logLik(tMod)
 
 # test SLFN
 dat <- subset(WPT,id=="C")
-lmod <- slfn(y~x1+x2+x3+x4,parameters=list(eta=.3,alpha=.001),type="logistic",data=dat,intercept=FALSE,base=1)
+lmod <- SLFN(y~x1+x2+x3+x4,parameters=list(eta=.3,alpha=.001),type="logistic",data=dat,intercept=FALSE,base=1)
 #rbfnmod <- rbfn(y~x1+x2+x3+x4,eta=.3,location=lapply(apply(expand.grid(rep(list(c(0,1)),4)),1,list),unlist),scale=rep(list(diag(4)),16),type="logistic",data=dat,intercept=FALSE,base=1)
 lmod <- fit(lmod)
 lmod@parStruct@fix <- c(FALSE,TRUE,TRUE,TRUE)
-rmod <- ratioRuleResponse(r~predict(lmod)-1,data=dat,base=1,ntimes=200)
+rmod <- RatioRuleResponse(r~predict(lmod)-1,data=dat,base=1,ntimes=200)
 rmod <- estimate(rmod)
 logLik(rmod)
-tMod <- new("McplModel",
-  learningModel = lmod,
-  responseModel = rmod)
-tmp <- estimate(tMod)
+tMod <- McplModel(learningModel = lmod,responseModel = rmod)
+tMod <- estimate(tMod)
+logLik(tMod)
 
 # now with a redundant parameterisation
 dat <- subset(WPT,id=="C")
-lmod <- slfn(y~x1+x2+x3+x4,parameters=list(eta=.3),type="logistic",data=dat,intercept=FALSE)
-lmod <- fit(mod)
+lmod <- SLFN(y~x1+x2+x3+x4,parameters=list(eta=.3),type="logistic",data=dat,intercept=FALSE)
+lmod <- fit(lmod)
 lmod@parStruct@fix <- c(FALSE,TRUE,TRUE,TRUE)
-rmod <- ratioRuleResponse(r~predict(lmod)-1,data=dat,base=NULL,ntimes=200)
+rmod <- RatioRuleResponse(r~predict(lmod)-1,data=dat,base=NULL,ntimes=200)
 #rmod <- estimate(rmod)
-tMod = new("McplModel",
-  learningModel = lmod,
-  responseModel = rmod)
+tMod = McplModel(learningModel = lmod,responseModel = rmod)
 tmp <- estimate(tMod)
 
 # test GCM
 dat <- subset(WPT,id=="C")
-mod <- gcm(y~x1+x2+x3+x4,data=dat)
-logLik(mod)
-mod <- estimate(mod,unconstrained=TRUE,method="Nelder-Mead")
-logLik(mod)
-logLik(setPars(mod,c(0.31243147,0.32985646,0.06847703,0.28923503,6.044744)))
+lmod <- GCM(y~x1+x2+x3+x4,data=dat)
+logLik(lmod)
+lmod <- estimate(lmod,unconstrained=TRUE,method="Nelder-Mead")
+logLik(lmod)
+logLik(setPars(lmod,c(0.31243147,0.32985646,0.06847703,0.28923503,6.044744)))
 # use constrained estimation
-nw <- 3
+nw <- 4
 A <- bdiag(list(rbind(diag(nw),rep(-1,nw)),1))
 b <- c(rep(0,nw),-1-1e-10,0)
-mod@parStruct@constraints <- new("LinConstraintsList",
+lmod@parStruct@constraints <- new("LinConstraintsList",
   Amat = A, bvec=b)
-mod@parameters <- list(w=rep(.25,3),lambda=1)
-mod@parStruct@fix <- rep(FALSE,4)
-mod <- estimate(mod)
-logLik(mod)
+lmod@parameters <- list(w=rep(.25,nw),lambda=1)
+lmod@parStruct@fix <- rep(FALSE,nw+1)
+lmod <- estimate(lmod)
+logLik(lmod)
 
 # with continuous data
 load(paste(projectFolder,"StockMarket/R/study1/dmcpl.RData",sep=""))

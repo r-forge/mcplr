@@ -9,7 +9,7 @@
 ### (c) 2007, M. Speekenbrink
 ################################################################################
 
-setClass("GCMlearning",
+setClass("GCM",
   contains="LearningModel",
   representation(
     weights="list", # each element is a lower triangular matrix with (normalized) weight of each y[t]
@@ -18,27 +18,14 @@ setClass("GCMlearning",
     sampling="function" # computes nt*nt matrix with sampling weights (column wise!)
   )
 )
-setClass("GCMlearningNominal",
-  contains="GCMlearning"
-)
-setClass("GCMlearningInterval",
-  contains="GCMlearning"
-)
 setClass("GCMnominal",
-  contains="McplModel",
-  representation(
-    learningModel = "GCMlearningNominal",
-    responseModel = "RatioRuleResponse"
-  )
+  contains="GCM"
 )
 setClass("GCMinterval",
-  contains="McplModel",
-  representation(
-    learningModel = "GCMlearningInterval",
-    responseModel = "GaussianMixtureResponse"
-  )
+  contains="GCM"
 )
-setMethod("is.unconstrained",signature(object="GCMlearning"),
+
+setMethod("is.unconstrained",signature(object="GCM"),
   function(object,...) {
     if(is(object@parStruct@constraints,"LinConstraintsList") || is(object@parStruct@constraints,"BoxConstraintsList")) {
       return(FALSE)
@@ -48,7 +35,7 @@ setMethod("is.unconstrained",signature(object="GCMlearning"),
   }
 )
 
-setMethod("fit",signature(object="GCMlearning"),
+setMethod("fit",signature(object="GCM"),
   function(object,...) {
     if(object@nTimes@cases>1) {
       for(case in 1:object@nTimes@cases) {
@@ -105,7 +92,7 @@ gcm.fit.unconstrained <- function(x,y,parameters,distance,similarity,sampling,..
   return(list(weights=w))
 }
 
-setMethod("setPars",signature(object="GCMlearning"),
+setMethod("setPars",signature(object="GCM"),
   function(object,pars,internal=FALSE,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
     if(!internal || is.null(object@parStruct@constraints)) {
@@ -166,7 +153,7 @@ setMethod("setPars",signature(object="GCMlearning"),
   }
 )
 
-setMethod("getPars",signature(object="GCMlearning"),
+setMethod("getPars",signature(object="GCM"),
   function(object,which="all",internal=FALSE,...) {
     gP.u <- function(pars) {
       pr <- pars$r
@@ -211,7 +198,7 @@ setMethod("getPars",signature(object="GCMlearning"),
   }
 )
 
-setMethod("predict",signature(object="GCMlearning"),
+setMethod("predict",signature(object="GCM"),
   function(object,...) {
     pred <- vector()
     for(case in 1:object@nTimes@cases) {
@@ -223,7 +210,7 @@ setMethod("predict",signature(object="GCMlearning"),
   }
 )
 
-setMethod("logLik",signature(object="GCMlearningNominal"),
+setMethod("logLik",signature(object="GCMnominal"),
   function(object,discount=1,eps=.Machine$double.eps,...) {
     discount <- unlist(lapply(object@nTimes@bt,"+",discount))
     pred <- predict(object,type="response",...)
@@ -234,11 +221,13 @@ setMethod("logLik",signature(object="GCMlearningNominal"),
     out <- LL
     nobs <- length(pred)
     attr(out,"nobs") <- nobs
+    attr(out,"df") <- length(getPars(object,which="free"))
+    class(out) <- "logLik"
     out
   }
 )
 
-setMethod("logLik",signature(object="GCMlearningInterval"),
+setMethod("logLik",signature(object="GCMinterval"),
   function(object,discount=1,...) {
     LL <- vector("double")
     nobs <- 0
@@ -252,11 +241,13 @@ setMethod("logLik",signature(object="GCMlearningInterval"),
     }
     out <- sum(LL)
     attr(out,"nobs") <- nobs
+    attr(out,"df") <- length(getPars(object,which="free"))
+    class(out) <- "logLik"
     out
   }
 )
 
-setMethod("estimate",signature(object="GCMlearning"),
+setMethod("estimate",signature(object="GCM"),
   function(object,method="Nelder-Mead",...) {
     optfun <- function(pars,object,repar,...) {
       #object <- setPars(object,pars,unconstrained=unconstrained)
@@ -398,7 +389,7 @@ gcm.sampling <- function(type="uniform") {
   fun
 }
 
-gcm <- function(formula,level="nominal",response,distance=gcm.distance("cityblock"),similarity=gcm.similarity("exponential"),sampling=gcm.sampling("uniform"),parameters=list(),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL) {
+GCM <- function(formula,level="nominal",distance=gcm.distance("cityblock"),similarity=gcm.similarity("exponential"),sampling=gcm.sampling("uniform"),parameters=list(),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL) {
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=TRUE)
   x <- dat$x
   y <- dat$y
@@ -415,12 +406,12 @@ gcm <- function(formula,level="nominal",response,distance=gcm.distance("citybloc
     if(is.null(parameters$lambda)) parameters$lambda <- 1
     if(is.null(parameters$r)) {
       if(attr(distance,"name") == "minkowski") {
-        parameters$r <- r
+        parameters$r <- 1
       }
     }
     if(is.null(parameters$q)) {
-      if(attr(distance,"name")=="general") {
-          parameters$q <- q
+      if(attr(distance,"name")=="minkowski") {
+          parameters$q <- 1
       }
     }
     if(is.null(parameters$gamma)) {
@@ -479,7 +470,7 @@ gcm <- function(formula,level="nominal",response,distance=gcm.distance("citybloc
   nTimes <- nTimes(ntimes)
   
   if(level=="nominal") {
-    mod <- new("GCMlearningNominal",
+    mod <- new("GCMnominal",
       x=x,
       y=y,
       parameters=parameters,
@@ -491,7 +482,7 @@ gcm <- function(formula,level="nominal",response,distance=gcm.distance("citybloc
     )
   }
   if(level=="interval") {
-    mod <- new("GCMlearningInterval",
+    mod <- new("GCMinterval",
       x=x,
       y=y,
       parameters=parameters,

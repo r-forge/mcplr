@@ -78,7 +78,7 @@ setMethod("logLik",signature(object="RatioRuleResponse"),
   }
 )
 
-ratioRuleResponse <- function(formula,parameters=list(beta=1),
+RatioRuleResponse <- function(formula,parameters=list(beta=1),
                         data,base=NULL,ntimes=NULL,replicate=TRUE,fixed,
                         parStruct,family,subset) {
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base) else 

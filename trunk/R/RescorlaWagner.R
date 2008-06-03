@@ -112,7 +112,7 @@ setMethod("predict",signature(object="RescorlaWagner"),
   }
 )
 
-rescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,0),ws=0),data,intercept=TRUE,base=NULL,ntimes=NULL,replicate=TRUE,fixed,parStruct,subset) {
+RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,0),ws=0),data,intercept=TRUE,base=NULL,ntimes=NULL,replicate=TRUE,fixed,parStruct,subset) {
   if(!intercept) remi <- TRUE else remi <- FALSE
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remi) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remi)
   x <- dat$x
@@ -166,27 +166,34 @@ rescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c
     }
   }
 
+#  if(missing(parStruct)) {
+#    parStruct <- new("ParStruct")
+#    if(replicate) parStruct@replicate <- TRUE else parStruct@replicate <- FALSE
+#    if(is.null(ntimes) | replicate) {
+#      fix <- rep(FALSE,length(unlist(parameters)))
+#      fix <- relist(fix,skeleton=parameters)
+#    } else {
+#      fix <- rep(FALSE,length(unlist(parameters[[1]])))
+#      fix <- relist(fix,skeleton=parameters[[1]])
+#    }
+#    if(!missing(fixed)) {
+#      for(i in 1:length(fix)) {
+#        if(!is.null(fixed[[names(fix)[i]]]) && fixed[[names(fix)[i]]]) fix[[i]] <- rep(TRUE,length(fix[[i]]))
+#      }
+#    }
+#    if(is.null(ntimes) | replicate) {
+#      parStruct@fix <- unlist(fix)
+#    } else {
+#      fix <- rep(list(fix,length(ntimes)))
+#      parStruct@fix <- unlist(fix)
+#    }
+#  }
+  
   if(missing(parStruct)) {
-    parStruct <- new("ParStruct")
-    if(replicate) parStruct@replicate <- TRUE else parStruct@replicate <- FALSE
-    if(is.null(ntimes) | replicate) {
-      fix <- rep(FALSE,length(unlist(parameters)))
-      fix <- relist(fix,skeleton=parameters)
-    } else {
-      fix <- rep(FALSE,length(unlist(parameters[[1]])))
-      fix <- relist(fix,skeleton=parameters[[1]])
-    }
-    if(!missing(fixed)) {
-      for(i in 1:length(fix)) {
-        if(!is.null(fixed[[names(fix)[i]]]) && fixed[[names(fix)[i]]]) fix[[i]] <- rep(TRUE,length(fix[[i]]))
-      }
-    }
-    if(is.null(ntimes) | replicate) {
-      parStruct@fix <- unlist(fix)
-    } else {
-      fix <- rep(list(fix,length(ntimes)))
-      parStruct@fix <- unlist(fix)
-    }
+    tfix <- NULL
+    if(!missing(fixed)) tfix <- fixed
+    parStruct <- ParStruct(parameters,replicate=replicate,
+                    fixed=tfix,ntimes=ntimes)
   }
 
   if(is.null(ntimes)) ntimes <- nrow(y)

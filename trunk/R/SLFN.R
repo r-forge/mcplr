@@ -121,7 +121,8 @@ slfn.fit <- function(y,x,ws,eta,alpha,beta,grad,window.size=0) {
   return(list(weight=weight))
 }
 
-slfn <- function(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),type=c("linear","logistic"),data,window.size=0,intercept=TRUE,base=NULL,ntimes=NULL,replicate=T,subset) {
+SLFN <- function(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),type=c("linear","logistic"),fixed,parStruct,data,subset,window.size=0,intercept=TRUE,base=NULL,ntimes=NULL,replicate=T) {
+  type <- match.arg(type)
   lin <- function(x) {
     x
   }
@@ -152,12 +153,12 @@ slfn <- function(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),type=c("li
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remi) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remi)
   x <- dat$x
   y <- dat$y
-  fun <- switch(type[1],
+  fun <- switch(type,
     logistic = logis,
     linear = lin,
     lin
   )
-  grad <- switch(type[1],
+  grad <- switch(type,
     logistic = grad.logis,
     linear = grad.lin,
     grad.lin)
@@ -177,9 +178,27 @@ slfn <- function(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),type=c("li
       parameters <- rep(list(parameters),nrep)
     } else warning("there is no validity check for the given parameters when combined with ntimes and replicate=FALSE \n Please make sure the supplied list is valid")
   }
+  
+  if(missing(parStruct)) {
+    tfix <- NULL
+    if(!missing(fixed)) tfix <- fixed
+    parStruct <- ParStruct(parameters,replicate=replicate,
+                    fixed=tfix,ntimes=ntimes)
+  }
+
   if(is.null(ntimes)) ntimes <- nrow(y)
   nTimes <- nTimes(ntimes)
-  new("SLFN",x=x,y=y,parameters=parameters,nTimes=nTimes,activation=type[1],actfun=fun,gradient=grad,window.size=window.size)
+  new("SLFN",
+    x=x,
+    y=y,
+    parameters=parameters,
+    parStruct=parStruct,
+    nTimes=nTimes,
+    activation=type[1],
+    actfun=fun,
+    gradient=grad,
+    window.size=window.size
+  )
 }
 
 setMethod("predict",signature(object="SLFN"),

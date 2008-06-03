@@ -359,6 +359,13 @@ setClass("McplModel",
   )
 )
 
+McplModel <- function(learningModel,responseModel) {
+  mod <- new("McplModel",
+    learningModel = learningModel,
+    responseModel = responseModel)
+  fit(mod)
+}
+
 setMethod("getPars",signature(object="McplModel"),
   function(object,which="all",internal=FALSE,...) {
     pars <- list()
