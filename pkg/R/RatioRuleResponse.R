@@ -19,7 +19,7 @@ setMethod("estimate",signature(object="RatioRuleResponse"),
       object <- fit(object,...)
     } else {
       optfun <- function(par,object,...) {
-        beta <- exp(par)
+        beta <- exp(par[1])
         p <- predict(object,type="response")
         p <- p^beta
         p <- p/rowSums(p)
@@ -56,6 +56,7 @@ setMethod("predict",signature(object="RatioRuleResponse"),
 setMethod("logLik",signature(object="RatioRuleResponse"),
   function(object,eps=.Machine$double.eps,...) {
     pred <- predict(object,type="response",...)
+    nt <- NROW(pred)
     if(ncol(as.matrix(pred))==1) {
       pred <- rowSums(cbind(pred*object@y,(1-pred)*(1-object@y)))
     } else {
@@ -70,6 +71,71 @@ setMethod("logLik",signature(object="RatioRuleResponse"),
     #} else {
       LL <- sum(log(pred))
     #}
+    attr(LL,"nobs") <- nt
+    attr(LL,"df") <- length(getPars(object,which="free"))
+    class(LL) <- "logLik"
     LL
   }
 )
+
+RatioRuleResponse <- function(formula,parameters=list(beta=1),
+                        data,base=NULL,ntimes=NULL,replicate=TRUE,fixed,
+                        parStruct,family,subset) {
+  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base) else 
+    dat <- mcpl.prepare(formula,data,base=base)
+
+  y <- dat$y
+  
+  if(!is.null(base)) {
+    #y <- y[,base]
+    if(missing(family)) if(ncol(y)==1) family <- binomial() else family <- multinomial()
+  } else {
+    if(missing(family)) if(ncol(y)==2) family <- binomial() else family <- multinomial()
+  }
+  x <- dat$x
+  
+  parfill <- function(parameters) {
+    pars <- list()
+    if(is.null(parameters$beta)) pars$beta <- 1 else pars$beta <- parameters$beta
+    pars
+  }
+
+  if(is.null(ntimes) | replicate) {
+    # intialize
+    parameters <- parfill(parameters)
+  } else {
+    # setup a parlist
+    nrep <- length(ntimes)
+    # check structure of supplied list
+    if(all(lapply(parameters,is.list)) && length(parameters)==nrep) {
+      for(i in 1:nrep) {
+        parameters[[i]] <- parfill(parameters[[i]])
+      }
+    } else {
+      parameters <- parfill(parameters)
+      parameters <- rep(list(parameters),nrep)
+    }
+  }
+  
+  if(missing(parStruct)) {
+    tfix <- NULL
+    if(!missing(fixed)) tfix <- fixed
+    parStruct <- ParStruct(parameters,replicate=replicate,
+                    fixed=tfix,ntimes=ntimes)
+  }
+
+  if(is.null(ntimes)) ntimes <- nrow(y)
+  nTimes <- nTimes(ntimes)
+    
+  mod <- new("RatioRuleResponse",
+    x = x,
+    y = y,
+    parameters = parameters,
+    parStruct=parStruct,
+    nTimes=nTimes,
+    family=family)
+  mod <- fit(mod)
+  mod                     
+                        
+}
+

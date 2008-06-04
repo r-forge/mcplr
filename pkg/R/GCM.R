@@ -9,7 +9,7 @@
 ### (c) 2007, M. Speekenbrink
 ################################################################################
 
-setClass("Gcm",
+setClass("GCM",
   contains="LearningModel",
   representation(
     weights="list", # each element is a lower triangular matrix with (normalized) weight of each y[t]
@@ -18,14 +18,14 @@ setClass("Gcm",
     sampling="function" # computes nt*nt matrix with sampling weights (column wise!)
   )
 )
-setClass("GcmNominal",
-  contains="Gcm"
+setClass("GCMnominal",
+  contains="GCM"
 )
-setClass("GcmInterval",
-  contains="Gcm"
+setClass("GCMinterval",
+  contains="GCM"
 )
 
-setMethod("is.unconstrained",signature(object="Gcm"),
+setMethod("is.unconstrained",signature(object="GCM"),
   function(object,...) {
     if(is(object@parStruct@constraints,"LinConstraintsList") || is(object@parStruct@constraints,"BoxConstraintsList")) {
       return(FALSE)
@@ -35,7 +35,7 @@ setMethod("is.unconstrained",signature(object="Gcm"),
   }
 )
 
-setMethod("fit",signature(object="Gcm"),
+setMethod("fit",signature(object="GCM"),
   function(object,...) {
     if(object@nTimes@cases>1) {
       for(case in 1:object@nTimes@cases) {
@@ -60,7 +60,6 @@ gcm.fit <- gcm.cont.fit <- gcm.discr.fit <- function(x,y,parameters,distance,sim
   sam <- sampling(nt=nrow(x),parameters=parameters,...)
   w <- sim*sam
   w <- apply(w,2,function(x) x/sum(x))
-  #w <- t(t(w)/colSums(w))
   w[is.nan(w)] <- 0 # FIX ME!
 #  if(!all(colSums(w[,-1])==1)) {
 #    warning("problem in mixture weights: do not all sum to 1")
@@ -89,16 +88,15 @@ gcm.fit.unconstrained <- function(x,y,parameters,distance,similarity,sampling,..
   sim <- similarity(distance=dis,parameters=parameters,...)
   sam <- sampling(nt=nrow(x),parameters=parameters,...)
   w <- sim*sam
-  #w <- t(t(w)/colSums(w))
   w <- apply(w,2,function(x) x/sum(x))
   return(list(weights=w))
 }
 
-setMethod("setPars",signature(object="Gcm"),
-  function(object,pars,...,rval=c("object","parameters")) {
+setMethod("setPars",signature(object="GCM"),
+  function(object,pars,internal=FALSE,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
-    if(!is.unconstrained(object)) {
-      parl <- callNextMethod(object=object,pars=pars,rval="parameters",...)
+    if(!internal || is.null(object@parStruct@constraints)) {
+      parl <- callNextMethod(object=object,pars=pars,internal=internal,rval="parameters",...)
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases){
           if(length(parl[[case]]$w) == ncol(object@x) - 1) {
@@ -111,6 +109,7 @@ setMethod("setPars",signature(object="Gcm"),
         }
       }
     } else {
+      # use reparametrization
       sP.u <- function(pars,fix) {
         pr <- pars$r
         pq <- pars$q
@@ -136,7 +135,7 @@ setMethod("setPars",signature(object="Gcm"),
       object@parStruct@fix <- unlist(fix)
       #object <- callNextMethod(object=object,pars=pars,...)
       #pars <- object@parameters
-      parl <- callNextMethod(object=object,pars=pars,rval="parameters",...)
+      parl <- callNextMethod(object=object,pars=pars,internal=internal,rval="parameters",...)
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases){
           parl[[case]] <- sP.u(parl[[case]],fix[[case]])
@@ -154,8 +153,8 @@ setMethod("setPars",signature(object="Gcm"),
   }
 )
 
-setMethod("getPars",signature(object="Gcm"),
-  function(object,which="all",...) {
+setMethod("getPars",signature(object="GCM"),
+  function(object,which="all",internal=FALSE,...) {
     gP.u <- function(pars) {
       pr <- pars$r
       pq <- pars$q
@@ -168,7 +167,7 @@ setMethod("getPars",signature(object="Gcm"),
       if(!is.null(pars$sdy)) pars$sdy <- log(pars$sdy)
       pars
     }
-    if(is.unconstrained(object,...)) {
+    if(internal && is.null(object@parStruct@constraints)) {
       pars <- object@parameters
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases){
@@ -199,7 +198,7 @@ setMethod("getPars",signature(object="Gcm"),
   }
 )
 
-setMethod("predict",signature(object="Gcm"),
+setMethod("predict",signature(object="GCM"),
   function(object,...) {
     pred <- vector()
     for(case in 1:object@nTimes@cases) {
@@ -211,7 +210,7 @@ setMethod("predict",signature(object="Gcm"),
   }
 )
 
-setMethod("logLik",signature(object="GcmNominal"),
+setMethod("logLik",signature(object="GCMnominal"),
   function(object,discount=1,eps=.Machine$double.eps,...) {
     discount <- unlist(lapply(object@nTimes@bt,"+",discount))
     pred <- predict(object,type="response",...)
@@ -222,11 +221,13 @@ setMethod("logLik",signature(object="GcmNominal"),
     out <- LL
     nobs <- length(pred)
     attr(out,"nobs") <- nobs
+    attr(out,"df") <- length(getPars(object,which="free"))
+    class(out) <- "logLik"
     out
   }
 )
 
-setMethod("logLik",signature(object="GcmInterval"),
+setMethod("logLik",signature(object="GCMinterval"),
   function(object,discount=1,...) {
     LL <- vector("double")
     nobs <- 0
@@ -240,40 +241,43 @@ setMethod("logLik",signature(object="GcmInterval"),
     }
     out <- sum(LL)
     attr(out,"nobs") <- nobs
+    attr(out,"df") <- length(getPars(object,which="free"))
+    class(out) <- "logLik"
     out
   }
 )
 
-setMethod("estimate",signature(object="Gcm"),
+setMethod("estimate",signature(object="GCM"),
   function(object,method="Nelder-Mead",...) {
-    optfun <- function(pars,object,...) {
+    optfun <- function(pars,object,repar,...) {
       #object <- setPars(object,pars,unconstrained=unconstrained)
-      object@parameters <- setPars(object,pars,rval="parameters",...)
+      object@parameters <- setPars(object,pars,repar=repar,...,rval="parameters")
       object <- fit(object,...)
       -logLik(object)
     }
-    pars <- getPars(object,which="free")
     if(!is.unconstrained(object,...)) {
-      switch(is(object@parStruct@constraints),
+      pars <- getPars(object,which="free",internal=TRUE,,...)
+      object@parameters <- switch(is(object@parStruct@constraints)[1],
         "LinConstraintsList" = {
           A <- object@parStruct@constraints@Amat
           b <- object@parStruct@constraints@bvec
-          opt <- constrOptim(theta=pars,f=optfun,grad=NULL,ui=A,ci=b,object=object,unconstrained=unconstrained,...)
-          object@parameters <- setPars(object,opt$par,rval="parameters",...)
+          opt <- constrOptim(theta=pars,f=optfun,grad=NULL,ui=A,ci=b,object=object,repar=FALSE,...)
+          setPars(object,opt$par,internal=TRUE,...,rval="parameters")
         },
         "BoxConstraintsList" = {
-          opt <- optim(pars,fn=optfun,method="L-BFGS-B",object=object,min=object@parStruct@constraints@min,max=object@parStruct@constraints@min,...)
-          object@parameters <- setPars(object,opt$par,rval="parameters",...)
+          opt <- optim(pars,fn=optfun,method="L-BFGS-B",object=object,min=object@parStruct@constraints@min,max=object@parStruct@constraints@min,repar=FALSE,...)
+          setPars(object,opt$par,internal=TRUE,...,rval="parameters")
         },
         {
           warning("This extension of ConstraintsList is not implemented; using default optimisation.")
-          opt <- optim(pars,fn=optfun,method=method,object=object,...)
-          object@parameters <- setPars(object,opt$par,rval="parameters",...)
+          opt <- optim(pars,fn=optfun,method=method,object=object,repar=FALSE,...)
+          setPars(object,opt$par,internal=TRUE,...,rval="parameters")
         }
       )
     } else {
-      opt <- optim(pars,fn=optfun,method=method,object=object,...)
-      object@parameters <- setPars(object,opt$par,rval="parameters",...)
+      pars <- getPars(object,which="free",repar=TRUE,...)
+      opt <- optim(pars,fn=optfun,method=method,object=object,repar=TRUE,...)
+      object@parameters <- setPars(object,opt$par,internal=TRUE,...,rval="parameters")
     }
     object <- fit(object,...)
     object
@@ -316,7 +320,7 @@ gcm.distance <- function(type="cityblock") {
     cityblock = dis.city,
     euclidian = dis.eucl,
     minkowski = dis.mink,
-    gcm.distance.city
+    dis.city
   )
   attr(fun,"name") <- type
   fun
@@ -385,7 +389,8 @@ gcm.sampling <- function(type="uniform") {
   fun
 }
 
-gcm <- function(formula,level="nominal",distance=gcm.distance("cityblock"),similarity=gcm.similarity("exponential"),sampling=gcm.sampling("uniform"),parameters=list(),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL) {
+GCM <- function(formula,level=c("nominal","interval"),distance=gcm.distance("cityblock"),similarity=gcm.similarity("exponential"),sampling=gcm.sampling("uniform"),parameters=list(w=NULL,lambda=1,r=1,q=1,gamma=1),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL) {
+  level <- match.arg(level)
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=TRUE)
   x <- dat$x
   y <- dat$y
@@ -402,12 +407,12 @@ gcm <- function(formula,level="nominal",distance=gcm.distance("cityblock"),simil
     if(is.null(parameters$lambda)) parameters$lambda <- 1
     if(is.null(parameters$r)) {
       if(attr(distance,"name") == "minkowski") {
-        parameters$r <- r
+        parameters$r <- 1
       }
     }
     if(is.null(parameters$q)) {
-      if(attr(distance,"name")=="general") {
-          parameters$q <- q
+      if(attr(distance,"name")=="minkowski") {
+          parameters$q <- 1
       }
     }
     if(is.null(parameters$gamma)) {
@@ -426,10 +431,10 @@ gcm <- function(formula,level="nominal",distance=gcm.distance("cityblock"),simil
       parameters$w <- parameters$w/sum(parameters$w)
       parameters$lambda <- 1
       if(attr(distance,"name") == "minkowski") {
-        parameters$r <- r
+        parameters$r <- 1
       }
       if(attr(distance,"name")=="general") {
-          parameters$q <- q
+          parameters$q <- 1
       }
       if(attr(sampling,"name") != "uniform") {
         if(is.null(parameters$gamma)) parameters$gamma <- 1
@@ -466,7 +471,7 @@ gcm <- function(formula,level="nominal",distance=gcm.distance("cityblock"),simil
   nTimes <- nTimes(ntimes)
   
   if(level=="nominal") {
-    mod <- new("GcmNominal",
+    mod <- new("GCMnominal",
       x=x,
       y=y,
       parameters=parameters,
@@ -478,7 +483,7 @@ gcm <- function(formula,level="nominal",distance=gcm.distance("cityblock"),simil
     )
   }
   if(level=="interval") {
-    mod <- new("GcmInterval",
+    mod <- new("GCMinterval",
       x=x,
       y=y,
       parameters=parameters,
@@ -493,7 +498,7 @@ gcm <- function(formula,level="nominal",distance=gcm.distance("cityblock"),simil
   mod
 }
 
-setMethod("lFr",signature(x="Gcm",y="GaussianMixtureResponse"), 
+setMethod("lFr",signature(x="GCMinterval",y="GaussianMixtureResponse"), 
   function(x,y,...) {
     for(case in 1:x@nTimes@cases) {
       y@weights[[case]] <- x@weights[[case]]

@@ -77,7 +77,7 @@ setMethod("logLik",signature(object="GaussianMixtureResponse"),
       d <- w*d
       #rmv <- unique(c(discount,zw))
       #d <- d[,-rmv]
-      d <- d[,-zw]
+      if(length(zw)>0) d <- d[,-zw]
       d <- colSums(d)
       miss <- is.na(d)
       LL[case] <- sum(log(d[!miss])) #+ length(zw)*default
@@ -239,8 +239,8 @@ setMethod("estimate",signature(object="GaussianMixtureResponse"),
   }
 )
 
-gaussianMixtureResponse <- function(formula,ncomponent=2,data,subset,weights,ntimes=NULL) {
-  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=TRUE)
+GaussianMixtureResponse <- function(formula,ncomponent=2,data,subset,weights,ntimes=NULL) {
+  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,remove.intercept=TRUE)
   x <- dat$x
   y <- dat$y
   if(ncol(x)!=0) ncomponent <- ncol(x)

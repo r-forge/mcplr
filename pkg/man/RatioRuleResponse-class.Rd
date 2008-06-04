@@ -31,19 +31,20 @@ Class \code{"\linkS4class{McplBaseModel}"}, by class "ResponseModel", distance 2
     \item{predict}{\code{signature(object = "RatioRuleResponse")}: ... }
 	 }
 }
-\references{Luce, R. D. (1959) Individual choice behavior: A theoretical analysis. New York: John
+\references{
+Luce, R. D. (1959) \emph{Individual choice behavior: A theoretical analysis}. New York: John
 Wiley and Sons.}
 
 \author{Maarten Speekenbrink}
 
-# \note{ ~~further notes~~ }
+% \note{ ~~further notes~~ }
 
-# ~Make other sections like Warning with \section{Warning }{....} ~
+% ~Make other sections like Warning with \section{Warning }{....} ~
 
-#\seealso{
-#	~~objects to See Also as \code{\link{~~fun~~}}, ~~~
-#	or \code{\linkS4class{CLASSNAME}} for links to other classes
-#}
+%\seealso{
+%	~~objects to See Also as \code{\link{~~fun~~}}, ~~~
+%	or \code{\linkS4class{CLASSNAME}} for links to other classes
+%}
 \examples{
 showClass("RatioRuleResponse")
 }
