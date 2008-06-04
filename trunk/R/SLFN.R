@@ -121,7 +121,7 @@ slfn.fit <- function(y,x,ws,eta,alpha,beta,grad,window.size=0) {
   return(list(weight=weight))
 }
 
-SLFN <- function(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),type=c("linear","logistic"),fixed,parStruct,data,subset,window.size=0,intercept=TRUE,base=NULL,ntimes=NULL,replicate=T) {
+SLFN <- function(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),type=c("linear","logistic"),data,subset,fixed,parStruct,window.size=0,intercept=TRUE,base=NULL,ntimes=NULL,replicate=T) {
   type <- match.arg(type)
   lin <- function(x) {
     x

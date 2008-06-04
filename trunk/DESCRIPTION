@@ -8,6 +8,6 @@ Depends: R (>= 2.6.0), stats4, methods
 Description: mcplR offers a flexible (S4) framework to investigate multiple cue probability learning (MCPL). 
   mcplR incorporates a number of learning models (Rescorla-Wagner, GCM, ALCOVE, etc) in a general state-space framework, 
   where new models can be easily added.
-Collate: allGenerics.R classes.R bdiag.R relist.R mcplprepare.R RatioRuleResponse.R GaussianMixtureResponse.R GaussianResponse.R GCM.R SLFN.R
+Collate: allGenerics.R classes.R bdiag.R relist.R mcplprepare.R McplBaseModel.R LearningModel.R ResponseModel.R McplModel.R RatioRuleResponse.R GaussianMixtureResponse.R GaussianResponse.R GCM.R SLFN.R
 License: GPL (>=2)
 URL: http://mcplr.r-forge.r-project.org/

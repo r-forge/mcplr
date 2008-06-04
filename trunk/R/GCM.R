@@ -389,7 +389,8 @@ gcm.sampling <- function(type="uniform") {
   fun
 }
 
-GCM <- function(formula,level="nominal",distance=gcm.distance("cityblock"),similarity=gcm.similarity("exponential"),sampling=gcm.sampling("uniform"),parameters=list(),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL) {
+GCM <- function(formula,level=c("nominal","interval"),distance=gcm.distance("cityblock"),similarity=gcm.similarity("exponential"),sampling=gcm.sampling("uniform"),parameters=list(),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL) {
+  level <- match.arg(level)
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=TRUE)
   x <- dat$x
   y <- dat$y
@@ -497,7 +498,7 @@ GCM <- function(formula,level="nominal",distance=gcm.distance("cityblock"),simil
   mod
 }
 
-setMethod("lFr",signature(x="GCMlearningInterval",y="GaussianMixtureResponse"), 
+setMethod("lFr",signature(x="GCMinterval",y="GaussianMixtureResponse"), 
   function(x,y,...) {
     for(case in 1:x@nTimes@cases) {
       y@weights[[case]] <- x@weights[[case]]
