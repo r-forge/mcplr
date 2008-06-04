@@ -17,6 +17,7 @@ source("R/GCM.R")
 source("R/SLFN.R")
 source("R/RescorlaWagner.R")
 source("R/RBFN.R")
+source("R/ALCOVE.R")
 
 # test Rescorla Wagner
 dat <- subset(WPT,id=="C")
@@ -41,7 +42,26 @@ tMod <- McplModel(learningModel = lmod,responseModel = rmod)
 tMod <- estimate(tMod)
 logLik(tMod)
 
-# now with a redundant parameterisation
+
+# test GCM
+dat <- subset(WPT,id=="C")
+lmod <- GCM(y~x1+x2+x3+x4,data=dat)
+logLik(lmod)
+lmod <- estimate(lmod,unconstrained=TRUE,method="Nelder-Mead")
+logLik(lmod)
+logLik(setPars(lmod,c(0.31243147,0.32985646,0.06847703,0.28923503,6.044744)))
+
+# test ALCOVE
+dat <- subset(WPT,id=="C")
+lmod <- ALCOVE(y~x1+x2+x3+x4,data=dat)
+lmod <- estimate(lmod)
+
+
+
+
+
+
+# test SLFN, now with a redundant parameterisation
 dat <- subset(WPT,id=="C")
 lmod <- SLFN(y~x1+x2+x3+x4,parameters=list(eta=.3),type="logistic",data=dat,intercept=FALSE)
 lmod <- fit(lmod)
@@ -51,14 +71,10 @@ rmod <- RatioRuleResponse(r~predict(lmod)-1,data=dat,base=NULL,ntimes=200)
 tMod = McplModel(learningModel = lmod,responseModel = rmod)
 tmp <- estimate(tMod)
 
-# test GCM
+
+# test GCM using constrained estimation
 dat <- subset(WPT,id=="C")
 lmod <- GCM(y~x1+x2+x3+x4,data=dat)
-logLik(lmod)
-lmod <- estimate(lmod,unconstrained=TRUE,method="Nelder-Mead")
-logLik(lmod)
-logLik(setPars(lmod,c(0.31243147,0.32985646,0.06847703,0.28923503,6.044744)))
-# use constrained estimation
 nw <- 4
 A <- bdiag(list(rbind(diag(nw),rep(-1,nw)),1))
 b <- c(rep(0,nw),-1-1e-10,0)

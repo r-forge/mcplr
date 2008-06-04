@@ -35,9 +35,9 @@
 
 	\item{\code{parameters}:}{(named) list with parameter values.}
 
-	\item{\code{parStruct}:}{A \code{\link{ParStruct}} object.}
+	\item{\code{parStruct}:}{A \code{\link{ParStruct-class}} object.}
 
-	\item{\code{nTimes}:}{An \code{\link{NTimes}} object.}
+	\item{\code{nTimes}:}{An \code{\link{NTimes-class}} object.}
 
 	}
 }

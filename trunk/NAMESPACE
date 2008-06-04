@@ -4,10 +4,10 @@ importFrom(stats, predict)
 importFrom(stats4, AIC, BIC, logLik, plot, summary)
 
 export(
-	alcove,	
-	gcm,
-	rescorlaWagner,
-	slfn
+	ALCOVE,	
+	GCM,
+	RescorlaWagner,
+	SLFN
 )
 
 exportClasses(

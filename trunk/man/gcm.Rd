@@ -10,9 +10,9 @@ Constructs a Generalized Context Model.
 }
 \usage{
 GCM(formula,level=c("nominal","interval"),distance=gcm.distance("cityblock"),
-  similarity=gcm.similarity("exponential"),sampling=gcm.sampling("uniform"),
-  parameters=list(),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,
-  base=NULL)
+similarity=gcm.similarity("exponential"),sampling=gcm.sampling("uniform"),
+parameters=list(w=NULL,lambda=1,r=1,q=1,gamma=1),fixed,parStruct,data,subset,
+ntimes=NULL,replicate=TRUE,base=NULL)
 }
 \arguments{
 \item{formula}{an object of class \code{formula} (or one that can be coerced to 
@@ -35,8 +35,10 @@ be ignored}
 \item{data}{data frame containing the variables listed in the formula argument.}
 \item{subset}{subset of data to fit model to.}
 \item{ntimes}{a vector with number of observations for each replication.}
-\iten{replicate}{logical to indicate whether model parameters are identical for 
+\item{replicate}{logical to indicate whether model parameters are identical for 
 each replication in ntimes.}
+\item{base}{assign one of the levels of the criterion variable the role of base 
+category.}
 }
 \details{The Generalized Context Model (Nosofsky, 1986) is an exemplar model.
 It predicts the value of a criterion at t based on the similarity of a probe cue 

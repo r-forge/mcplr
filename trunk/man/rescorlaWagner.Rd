@@ -42,6 +42,7 @@ Variations in the effectiveness of reinforcement and nonreinforcement. In A. H.
 Black and W. F. Prokasy (Eds.), \emph{Classical Conditioning II}, 
 Appleton-Century-Crofts. pp. 64-99.
 }
+\author{Maarten Speekenbrink}
 \examples{
 ## open weather prediction data
 data(WPT)
@@ -51,4 +52,3 @@ mod <- RescorlaWagner(y~x1+x2+x3+x4-1,data=WPT,ntimes=c(200,200))
 mod <- estimate(mod)
 summary(mod)
 }
-\keyword{models}

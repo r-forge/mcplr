@@ -1,8 +1,7 @@
 \name{WPT}
+\alias{WPT}
 
 \docType{data}
-
-# \alias{WPT}
 
 \title{Weather Prediction TAsk Data}
 
@@ -14,14 +13,14 @@
   consists of 200 trials.
 }
 
-\usage{data(speed)}
+\usage{data(WPT)}
 
 \format{Data.frame}
 
 \source{
 
-	Speekenbrink, M., Channon, S & Shanks, D.R. (2008). Learning strategies in
-  amnesia. \emph{Neuroscience and Biobehavioral Reviews},\emph{32},292-310.
+	Speekenbrink, M., Channon, S and Shanks, D.R. (2008). Learning strategies in
+  amnesia. \emph{Neuroscience and Biobehavioral Reviews},\bold{32},292-310.
 
 }
 

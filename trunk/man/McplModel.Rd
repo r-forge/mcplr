@@ -6,18 +6,31 @@
 
 \alias{getReplication,McplModel-method}
 \alias{ntimes,McplModel-method}
+\alias{AIC,McplModel-method}
+\alias{AICc,McplModel-method}
+\alias{BIC,McplModel-method}
+\alias{estimate,McplModel-method}
+\alias{fit,McplModel-method}
+\alias{getPars,McplModel-method}
+\alias{logLik,McplModel-method}
+\alias{RSquare,McplModel-method}
+\alias{setPars,McplModel-method}
+\alias{show,McplModel-method}
+\alias{summary,McplModel-method}
+
+
 
 \title{Class "McplModel"}
 
-\description{An \code{\link{mcplR}} model.}
+\description{An MCPL model, containing a learning and response model.}
 
 \section{Slots}{
 
 	\describe{
 
-	\item{\code{learningModel}:}{A \code{\link{LearningModel}} object.}
+	\item{\code{learningModel}:}{A \code{\link{LearningModel-class}} object.}
 
-	\item{\code{learningModel}:}{A \code{\link{ResponseModel}} object.}
+	\item{\code{learningModel}:}{A \code{\link{ResponseModel-class}} object.}
 
 	}
 }
@@ -32,6 +45,7 @@
     \item{getPars}{\code{signature(object = "McplModel")}: Get current parameter values.}
     \item{logLik}{\code{signature(object = "McplModel")}: Log-likelihood for current parameter values - based on response model.}
     \item{RSquare}{\code{signature(object = "McplModel")}: Squared correlation coefficient - a.k.a "proportion variance explained" - based on response model.}
+    \item{setPars}{\code{signature(object = "McplModel")}: Set parameter values.}
     \item{show}{\code{signature(object = "McplModel")}: Display object briefly.}
     \item{summary}{\code{signature(object = "McplModel")}: Generate object summary.}
   }

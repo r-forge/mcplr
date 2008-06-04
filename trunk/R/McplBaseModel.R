@@ -185,7 +185,7 @@ setMethod("estimate",signature(object="McplBaseModel"),
     LSoptfun <- function(pars,object,...) {
       object@parameters <- setPars(object,pars,...,rval="parameters",internal=TRUE)
       object <- fit(object,...)
-      sum((predict(object)-object@y)^2)
+      sum((predict(object,type="response")-object@y)^2)
     }
     pars <- getPars(object,which="free",...,internal=TRUE)
     if(hasMethod("logLik",is(object))) optfun <- MLoptfun else optfun <- LSoptfun

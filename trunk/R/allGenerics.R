@@ -1,5 +1,5 @@
 .First.lib <- function(lib, pkg) {
-#	require(nnet)
+  require(stats4)
 }
 
 .Last.lib <- function(libpath) {}

@@ -320,7 +320,7 @@ gcm.distance <- function(type="cityblock") {
     cityblock = dis.city,
     euclidian = dis.eucl,
     minkowski = dis.mink,
-    gcm.distance.city
+    dis.city
   )
   attr(fun,"name") <- type
   fun
@@ -389,7 +389,7 @@ gcm.sampling <- function(type="uniform") {
   fun
 }
 
-GCM <- function(formula,level=c("nominal","interval"),distance=gcm.distance("cityblock"),similarity=gcm.similarity("exponential"),sampling=gcm.sampling("uniform"),parameters=list(),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL) {
+GCM <- function(formula,level=c("nominal","interval"),distance=gcm.distance("cityblock"),similarity=gcm.similarity("exponential"),sampling=gcm.sampling("uniform"),parameters=list(w=NULL,lambda=1,r=1,q=1,gamma=1),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL) {
   level <- match.arg(level)
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=TRUE)
   x <- dat$x
@@ -431,10 +431,10 @@ GCM <- function(formula,level=c("nominal","interval"),distance=gcm.distance("cit
       parameters$w <- parameters$w/sum(parameters$w)
       parameters$lambda <- 1
       if(attr(distance,"name") == "minkowski") {
-        parameters$r <- r
+        parameters$r <- 1
       }
       if(attr(distance,"name")=="general") {
-          parameters$q <- q
+          parameters$q <- 1
       }
       if(attr(sampling,"name") != "uniform") {
         if(is.null(parameters$gamma)) parameters$gamma <- 1
