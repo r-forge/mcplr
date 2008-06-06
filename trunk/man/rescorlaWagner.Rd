@@ -49,6 +49,6 @@ data(WPT)
 ## initialize model
 mod <- RescorlaWagner(y~x1+x2+x3+x4-1,data=WPT,ntimes=c(200,200))
 ## estimate free parameters
-mod <- estimate(mod)
+\dontrun{mod <- estimate(mod)}
 summary(mod)
 }

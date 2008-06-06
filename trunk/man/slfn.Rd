@@ -56,7 +56,7 @@ data(WPT)
 ## initialize model
 mod <- SLFN(y~x1+x2+x3+x4-1,type="logistic",data=WPT,ntimes=c(200,200))
 ## estimate free parameters
-mod <- estimate(mod)
+\dontrun{mod <- estimate(mod)}
 summary(mod)
 
 ## TODO: add other activation function

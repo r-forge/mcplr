@@ -1,19 +1,30 @@
 import(methods)
-
-importFrom(stats, predict)
-importFrom(stats4, AIC, BIC, logLik, plot, summary)
+importFrom(stats, predict, AIC)
+importFrom(stats4, AIC, BIC, logLik)
 
 export(
 	ALCOVE,	
 	GCM,
 	RescorlaWagner,
-	SLFN
+	SLFN,
+	GaussianMixtureResponse,
+	GaussianResponse,
+	RatioRuleResponse	
 )
 
 exportClasses(
 	LearningModel,
 	ResponseModel,
-	McplModel
+	McplModel,
+	ALCOVE,
+	GCM,
+	GCMinterval,
+	GCMnominal,
+	RescorlaWagner,
+	SLFN,
+	GaussianMixtureResponse,
+	GaussianResponse,
+	RatioRuleResponse
 )
 
 exportMethods(

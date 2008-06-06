@@ -23,7 +23,7 @@ setMethod("logLik","GaussianResponse",
   }
 )
 
-gaussianResponse <- function(formula,parameters=list(sd=1),data,subset,ntimes=NULL) {
+GaussianResponse <- function(formula,parameters=list(sd=1),data,subset,ntimes=NULL) {
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,remove.intercept=TRUE)
   y <- dat$y
   x <- dat$x

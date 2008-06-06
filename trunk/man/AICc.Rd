@@ -29,7 +29,7 @@ AICc(object, \dots)
   Returns a numeric value with the corresponding AICc.
 }
 \references{
-  Hurvich, C.M. and Tsai, C.L. (1989) "Regression and Time Series Model Selection in Small Samples", \mph{Biometrika},
+  Hurvich, C.M. and Tsai, C.L. (1989) "Regression and Time Series Model Selection in Small Samples", \emph{Biometrika},
 \bold{76}, 297-307.
 }
 \author{Maarten Speekenbrink}

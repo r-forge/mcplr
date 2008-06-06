@@ -73,7 +73,7 @@ setMethod("fit",signature(object="RescorlaWagner"),
         y <- repl$y
         pars <- repl$parameters
         fit <- R_W.fit(x=x,y=y,alpha=pars$alpha,beta=pars$beta,lambda=pars$lambda,ws=pars$ws)
-        object@weight[object@nTimes@bt[case]:object@nTimes@et[case],] <- fit$weights
+        object@weights[object@nTimes@bt[case]:object@nTimes@et[case],] <- fit$weights
       }
     } else {
       pars <- object@parameters
@@ -198,11 +198,12 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c
 
   if(is.null(ntimes)) ntimes <- nrow(y)
   nTimes <- nTimes(ntimes)
-    
+  cid <- matrix(1:(nx*ny),nrow=nx)
+  
   mod <- new("RescorlaWagner",
     x = x,
     y = y,
-    weights = matrix(nrow=nt,ncol=ny),
+    weights = matrix(nrow=nt,ncol=length(cid)),
     parameters = parameters,
     parStruct=parStruct,
     nTimes=nTimes)
