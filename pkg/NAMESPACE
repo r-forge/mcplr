@@ -1,5 +1,5 @@
 import(methods)
-importFrom(stats, predict, AIC)
+importFrom(stats, predict)
 importFrom(stats4, AIC, BIC, logLik)
 
 export(
