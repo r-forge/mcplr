@@ -95,7 +95,7 @@ gcm.fit.unconstrained <- function(x,y,parameters,distance,similarity,sampling,..
 setMethod("setPars",signature(object="GCM"),
   function(object,pars,internal=FALSE,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
-    if(!internal || is.null(object@parStruct@constraints)) {
+    if(!internal || !is.null(object@parStruct@constraints)) {
       parl <- callNextMethod(object=object,pars=pars,internal=internal,rval="parameters",...)
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases){
