@@ -1,5 +1,6 @@
 \name{ALCOVE}
 \alias{ALCOVE}
+\alias{ALCOVE-class}
 
 \title{Attention Learning COVEring map model (ALCOVE)}
 \description{

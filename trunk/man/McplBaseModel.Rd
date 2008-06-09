@@ -10,15 +10,26 @@
 \alias{AIC,McplBaseModel-method}
 \alias{AICc,McplBaseModel-method}
 \alias{BIC,McplBaseModel-method}
+\alias{estimate}
 \alias{estimate,McplBaseModel-method}
+\alias{fit}
 \alias{fit,McplBaseModel-method}
+\alias{fit,ResponseModel-method}
+\alias{fit,LearningModel-method}
+\alias{getPars}
 \alias{getPars,McplBaseModel-method}
 \alias{getReplication,McplBaseModel-method}
 \alias{logLik,McplBaseModel-method}
 \alias{ntimes,McplBaseModel-method}
 \alias{RSquare,McplBaseModel-method}
 \alias{show,McplBaseModel-method}
+\alias{show,ResponseModel-method}
+\alias{show,LearningModel-method}
+\alias{setPars}
+\alias{setPars,McplBaseModel-method}
 \alias{summary,McplBaseModel-method}
+\alias{summary,ResponseModel-method}
+\alias{summary,LearningModel-method}
 %\alias{ntimes}
 
 \title{Class "McplBaseModel"}

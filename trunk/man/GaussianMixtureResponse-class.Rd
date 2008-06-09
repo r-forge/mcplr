@@ -1,5 +1,6 @@
-\name{GaussianMixtureResponse}
+\name{GaussianMixtureResponse-class}
 \docType{class}
+\alias{GaussianMixtureResponse}
 \alias{GaussianMixtureResponse-class}
 \alias{estimate,GaussianMixtureResponse-method}
 \alias{logLik,GaussianMixtureResponse-method}

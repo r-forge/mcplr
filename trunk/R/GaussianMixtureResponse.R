@@ -245,6 +245,7 @@ GaussianMixtureResponse <- function(formula,ncomponent=2,data,subset,weights,nti
   y <- dat$y
   if(ncol(x)!=0) ncomponent <- ncol(x)
   mod <- new("GaussianMixtureResponse",
+    x = x,
     y = y
   )
 }
