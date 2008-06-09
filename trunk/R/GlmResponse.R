@@ -11,7 +11,7 @@ setMethod("estimate",signature(object="GlmResponseModel"),
 	function(object) {
     # y = response
     pars <- object@parameters
-    fit <- glm.fit(x=object@x,y=object@y,family=object@family)
+    fit <- glm.fit(x=object@x,y=object@y,family=object@family,start=pars$coefficients)
     pars$coefficients <- fit$coefficients
     #object <- setpars(object,unlist(pars))
     object@parameters <- setpars(object,unlist(pars),rval="parameters",...)
@@ -41,6 +41,14 @@ setMethod("logLik","GlmResponseModel",
         p <- predict(object,type="response")
         dbinom(x=object@y,size=1,prob=p,log=TRUE)
       },
+      poisson = {
+        lambda <- predict(object,type="response")
+        dpois(x=object@y,lambda=lambda,log=TRUE)
+      }
+      Gamma = {
+        shape <- predict(object,type="response")
+        dgamma(x=object@y,shape=shape,log=TRUE)
+      }
       stop("family",object@family$family,"not implemented (yet)")
     )
   }
