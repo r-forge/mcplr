@@ -78,7 +78,19 @@ A large number of formal models have been proposed to describe how people learn 
 
 We will describe the features of the package through the package's implementation of the Generalized Context Model (GCM). We will also briefly illustrate how to specify a new model. 
 
-\section{MCPL models}
+\section{The general structure of MCPL models}
+
+In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the basis of a number of cues $X_{j,t}$. On each trial $t$, cue values are presented, and a prediction $R_t$ is made about the value of the criterion.
+
+An MCPL model consists of a learning and response models. A learning model describes how a representation of the environment is updated as new data comes in. A response model describes how this representation is used to form predictions of the environment. A graphical representation is given in Figure~\ref{fig:mcplmodel}. A main feature of MCPL models is that responses $R_t$ are conditionally independent given representations $\psi_t$, i.e.
+\begin{equation}
+P(R_1,\ldots,R_T|\psi_1,\ldots,\psi_T,\greekv{\theta}_R) = \prod_{t=1}^T P(R_t|\psi_t,\greekv{\theta}_R)
+\end{equation}
+While the response model is always a statistical model, in many cases the learning model is not. Models such as the GCM are deterministic, in the sense that a particular set of observations $x,y$ and parameters always result in the same  (e.g., there is a many-to-one mapping from $(\vec{x},\vec{y},\greekv{\theta}) \rightarrow \psi_t$).
+ 
+\section{The mcplR package}
+
+In the implementation of MCPL models, we distinguish between learning and response models. A learning model
 
 At the heart of the mcplR package is the class \code{McplModel}. An \code{McplModel} contains of two submodels, namely a \code{LearningModel} and a \code{ResponseModel}. Both these are derived from a general \code{McplBaseModel}, which contains a slot for a dependent variable ($y$), a slot for predictor variables ($x$), and a slot for a list with parameters. For a \code{LearningModel}, the criterion will usually be the dependent variable, and the cues the predictor variables. For a \code{ResponseModel}, the dependent variable will usually be the response variable, and the predictor variables (some function of) the predictions of the learning model. Both learning and response model can contain free variables.
 
