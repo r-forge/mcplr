@@ -44,11 +44,11 @@ setMethod("logLik","GlmResponseModel",
       poisson = {
         lambda <- predict(object,type="response")
         dpois(x=object@y,lambda=lambda,log=TRUE)
-      }
+      },
       Gamma = {
         shape <- predict(object,type="response")
         dgamma(x=object@y,shape=shape,log=TRUE)
-      }
+      },
       stop("family",object@family$family,"not implemented (yet)")
     )
   }
