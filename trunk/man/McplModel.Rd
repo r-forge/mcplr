@@ -13,7 +13,8 @@
 \alias{fit,McplModel-method}
 \alias{getPars,McplModel-method}
 \alias{logLik,McplModel-method}
-\alias{RSquare,McplModel-method}
+\alias{Rsq,McplModel-method}
+\alias{predict,McplModel-method}
 \alias{setPars,McplModel-method}
 \alias{show,McplModel-method}
 \alias{summary,McplModel-method}

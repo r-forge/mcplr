@@ -2,6 +2,7 @@
 \docType{genericFunction}
 \alias{AICc}
 \alias{AICc,ANY-method}
+\alias{AICc,missing-method}
 \alias{AICc,logLik-method}
 \title{Corrected Akaike Information Criterion}
 \description{
@@ -20,7 +21,7 @@ AICc(object, \dots)
 \arguments{
   \item{object}{An object of a suitable class for the AICc to be
     calculated - usually a \code{"logLik"} object or an object for which
-    a \code{\link[stats4:logLik-methods]{logLik}} method exists.
+    a \code{\link[stats4:logLik-method]{logLik}} method exists.
   }
   \item{\dots}{Some methods for this generic function may take
     additional, optional arguments.  At present none do.}
@@ -34,7 +35,7 @@ AICc(object, \dots)
 }
 \author{Maarten Speekenbrink}
 %\note{}
-\seealso{\code{\link{logLik-methods}}, \code{\link{AIC-methods}}}
+\seealso{\code{\link[stats4:logLik-method]{logLik}}, \code{\link[stats4:AIC-method]{AIC}}}
 \examples{
 
 }

@@ -9,6 +9,7 @@
 \alias{NTimes-class}
 \alias{nTimes}
 \alias{ParStruct-class}
+\alias{fixedListToVec}
 
 \alias{getReplication-methods}
 \alias{getReplication,McplBaseModel-methods}

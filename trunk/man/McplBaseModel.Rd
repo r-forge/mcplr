@@ -21,7 +21,7 @@
 \alias{getReplication,McplBaseModel-method}
 \alias{logLik,McplBaseModel-method}
 \alias{ntimes,McplBaseModel-method}
-\alias{RSquare,McplBaseModel-method}
+\alias{Rsq,McplBaseModel-method}
 \alias{show,McplBaseModel-method}
 \alias{show,ResponseModel-method}
 \alias{show,LearningModel-method}

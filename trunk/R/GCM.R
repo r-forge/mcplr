@@ -389,9 +389,12 @@ gcm.sampling <- function(type="uniform") {
   fun
 }
 
-GCM <- function(formula,level=c("nominal","interval"),distance=gcm.distance("cityblock"),similarity=gcm.similarity("exponential"),sampling=gcm.sampling("uniform"),parameters=list(w=NULL,lambda=1,r=1,q=1,gamma=1),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL) {
+GCM <- function(formula,level=c("nominal","interval"),distance=c("cityblock","euclidian","minkowski"),similarity=c("exponential","gaussian","general"),sampling=c("uniform","power","exponential"),parameters=list(w=NULL,lambda=1),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL,remove.intercept=FALSE) {
   level <- match.arg(level)
-  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=TRUE)
+  if(!is.function(distance)) distance <- gcm.distance(match.arg(distance))
+  if(!is.function(similarity)) similarity <- gcm.similarity(match.arg(similarity))
+  if(!is.function(sampling)) sampling <- gcm.sampling(match.arg(sampling))
+  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remove.intercept) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remove.intercept)
   x <- dat$x
   y <- dat$y
   nw <- ncol(x)
@@ -456,8 +459,12 @@ GCM <- function(formula,level=c("nominal","interval"),distance=gcm.distance("cit
       fix <- relist(fix,skeleton=parameters[[1]])
     }
     if(!missing(fixed)) {
-      for(i in 1:length(fix)) {
-        if(!is.null(fixed[[names(fix)[i]]]) && fixed[[names(fix)[i]]]) fix[[i]] <- rep(TRUE,length(fix[[i]]))
+      if(is.list(fixed)) {
+        fixed <- fixedListToVec(fixed,parameters)
+      } else {
+        for(i in 1:length(fix)) {
+          if(!is.null(fixed[[names(fix)[i]]]) && fixed[[names(fix)[i]]]) fix[[i]] <- rep(TRUE,length(fix[[i]]))
+        }
       }
     }
     if(is.null(ntimes) | replicate) {
