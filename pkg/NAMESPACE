@@ -32,7 +32,7 @@ exportMethods(
 	AIC,
 	AICc,
 	BIC,
-	RSquare,
+	Rsq,
 	estimate,
 	fit,
 	setPars,

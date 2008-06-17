@@ -1,6 +1,11 @@
 \name{RescorlaWagner}
 \alias{RescorlaWagner}
 \alias{RescorlaWagner-class}
+\alias{estimate,RescorlaWagner-method}
+\alias{fit,RescorlaWagner-method}
+\alias{getPars,RescorlaWagner-method}
+\alias{predict,RescorlaWagner-method}
+\alias{setPars,RescorlaWagner-method}
 
 \title{Rescorla-Wagner Model}
 \description{

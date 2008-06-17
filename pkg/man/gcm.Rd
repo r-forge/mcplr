@@ -3,16 +3,23 @@
 \alias{GCM-class}
 \alias{GCMinterval-class}
 \alias{GCMnominal-class}
+\alias{estimate,GCM-method}
+\alias{fit,GCM-method}
+\alias{getPars,GCM-method}
+\alias{predict,GCM-method}
+\alias{setPars,GCM-method}
 
 \title{Generalized Context Model}
 \description{
 Constructs a Generalized Context Model.
 }
 \usage{
-GCM(formula,level=c("nominal","interval"),distance=gcm.distance("cityblock"),
-similarity=gcm.similarity("exponential"),sampling=gcm.sampling("uniform"),
-parameters=list(w=NULL,lambda=1,r=1,q=1,gamma=1),fixed,parStruct,data,subset,
-ntimes=NULL,replicate=TRUE,base=NULL)
+GCM(formula,level=c("nominal","interval"),
+distance=c("cityblock","euclidian","minkowski"),
+similarity=c("exponential","gaussian","general"),
+sampling=c("uniform","power","exponential"),parameters=list(w=NULL,lambda=1),
+fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL,
+remove.intercept=FALSE)
 }
 \arguments{
 \item{formula}{an object of class \code{formula} (or one that can be coerced to 
@@ -20,12 +27,14 @@ that class): a symbolic description of the model to be fitted. For more details
 of model speecification, see \code{lm} or \code{glm}.}
 \item{level}{the measurement level of the dependent variable, either nominal 
 or interval.}
-\item{distance}{a function which returns a T*T matrix with distances between the 
+\item{distance}{either the name of a standard distance function, or a function 
+which returns a T*T matrix with distances between the 
 cues. See details.}
-\item{similarity}{a function which converts the T*T distance matrix to a T*T 
+\item{similarity}{either the name of a standard similarity function, or a 
+function which converts the T*T distance matrix to a T*T 
 similarity matrix. See datails.}
-\item{sampling}{a function which returns a T*T matrix with sampling weights. 
-See details.}
+\item{sampling}{either the name of a standard sampling function, or a function 
+which returns a T*T matrix with sampling weights. See details.}
 \item{parameters}{an (optional) named list with (starting) values of the 
 parameters. If no values are supplied, defaults are used. }
 \item{fixed}{a logical vector indicating whether model parameters are fixed or 
@@ -39,6 +48,8 @@ be ignored}
 each replication in ntimes.}
 \item{base}{assign one of the levels of the criterion variable the role of base 
 category.}
+\item{remove.intercept}{(logical) should the intercept term be removed from 
+the x matrix of the model?}
 }
 \details{The Generalized Context Model (Nosofsky, 1986) is an exemplar model.
 It predicts the value of a criterion at t based on the similarity of a probe cue 
@@ -63,10 +74,17 @@ Manuscript submitted for publication.}
 \examples{
 ## open weather prediction data
 data(WPT)
-## initialize model
-mod <- GCM(y~x1+x2+x3+x4-1,data=WPT,ntimes=c(200,200))
+## initialize model, use remove.intercept=TRUE so that the x matrix will contain
+##   four columns.
+mod <- GCM(y~x1+x2+x3+x4,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)
 ## estimate free parameters
 \dontrun{mod <- estimate(mod)}
 summary(mod)
+
+# now a model with a general minkowski distance function, and an exponential
+#    memory decay
+mod <- GCM(y~x1+x2+x3+x4-1,distance="minkowski",
+sampling="uniform",data=WPT,ntimes=c(200,200))
+
 }
 \keyword{models}

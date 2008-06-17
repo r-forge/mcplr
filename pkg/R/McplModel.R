@@ -130,10 +130,10 @@ setMethod("BIC",signature(object="McplModel"),
     BIC(object=object@responseModel,npar=npar,...)
   }
 )
-setMethod("RSquare",signature(object="McplModel"),
+setMethod("Rsq",signature(object="McplModel"),
   function(object,...) {
-    warning("RSquare based on responseModel")
-    RSquare(object=object@responseModel,...)
+    warning("R-Squared based on responseModel")
+    Rsq(object=object@responseModel,...)
   }
 )
 

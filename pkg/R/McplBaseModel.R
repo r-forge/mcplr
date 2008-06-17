@@ -102,7 +102,7 @@ setMethod("AICc",signature(object="McplBaseModel"),
 #    -2*logL + npar*log(nobs)
 #  }
 #)
-setMethod("RSquare",signature(object="McplBaseModel"),
+setMethod("Rsq",signature(object="McplBaseModel"),
   function(object,...) {
     p <- predict(object,type="response",...)
     SSt <- sum((object@y - mean(object@y))^2)

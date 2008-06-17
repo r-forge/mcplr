@@ -1,6 +1,11 @@
 \name{SLFN}
 \alias{SLFN}
 \alias{SLFN-class}
+\alias{estimate,SLFN-method}
+\alias{fit,SLFN-method}
+\alias{getPars,SLFN-method}
+\alias{predict,SLFN-method}
+\alias{setPars,SLFN-method}
 
 \title{Single Layer Feedforward Network}
 \description{

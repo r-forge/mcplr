@@ -1,5 +1,12 @@
 \name{ALCOVE}
 \alias{ALCOVE}
+\alias{ALCOVE-class}
+\alias{estimate,ALCOVE-method}
+\alias{fit,ALCOVE-method}
+\alias{getPars,ALCOVE-method}
+\alias{predict,ALCOVE-method}
+\alias{setPars,ALCOVE-method}
+
 
 \title{Attention Learning COVEring map model (ALCOVE)}
 \description{

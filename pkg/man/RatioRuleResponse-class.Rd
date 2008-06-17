@@ -1,5 +1,6 @@
-\name{RatioRuleResponse-class}
+\name{RatioRuleResponse}
 \docType{class}
+\alias{RatioRuleResponse}
 \alias{RatioRuleResponse-class}
 \alias{estimate,RatioRuleResponse-method}
 \alias{logLik,RatioRuleResponse-method}
@@ -8,7 +9,8 @@
 \title{Class "RatioRuleResponse"}
 \description{Responses according to Luce's ratio response rule.}
 \section{Objects from the Class}{
-Objects can be created by calls of the form \code{new("RatioRuleResponse", ...)}.
+Objects can be created by calls of the function \code{\link{RatioRuleResponse}} 
+or by \code{new("RatioRuleResponse", ...)}.
 }
 \section{Slots}{
 	 \describe{
@@ -21,8 +23,8 @@ Objects can be created by calls of the form \code{new("RatioRuleResponse", ...)}
   }
 }
 \section{Extends}{
-Class \code{"\linkS4class{ResponseModel}"}, directly.
-Class \code{"\linkS4class{McplBaseModel}"}, by class "ResponseModel", distance 2.
+Class \code{\linkS4class{ResponseModel}}, directly.
+Class \code{\linkS4class{McplBaseModel}}, by class "ResponseModel", distance 2.
 }
 \section{Methods}{
   \describe{
@@ -45,4 +47,5 @@ Wiley and Sons.}
 %	~~objects to See Also as \code{\link{~~fun~~}}, ~~~
 %	or \code{\linkS4class{CLASSNAME}} for links to other classes
 %}
+
 \keyword{classes}

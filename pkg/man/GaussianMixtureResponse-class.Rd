@@ -1,9 +1,13 @@
-\name{GaussianMixtureResponse}
+\name{GaussianMixtureResponse-class}
 \docType{class}
+%\alias{GaussianMixtureResponse}
 \alias{GaussianMixtureResponse-class}
 \alias{estimate,GaussianMixtureResponse-method}
 \alias{logLik,GaussianMixtureResponse-method}
 \alias{predict,GaussianMixtureResponse-method}
+\alias{fit,GaussianMixtureResponse-method}
+\alias{getPars,GaussianMixtureResponse-method}
+\alias{setPars,GaussianMixtureResponse-method}
 
 \title{Class "GaussianMixtureResponse"}
 \description{Model responses according to a Gaussian mixture.}
