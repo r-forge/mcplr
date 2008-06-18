@@ -67,6 +67,7 @@ Address correspondence to M. Speekenbrink, Department of Psychology, University 
 \newcommand{\mtr}{^{\textsf{T}}}
 
 \newcommand{\code}[1]{{\ttfamily{#1}}}
+%\newcommand{\code}[1]{{\verb{#1}}}
 
 \newcolumntype{d}[1]{D{.}{.}{#1}}
 
@@ -92,18 +93,24 @@ In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the bas
 			\tikzstyle{every node}=[minimum size=.8cm]
 
 
-				\draw	node[draw,circle] (thetaR1) at (0,-1) {$\greekv{\theta}_R$};
-				\draw node[draw,circle] (thetaR2) at (1,-1) {$\greekv{\theta}_R$};
-			  \draw	node[draw,circle] (thetaR3) at (2,-1) {$\greekv{\theta}_R$};
-				\draw	node (thetaRdots) at (3,0) {$\ldots$};
-				\draw	node[draw,circle] (thetaRT) at (4,-1)  {$\greekv{\theta}_R$};
+				\draw	node[draw,circle] (thetaR1) at (0,-2) {$\greekv{\theta}_R$};
+				\draw node[draw,circle] (thetaR2) at (1,-2) {$\greekv{\theta}_R$};
+			  \draw	node[draw,circle] (thetaR3) at (2,-2) {$\greekv{\theta}_R$};
+				\draw	node (thetaRdots) at (3,-2) {$\ldots$};
+				\draw	node[draw,circle] (thetaRT) at (4,-2)  {$\greekv{\theta}_R$};
 				
-				\draw	node[draw] (r1) at (0,0) {$R_1$};
-				\draw node[draw] (r2) at (1,0) {$R_2$};
-			  \draw	node[draw] (r3) at (2,0) {$R_3$};
-				\draw	node (rdots) at (3,0) {$\ldots$};
-				\draw	node[draw] (rT) at (4,0)  {$R_T$};
-				
+				\draw	node[draw] (r1) at (0,-1) {$R_1$};
+				\draw node[draw] (r2) at (1,-1) {$R_2$};
+			  \draw	node[draw] (r3) at (2,-1) {$R_3$};
+				\draw	node (rdots) at (3,-1) {$\ldots$};
+				\draw	node[draw] (rT) at (4,-1)  {$R_T$};
+
+				\draw	node[draw,circle] (eta1) at (0,0) {$\greekv{\eta}_1$};
+				\draw node[draw,circle] (eta2) at (1,0) {$\greekv{\eta}_2$};
+			  \draw	node[draw,circle] (eta3) at (2,0) {$\greekv{\eta}_3$};
+				\draw	node (etadots) at (3,0) {$\ldots$};
+				\draw	node[draw,circle] (etaT) at (4,0) {$\greekv{\eta}_T$};
+								
 				\draw node[circle,draw] (psi1) at (0,1) {${\greekv{\psi}}_1$};
 				\draw node[circle,draw] (psi2) at (1,1) {${\greekv{\psi}}_2$};
 				\draw	node[circle,draw] (psi3) at (2,1) {${\greekv{\psi}}_3$};
@@ -128,15 +135,21 @@ In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the bas
 				\draw	node (thetaLdots) at (3,4) {$\ldots$};
 				\draw	node[draw,circle] (thetaLT) at (4,4)  {$\greekv{\theta}_L$};
 				
-				\draw[->] (psi1) -- (r1);
-				\draw[->] (psi2) -- (r2);
-				\draw[->] (psi3) -- (r3);
-				\draw[->] (psiT) -- (rT);
+				\draw[->] (psi1) -- (eta1);
+				\draw[->] (psi2) -- (eta2);
+				\draw[->] (psi3) -- (eta3);
+				\draw[->] (psiT) -- (etaT);
 				
-				\draw[->] (x1) .. controls (-.5,1.5) and (-.5,0.5) .. (r1);
-				\draw[->] (x2) .. controls (.5,1.5) and (.5,0.5) ..  (r2);
-				\draw[->] (x3) .. controls (1.5,1.5) and (1.5,0.5)  ..  (r3);
-				\draw[->] (xT) .. controls (3.5,1.5) and (3.5,0.5) ..  (rT);
+				\draw[->] (x1) .. controls (-.5,1.5) and (-.5,0.5) .. (eta1);
+				\draw[->] (x2) .. controls (.5,1.5) and (.5,0.5) ..  (eta2);
+				\draw[->] (x3) .. controls (1.5,1.5) and (1.5,0.5)  ..  (eta3);
+				\draw[->] (xT) .. controls (3.5,1.5) and (3.5,0.5) ..  (etaT);
+				
+				\draw[->] (eta1) -- (r1);
+				\draw[->] (eta2) -- (r2);
+				\draw[->] (eta3) -- (r3);
+				\draw[->] (etaT) -- (rT);				
+				
 				
 				\draw[->] (thetaR1) -- (r1);
 				\draw[->] (thetaR2) -- (r2);
@@ -166,12 +179,13 @@ In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the bas
 			\end{scope}
 
 \end{tikzpicture}
-\caption{Representation of an MCPL model. The learning model involves updating representations $\greekv{\psi}_{t+1}$ on the basis of $\vec{x}_t$ and $y_t$. Responses $R_t$ are based on these representations and the cues.}
+\caption{Representation of an MCPL model. The learning model involves updating representations $\greekv{\psi}_{t+1}$ on the basis of $\vec{x}_t$ and $y_t$. Representations and cues are used to form a prediction $\greekv{\eta}_t$, which is the basis of responses $R_t$.}
+\label{fig:mcplmodel}
 \end{figure}
 
 An MCPL model consists of a learning and response models. A learning model describes how a representation of the environment is updated as new data comes in. A response model describes how this representation is used to form predictions of the environment. A graphical representation is given in Figure~\ref{fig:mcplmodel}. A main feature of MCPL models is that responses $R_t$ are conditionally independent given representations $\psi_t$, i.e.
 \begin{equation}
-P(R_1,\ldots,R_T|\psi_1,\ldots,\psi_T,\greekv{\theta}_R) = \prod_{t=1}^T P(R_t|\psi_t,\greekv{\theta}_R)
+P(R_1,\ldots,R_T|\greekv{\eta}_1,\ldots,\greekv{\eta}_T,\greekv{\theta}_R) = \prod_{t=1}^T P(R_t|\greekv{\eta}_t,\greekv{\theta}_R)
 \end{equation}
 While the response model is always a statistical model, in many cases the learning model is not. In many learning models, representations are updated as
 \begin{equation}
@@ -179,7 +193,9 @@ While the response model is always a statistical model, in many cases the learni
 \end{equation}
 where $f$ is some (non-linear) function. For instance, the Rescorla-Wagner model \cite{Rescorla72} involves updating stimulus response associations $\greekv{\psi}_t$ in this form. As we will see later, the GCM is different, but still deterministic, in the sense that a particular set of paired cue and criterion values $(\vec{x}_{1:t},y_{1:t})$ and parameters $\greekv{\theta}_L$ always result in the same representation $\greekv{\psi}_t$. There are exceptions to this (such as Anderson's \citeyear{Anderson91} Rational Model of Categorization), but these are currently not implemented in \code{mcplR}. Note that determinism is not a requirement to implement learning models in \code{mcplR}. However, the default estimation relies numerical optimization routines which will give inconsistent results if $\greekv{\psi}_{1:T}$ differs from iteration to iteration. Hence, for probabilistic learning models, a different estimation routine will have to be implemented.
  
-\section{The mcplR package}
+\section{Implementation in the \code{mcplR} package}
+
+MCPL models are implemented in \code{mcplR} as the \code{McplModel} class. The class has two slots: one for a \code{LearningModel} and one for a \code{ResponseModel}. Both these have a similar structure, and consist minimally of a (predictor) matrix $x$, a (criterion) matrix $y$, and a parameter list. For the learning model, the predictor matrix will usually contain the cues, and the criterion matrix the criterion. For the response model, the predictor matrix will usually contain $\greekv{\eta}$, and the response matrix the responses $R$. 
 
 In the implementation of MCPL models, we distinguish between learning and response models. A learning model
 
@@ -187,7 +203,69 @@ At the heart of the mcplR package is the class \code{McplModel}. An \code{McplMo
 
 In addition to class definitions, the mcplR package defines a number of methods which operate on these classes. The most important from the users viewpoint is no doubt the \code{estimate} method, by which to obtain (ML) estimates of model parameters.  
 
-\section{Implementation of the GCM}
+Estimate:
+\begin{enumerate}
+\item Compute $\greekv{\psi}$ from $\vec{y}$ and $\vec{x}$. \code{fit(learningModel)}.
+\item Compute $\greekv{\eta}$ from $\greekv{\psi}$ and $\vec{x}$. \code{responseModel@x <- predict(learningModel)} 
+\end{enumerate}
+
+\section{Example: the Rescorla-Wagner model}
+
+The Rescorla-Wagner model of associative learning \cite{Rescorla72}.
+
+From trial $t$ to $t+1$, the associative strength between a CS (cue) $j$ and US (criterion) $k$ is updated as
+\begin{equation}
+\psi_{j,k}(t+1) = \psi_{j,k}(t) + \alpha_j \beta_k(y_k(t)) (\lambda_k y_k(t) - \sum_i x_i(t) \psi_{i,k}(t)) .
+\end{equation}
+where $y_k(t)$ is the value of US $K$ at trial $t$ (this should be 0 when US $k$ is not present at $t$), $x_j(t)$ the value of the CS $j$ ate trial $t$ (again, this should be 0 when $j$ is not present at $t$), $\alpha_j$ the salience of CS $j$, and $\beta_k$ the rate parameter for US $k$, which can be dependent on the presence or absence of $y_k(t)$. 
+
+\subsection{Creating a Rescorla-Wagner learning model}
+
+A Rescorla-Wagner model can be created by calling \code{RescorlaWagner(formula,data,...)}. For instance, for an event $y$ with two levels, and four cues $x_j$, we can use 
+
+
+\begin{figure}
+\begin{verbatim}
+# create a learning model
+lMod <- RescorlaWagner(y ~ x1+x2+x3+x4,data=WPT)
+# create a response model
+rMod <- RatioRuleResponse(r~1,data=WPT)
+# combine in an McplModel
+mMod <- McplModel(lMod,rMod)
+mMod <- estimate(mMod)
+\end{verbatim}
+\caption{Example code to create and estimate a Rescorla Wagner model} 
+\end{figure}
+
+\code{lMod <- RescorlaWagner(y \textasciitilde x1+x2+x3+x4,data=WPT)}
+
+which will create a default Rescorla-Wagner model. We can view the default parameter values by calling \code{getPars(lMod)}.
+ 
+\subsection{Creating an MCPL model}
+
+\subsection{Estimating the model parameters}
+ 
+\section{Other learning models currently implemented in \code{mcplR}}
+
+\subsection{Single Layer Feedforward Network}
+
+Associative learning models such as the Rescorla-Wagner model can be implemented by an artificial neural network \cite{Gluck88} with one input layer and one output layer. These networks are also known as Single Layer Feedforward Network models \cite<SLFN,>{Bishop95}.  
+
+\subsection{Generalized Context Model}
+
+GCM learning model can be created by the function \code{GCM(formula,data,...)}. This will create a default GCM model, with a city-block distance function and an exponential similarity gradient, with  The distance function can be changed to an euclidian or general Minkowski distance function by the option \code{distance=``euclidian''} or \code{distance=``minkowksi''}, respectively. An arbitrary function can also be used by using a function for the distance option. Similarly, the similarity gradient can be changed through the option \code{similarity=``gaussian''}. In addition, the version of the GCM allows the specification of a sampling function (or memory gradient). By default, this is set to uniform, but other options are a power and exponential function.
+ 
+\subsection{ALCOVE}
+
+ALCOVE \cite{Kruschke92}.
+
+
+
+\bibliography{bibliography}
+
+
+
+\end{document}
 
 A GCM can be specified by the function \code{GCM(formula,data,parameters,...)}. This function creates an object of the class \code{GCM}, extending the \code{LearningModel} class. To estimate the model's parameters, we can call the \code{estimate(object,...)} method. This will result in estimates which maximize the likelihood of the criterion. However, we will often want to use the \code{GCM} model as part of an \code{McplModel}. The ``classical'' GCM \cite{Nosofsky86} uses
 \begin{equation}
@@ -210,9 +288,3 @@ Note that that the value of $V_j$ is given by the learning model. The response m
 \subsection{Estimation}
 
 The freely estimable parameters of the GCM are collected in the parameter vector $\greekv{\theta} = (,\lambda)$. Maximum likelihood estimates of these parameters are obtained by numerical maximisation of the likelihood $P(R|\greekv{\theta})$, specified in the response model. By default, numerical optimization is done by the Nelder-Mead simplex algorithm as implemented in the \code{optim} function of \code{R}. Other estimation procedures can be specified at the level of specific classes deriving from \code{McplModel}. There is also a switch to allow conditional maximisation of the response model parameters. In some cases, maximum likelihood estimates of the response model parameters can be derived in closed form (conditional on the learning model parameters), so that conditional estimation can decrease the computation required.
-
-\bibliography{bibliography}
-
-
-
-\end{document}

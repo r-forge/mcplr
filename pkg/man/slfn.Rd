@@ -15,7 +15,7 @@ output layer, and no hidden layer.
 \usage{
 SLFN(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),
 type=c("linear","logistic"),data,subset,fixed,parStruct,window.size=0,
-intercept=TRUE,base=NULL,ntimes=NULL,replicate=T)
+remove.intercept=FALSE,base=NULL,ntimes=NULL,replicate=T)
 }
 \arguments{
 \item{formula}{an object of class \code{formula} (or one that can be coerced to
@@ -34,10 +34,10 @@ activation functions.}
 the `fixed' argument above will be ignored.}
 \item{window.size}{an integer >= 0 specifying the number of previous data points
 used to compute the gradient (in addition to the current data point).}
-\item{intercept}{logical. If set to FALSE, the intercept term will be removed
-if included in the model through the model formula. If the
-formula specifies to remove the intercept (via -1), setting this to TRUE will
-not add an intercept.}
+\item{remove.intercept}{should an intercept be included in the predictors? If 
+set to TRUE, an intercept term (if present) will be removed from x. This can 
+be useful when the predictors are categorical variables, where removing the 
+intercept in the formula will result in an extra dummy variable.}
 \item{base}{if the criterion (rhs of formula) is a factor, an overparametrized
 dummy coding will be used by default. That is, for a criterion with n levels, a
 dummy matrix will be used with n columns. By setting base to an integer k,

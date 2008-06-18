@@ -13,7 +13,8 @@ Constructs a Rescorla-Wagner learning model.
 }
 \usage{
 RescorlaWagner(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,0),ws=0),
-data,subset,fixed,parStruct,intercept=TRUE,base=NULL,ntimes=NULL,replicate=TRUE)
+data,subset,fixed=list(alpha=FALSE,beta=TRUE,lambda=TRUE,ws=TRUE),parStruct,
+remove.intercept=FALSE,base=NULL,ntimes=NULL,replicate=TRUE)
 }
 \arguments{
 \item{formula}{an object of class \code{formula} (or one that can be coerced to 
@@ -27,11 +28,13 @@ parameters. Missing parameters in the list will be set to default values.}
 (TRUE) or freely estimable (FALSE).}
 \item{parStruct}{(optional) ParStruct object. Note that if parStruct is given, 
 the `fixed' argument above will be ignored.}
-\item{intercept}{should an intercept be included in the predictors? If set to 
-FALSE, an intercept will be removed from the model.frame. This is especially
-useful when the predictors are categorical variables.}
+\item{remove.intercept}{should an intercept be included in the predictors? If 
+set to TRUE, an intercept term (if present) will be removed from x. This can 
+be useful when the predictors are categorical variables, where removing the 
+intercept in the formula will result in an extra dummy variable.}
 \item{base}{which level of the criterion variable is considered the base 
-category? Defaults to the first level.}
+category? If set to a positive integer, that level will not be included in the
+criterion matrix y.}
 \item{ntimes}{an optional vector with, for each repetition in the data, the 
 total number of trials.}
 \item{replicate}{are the repeated series true replications, i.e., are the model

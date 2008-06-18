@@ -1,6 +1,7 @@
 import(methods)
 importFrom(stats, predict)
 importFrom(stats4, AIC, BIC, logLik)
+importFrom(lattice, xyplot)
 
 export(
 	ALCOVE,	

@@ -212,7 +212,8 @@ setMethod("predict",signature(object="GCM"),
 
 setMethod("logLik",signature(object="GCMnominal"),
   function(object,discount=1,eps=.Machine$double.eps,...) {
-    discount <- unlist(lapply(object@nTimes@bt,"+",discount))
+    discount <- unlist(lapply(object@nTimes@bt-1,"+",discount))
+    discount <- discount[discount>0]
     pred <- predict(object,type="response",...)
     pred <- rowSums(object@y*pred)[-discount]
     pred[pred > 1-eps] <- 1-eps
@@ -448,34 +449,14 @@ GCM <- function(formula,level=c("nominal","interval"),distance=c("cityblock","eu
       parameters <- rep(list(parameters),nrep)
     } else warning("there is no validity check for the given parameters when combined with ntimes and replicate=FALSE \n Please make sure the supplied list is valid")
   }
+  
+  if(is.null(ntimes)) nTimes <- nTimes(nrow(y)) else nTimes <- nTimes(ntimes)
+  
   if(missing(parStruct)) {
-    parStruct <- new("ParStruct")
-    if(replicate) parStruct@replicate <- TRUE else parStruct@replicate <- FALSE
-    if(is.null(ntimes) | replicate) {
-      fix <- rep(FALSE,length(unlist(parameters)))
-      fix <- relist(fix,skeleton=parameters)
-    } else {
-      fix <- rep(FALSE,length(unlist(parameters[[1]])))
-      fix <- relist(fix,skeleton=parameters[[1]])
-    }
-    if(!missing(fixed)) {
-      if(is.list(fixed)) {
-        fixed <- fixedListToVec(fixed,parameters)
-      } else {
-        for(i in 1:length(fix)) {
-          if(!is.null(fixed[[names(fix)[i]]]) && fixed[[names(fix)[i]]]) fix[[i]] <- rep(TRUE,length(fix[[i]]))
-        }
-      }
-    }
-    if(is.null(ntimes) | replicate) {
-      parStruct@fix <- unlist(fix)
-    } else {
-      fix <- rep(list(fix,length(ntimes)))
-      parStruct@fix <- unlist(fix)
-    }
+    parStruct <- ParStruct(parameters=parameters,replicate=replicate,
+      fixed = if(missing(fixed)) NULL else fixed,
+      ntimes = if(missing(ntimes)) NULL else ntimes)
   }
-  if(is.null(ntimes)) ntimes <- nrow(y)
-  nTimes <- nTimes(ntimes)
   
   if(level=="nominal") {
     mod <- new("GCMnominal",
@@ -501,7 +482,7 @@ GCM <- function(formula,level=c("nominal","interval"),distance=c("cityblock","eu
       sampling=sampling
     )
   }
-  mod <- fit(mod,ntimes=ntimes)
+  mod <- fit(mod)
   mod
 }
 

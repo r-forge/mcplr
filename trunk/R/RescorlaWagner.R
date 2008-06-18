@@ -112,9 +112,29 @@ setMethod("predict",signature(object="RescorlaWagner"),
   }
 )
 
-RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,0),ws=0),data,subset,fixed,parStruct,intercept=TRUE,base=NULL,ntimes=NULL,replicate=TRUE) {
-  if(!intercept) remi <- TRUE else remi <- FALSE
-  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remi) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remi)
+setMethod("plot",signature(x="RescorlaWagner",y="missing"),
+  function(x,y,...) {
+    nx <- ncol(x@x)
+    ny <- ncol(x@y)
+    nw <- ncol(x@weights)
+    nt <- nrow(x@weights)
+    dat <- data.frame(
+      id=factor(rep(rep(1:x@nTimes@cases,x@nTimes@n),nx*ny),labels="series",1:x@nTimes@cases),
+      trial=rep(unlist(sapply(x@nTimes@n,seq,from=1,by=1)),nx*ny),
+      w=as.vector(x@weights),
+      xid=factor(rep(rep(1:nx,each=nt),ny),labels=paste("x",1:nx,sep="")),
+      yid=factor(rep(1:ny,each=nt*nx),labels=paste("y",1:ny,sep="")))
+    if(x@nTimes@cases>1) {
+      plot <- xyplot(w~trial|yid*id,groups=xid,data=dat,type="l",as.table=TRUE,auto.key=TRUE,...)
+    } else {
+      plot <- xyplot(w~trial|yid,groups=xid,data=dat,type="l",as.table=TRUE,auto.key=TRUE,...)
+    }
+    plot
+  }
+)
+
+RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,0),ws=0),data,subset,fixed=list(alpha=FALSE,beta=TRUE,lambda=TRUE,ws=TRUE),parStruct,remove.intercept=FALSE,base=NULL,ntimes=NULL,replicate=TRUE) {
+  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remove.intercept) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remove.intercept)
   x <- dat$x
   y <- dat$y
   nx <- ncol(x)
@@ -149,14 +169,14 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c
     if(length(parameters$ws)!=1 && length(parameters$ws)!=nx*ny) stop("ws must have length 1 or nx*ny")
     parameters
   }
-  if(is.null(ntimes) | replicate) {
+  if(is.null(ntimes) | length(ntimes)==1 | replicate) {
     # intialize lambda
     parameters <- parfill(parameters)
   } else {
     # setup a parlist
     nrep <- length(ntimes)
     # check structure of supplied list
-    if(all(lapply(parameters,is.list)) && length(parameters)==nrep) {
+    if(all(unlist(lapply(parameters,is.list))) && length(parameters)==nrep) {
       for(i in 1:nrep) {
         parameters[[i]] <- parfill(parameters[[i]])
       }
@@ -165,39 +185,15 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c
       parameters <- rep(list(parameters),nrep)
     }
   }
-
-#  if(missing(parStruct)) {
-#    parStruct <- new("ParStruct")
-#    if(replicate) parStruct@replicate <- TRUE else parStruct@replicate <- FALSE
-#    if(is.null(ntimes) | replicate) {
-#      fix <- rep(FALSE,length(unlist(parameters)))
-#      fix <- relist(fix,skeleton=parameters)
-#    } else {
-#      fix <- rep(FALSE,length(unlist(parameters[[1]])))
-#      fix <- relist(fix,skeleton=parameters[[1]])
-#    }
-#    if(!missing(fixed)) {
-#      for(i in 1:length(fix)) {
-#        if(!is.null(fixed[[names(fix)[i]]]) && fixed[[names(fix)[i]]]) fix[[i]] <- rep(TRUE,length(fix[[i]]))
-#      }
-#    }
-#    if(is.null(ntimes) | replicate) {
-#      parStruct@fix <- unlist(fix)
-#    } else {
-#      fix <- rep(list(fix,length(ntimes)))
-#      parStruct@fix <- unlist(fix)
-#    }
-#  }
+  
+  if(is.null(ntimes)) nTimes <- nTimes(nrow(y)) else nTimes <- nTimes(ntimes)
   
   if(missing(parStruct)) {
-    tfix <- NULL
-    if(!missing(fixed)) tfix <- fixed
-    parStruct <- ParStruct(parameters,replicate=replicate,
-                    fixed=tfix,ntimes=ntimes)
+    parStruct <- ParStruct(parameters=parameters,replicate=replicate,
+      fixed = fixed,
+      ntimes = {if(missing(ntimes)) NULL else ntimes})
   }
-
-  if(is.null(ntimes)) ntimes <- nrow(y)
-  nTimes <- nTimes(ntimes)
+  
   cid <- matrix(1:(nx*ny),nrow=nx)
   
   mod <- new("RescorlaWagner",

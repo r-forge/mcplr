@@ -35,27 +35,43 @@ setClass("ParStruct",
 
 ParStruct <- function(parameters,replicate=TRUE,fixed=NULL,ntimes=NULL,
                 constraints=NULL) {
-    parStruct <- new("ParStruct")
-    if(replicate) parStruct@replicate <- TRUE else parStruct@replicate <- FALSE
-    if(is.null(ntimes) | replicate) {
-      fix <- rep(FALSE,length(unlist(parameters)))
-      fix <- relist(fix,skeleton=parameters)
+  parStruct <- new("ParStruct")
+  if(replicate) parStruct@replicate <- TRUE else parStruct@replicate <- FALSE
+  
+  if(!is.null(fixed)) {
+    if(is.null(ntimes) | length(ntimes)==1 | replicate) {
+      if(is.list(fixed)) fix <- fixedListToVec(fixed,parameters) else fix <- fixed
     } else {
-      fix <- rep(FALSE,length(unlist(parameters[[1]])))
-      fix <- relist(fix,skeleton=parameters[[1]])
-    }
-    if(!is.null(fixed)) {
-      for(i in 1:length(fix)) {
-        if(!is.null(fixed[[names(fix)[i]]]) && fixed[[names(fix)[i]]]) fix[[i]] <- rep(TRUE,length(fix[[i]]))
+      cases <- length(ntimes)
+      fix <- vector("list",length=cases)
+      if(is.list(fixed)) {
+        if(is.null(names(fixed)) && length(fixed) == cases) {
+          for(i in 1:cases) {
+            if(is.list(fixed[[i]])) {
+              fix[[i]] <- fixedListToVec(fixed[[i]],parameters)
+            } else {
+              fix[[i]] <- fixed[[i]]
+            }
+          }
+        } else {
+           for(i in 1:cases) {
+            fix[[i]] <- fixedListToVec(fixed,parameters[[i]])
+          }
+        }
+      } else {
+        if(length(fixed) == length(unlist(parameters))) {
+          fix <- fixed
+        } else {
+          fix <- rep(fixed,length=length(unlist(parameters)))
+        }
       }
     }
-    if(is.null(ntimes) | replicate) {
-      parStruct@fix <- unlist(fix)
-    } else {
-      fix <- rep(list(fix,length(ntimes)))
-      parStruct@fix <- unlist(fix)
-    }
-    parStruct
+  } else {
+    fix <- rep(FALSE,length=length(unlist(parameters)))
+  }
+  parStruct@fix <- unlist(fix)
+  if(!is.null(constraints)) parStruct@constraints <- constraints
+  parStruct
 }
 
 

@@ -82,7 +82,7 @@ setMethod("fit","SLFN",
         #beta <- object@parameters$beta[case,]
         #ws <- object@parameters$ws[case,]
         fit <- slfn.fit(x=x,y=y,eta=pars$eta,alpha=pars$alpha,beta=pars$beta,ws=pars$ws,grad=object@gradient,window.size=object@window.size)
-        object@weight[object@nTimes@bt[case]:object@nTimes@et[case],] <- fit$weight
+        object@weight[object@nTimes@bt[case]:object@nTimes@et[case],,] <- fit$weight
       }
     } else {
       fit <- slfn.fit(x=object@x,y=object@y,eta=object@parameters$eta,alpha=object@parameters$alpha,beta=object@parameters$beta,ws=object@parameters$ws,grad=object@gradient,window.size=object@window.size)
@@ -121,7 +121,7 @@ slfn.fit <- function(y,x,ws,eta,alpha,beta,grad,window.size=0) {
   return(list(weight=weight))
 }
 
-SLFN <- function(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),type=c("linear","logistic"),data,subset,fixed,parStruct,window.size=0,intercept=TRUE,base=NULL,ntimes=NULL,replicate=T) {
+SLFN <- function(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),type=c("linear","logistic"),data,subset,fixed,parStruct,window.size=0,remove.intercept=FALSE,base=NULL,ntimes=NULL,replicate=T) {
   type <- match.arg(type)
   lin <- function(x) {
     x
@@ -133,24 +133,14 @@ SLFN <- function(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),type=c("li
     if(!is.matrix(x)) x <- matrix(x,ncol=length(x))
     if(!is.matrix(y)) y <- matrix(y,ncol=length(y))
     t(x)%*%(logis(x%*%w) - y)
-#    
-#    if(!is.matrix(x)) {
-#      return(as.numeric(x*(logis(x%*%w) - y)))
-#    } else return(as.numeric(t(x)%*%(logis(x%*%w) - y)))
   }
   grad.lin <- function(y,x,w) {
     if(!is.matrix(x)) x <- matrix(x,ncol=length(x))
     if(!is.matrix(y)) y <- matrix(y,ncol=length(y))
     t(x)%*%(x%*%w - y)
-#    {
-#      return(as.numeric(x*(x%*%w - y)))
-#    } else {
-#      tmp <- t(matrix(x,nrow=ncol(y),ncol=300,byrow=T)*as.vector((x%*%w - y)))
-#      return(as.numeric(t(x)%*%(x%*%w - y)))
-#    }
   }
-  if(!intercept) remi <- TRUE else remi <- FALSE
-  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remi) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remi)
+
+  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remove.intercept) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remove.intercept)
   x <- dat$x
   y <- dat$y
   fun <- switch(type,
@@ -179,18 +169,18 @@ SLFN <- function(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),type=c("li
     } else warning("there is no validity check for the given parameters when combined with ntimes and replicate=FALSE \n Please make sure the supplied list is valid")
   }
   
+  if(is.null(ntimes)) nTimes <- nTimes(nrow(y)) else nTimes <- nTimes(ntimes)
+  
   if(missing(parStruct)) {
-    tfix <- NULL
-    if(!missing(fixed)) tfix <- fixed
-    parStruct <- ParStruct(parameters,replicate=replicate,
-                    fixed=tfix,ntimes=ntimes)
+    parStruct <- ParStruct(parameters=parameters,replicate=replicate,
+      fixed = if(missing(fixed)) NULL else fixed,
+      ntimes = if(missing(ntimes)) NULL else ntimes)
   }
-
-  if(is.null(ntimes)) ntimes <- nrow(y)
-  nTimes <- nTimes(ntimes)
-  new("SLFN",
+  
+  mod <- new("SLFN",
     x=x,
     y=y,
+    weight=array(dim=c(sum(nTimes@n),ncol(x),ncol(y))),
     parameters=parameters,
     parStruct=parStruct,
     nTimes=nTimes,
@@ -199,6 +189,8 @@ SLFN <- function(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),type=c("li
     gradient=grad,
     window.size=window.size
   )
+  mod <- fit(mod)
+  mod
 }
 
 setMethod("predict",signature(object="SLFN"),
@@ -215,3 +207,23 @@ setMethod("predict",signature(object="SLFN"),
   }
 )
 
+setMethod("plot",signature(x="SLFN",y="missing"),
+  function(x,y,...) {
+    nx <- ncol(x@x)
+    ny <- ncol(x@y)
+    nw <- prod(dim(x@weight)[c(2,3)])
+    nt <- dim(x@weight)[1]
+    dat <- data.frame(
+      id=factor(rep(rep(1:x@nTimes@cases,x@nTimes@n),nx*ny),labels="series",1:x@nTimes@cases),
+      trial=rep(unlist(sapply(x@nTimes@n,seq,from=1,by=1)),nx*ny),
+      w=as.vector(x@weight),
+      xid=factor(rep(rep(1:nx,each=nt),ny),labels=paste("x",1:nx,sep="")),
+      yid=factor(rep(1:ny,each=nt*nx),labels=paste("y",1:ny,sep="")))
+    if(x@nTimes@cases>1) {
+      plot <- xyplot(w~trial|yid*id,groups=xid,data=dat,type="l",as.table=TRUE,auto.key=TRUE,...)
+    } else {
+      plot <- xyplot(w~trial|yid,groups=xid,data=dat,type="l",as.table=TRUE,auto.key=TRUE,...)
+    }
+    plot
+  }
+)

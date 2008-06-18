@@ -14,8 +14,8 @@ Constructs an Attention Learning COVEring map model.
 }
 \usage{
 ALCOVE(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),humble=TRUE,
-exemplar.locations,data,subset,fixed,parStruct,random.locations=FALSE,
-n.locations=10,base=NULL,ntimes=NULL,replicate=TRUE)
+exemplar.locations,data,subset,fixed=list(r=TRUE,q=TRUE),parStruct,
+random.locations=FALSE,n.locations=10,base=NULL,ntimes=NULL,replicate=TRUE)
 }
 \arguments{
 \item{formula}{an object of class \code{formula} (or one that can be coerced to

@@ -169,7 +169,7 @@ setMethod("predict",signature(object="ALCOVE"),
   }
 )
 
-ALCOVE <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),humble=TRUE,exemplar.locations,data,subset,fixed,parStruct,random.locations=FALSE,n.locations=10,base=NULL,ntimes=NULL,replicate=TRUE) {
+ALCOVE <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),humble=TRUE,exemplar.locations,data,subset,fixed=list(r=TRUE,q=TRUE),parStruct,random.locations=FALSE,n.locations=10,base=NULL,ntimes=NULL,replicate=TRUE) {
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=TRUE)
   x <- dat$x
   y <- dat$y
@@ -198,15 +198,13 @@ ALCOVE <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),hu
     }
   }
     
+  if(is.null(ntimes)) nTimes <- nTimes(nrow(y)) else nTimes <- nTimes(ntimes)
+  
   if(missing(parStruct)) {
-    tfix <- NULL
-    if(!missing(fixed)) tfix <- fixed
-    parStruct <- ParStruct(parameters,replicate=replicate,
-                    fixed=tfix,ntimes=ntimes)
+    parStruct <- ParStruct(parameters=parameters,replicate=replicate,
+      fixed = fixed,
+      ntimes = if(missing(ntimes)) NULL else ntimes)
   }
-
-  if(is.null(ntimes)) ntimes <- nrow(y)
-  nTimes <- nTimes(ntimes)
 
   if(missing(exemplar.locations)) {
     exemplar.locations <- list()
