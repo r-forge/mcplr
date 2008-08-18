@@ -74,11 +74,11 @@ Address correspondence to M. Speekenbrink, Department of Psychology, University 
 \begin{document}
 \maketitle
 
-Multiple cue probability learning tasks require the prediction of a criterion variable on the basis of a number of cues which are probabilistically related to the criterion. This class of tasks is quite general, and a number of paradigms in (cognitive) psychology fall under it header. A numerical criterion variable is often used in Social Judgement Theory. When the criterion is a nominal variable, it is also common to speak of category learning tasks. 
+Multiple Cue Probability Learning (MCPL) tasks require the prediction of a criterion variable on the basis of a number of cues which are probabilistically related to the criterion. This class of tasks is quite general, and a number of paradigms in (cognitive) psychology fall under it header. A numerical criterion variable is often used in Social Judgement Theory. When the criterion is a nominal variable, it is also common to speak of category learning tasks. 
 
 A large number of formal models have been proposed to describe how people learn to perform MCPL tasks. We describe here an \code{R} package in which a number of these have been implemented, and which has been designed such that users can relatively easily add other models. 
 
-We will describe the features of the package through the package's implementation of the Generalized Context Model (GCM). We will also briefly illustrate how to specify a new model. 
+We will describe the features of the package through the package's implementation of the Rescorla-Wagner. We will also briefly illustrate how to specify a new model. 
 
 \section{The general structure of MCPL models}
 
@@ -193,7 +193,7 @@ While the response model is always a statistical model, in many cases the learni
 \end{equation}
 where $f$ is some (non-linear) function. For instance, the Rescorla-Wagner model \cite{Rescorla72} involves updating stimulus response associations $\greekv{\psi}_t$ in this form. As we will see later, the GCM is different, but still deterministic, in the sense that a particular set of paired cue and criterion values $(\vec{x}_{1:t},y_{1:t})$ and parameters $\greekv{\theta}_L$ always result in the same representation $\greekv{\psi}_t$. There are exceptions to this (such as Anderson's \citeyear{Anderson91} Rational Model of Categorization), but these are currently not implemented in \code{mcplR}. Note that determinism is not a requirement to implement learning models in \code{mcplR}. However, the default estimation relies numerical optimization routines which will give inconsistent results if $\greekv{\psi}_{1:T}$ differs from iteration to iteration. Hence, for probabilistic learning models, a different estimation routine will have to be implemented.
  
-\section{Implementation in the \code{mcplR} package}
+\section{Implementation in \code{mcplR}}
 
 MCPL models are implemented in \code{mcplR} as the \code{McplModel} class. The class has two slots: one for a \code{LearningModel} and one for a \code{ResponseModel}. Both these have a similar structure, and consist minimally of a (predictor) matrix $x$, a (criterion) matrix $y$, and a parameter list. For the learning model, the predictor matrix will usually contain the cues, and the criterion matrix the criterion. For the response model, the predictor matrix will usually contain $\greekv{\eta}$, and the response matrix the responses $R$. 
 
@@ -227,12 +227,15 @@ A Rescorla-Wagner model can be created by calling \code{RescorlaWagner(formula,d
 \begin{figure}
 \begin{verbatim}
 # create a learning model
-lMod <- RescorlaWagner(y ~ x1+x2+x3+x4,data=WPT)
+lMod <- RescorlaWagner(y ~ x1+x2+x3+x4,data=WPT,ntimes=c(200,200))
 # create a response model
-rMod <- RatioRuleResponse(r~1,data=WPT)
+rMod <- RatioRuleResponse(r~1,data=WPT,ntimes=c(200,200))
 # combine in an McplModel
 mMod <- McplModel(lMod,rMod)
+# estimate the free parameters
 mMod <- estimate(mMod)
+# summary
+summary(mMod)
 \end{verbatim}
 \caption{Example code to create and estimate a Rescorla Wagner model} 
 \end{figure}
