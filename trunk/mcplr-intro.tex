@@ -195,7 +195,7 @@ where $f$ is some (non-linear) function. For instance, the Rescorla-Wagner model
  
 \section{Implementation in \code{mcplR}}
 
-MCPL models are implemented in \code{mcplR} as the \code{McplModel} class. The class has two slots: one for a \code{LearningModel} and one for a \code{ResponseModel}. Both these have a similar structure, and consist minimally of a (predictor) matrix $x$, a (criterion) matrix $y$, and a parameter list. For the learning model, the predictor matrix will usually contain the cues, and the criterion matrix the criterion. For the response model, the predictor matrix will usually contain $\greekv{\eta}$, and the response matrix the responses $R$. 
+MCPL models are implemented in \code{mcplR} through the \code{McplModel} class. The class has two slots: one for a \code{LearningModel} and one for a \code{ResponseModel}. Both these have a similar structure, and consist minimally of a (predictor) matrix $x$, a (criterion) matrix $y$, and a parameter list. For the learning model, the predictor matrix will usually contain the cues, and the criterion matrix the criterion. For the response model, the predictor matrix will usually contain $\greekv{\eta}$, and the response matrix the responses $R$. 
 
 In the implementation of MCPL models, we distinguish between learning and response models. A learning model
 
