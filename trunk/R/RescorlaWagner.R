@@ -88,6 +88,7 @@ R_W.fit <- function(y,x,alpha,beta,lambda,ws) {
   nx <- ncol(x)
   nt <- nrow(x)
   ny <- ncol(y)
+  #if(length(alpha)==1) alpha <- rep(alpha,nx)
   if(length(beta)==1) beta <- rep(beta,ny)
   cid <- matrix(1:(nx*ny),nrow=nx)
   weight <- matrix(,nrow=nt,ncol=length(cid))

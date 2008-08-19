@@ -1,52 +1,42 @@
 setClass("RatioRuleResponse",
   contains="ResponseModel",
   representation(
-    family="ANY"
+    transformation = "function"
   )
 )
+
 setMethod("estimate",signature(object="RatioRuleResponse"),
   function(object,...) {
+    optfun <- function(par,object,...) {
+      object@parameters <- setPars(object,par,rval="parameters",...)
+      -sum(logLik(object,...))
+    }
     mf <- match.call()
     pstart <- unlist(object@parameters)
-    if(length(pstart)!=1) stop("Ratio Rule response must have a single parameter")
-    if(ncol(object@y) == 1) {
-      # use glm.fit
-      fit <- glm.fit(x=object@x,y=object@y,family=object@family,...)
-      pars <- as.relistable(object@parameters)
-      pars$beta <- fit$coefficients
-      #object <- setPars(object,unlist(pars))
-      object@parameters <- setPars(object,unlist(pars),rval="parameters",...)
-      object <- fit(object,...)
+    #if(length(pstart)!=1) stop("Ratio Rule response must have a single parameter")
+    if(!is.null(mf$CML.method) || !is.null(mf$method)) {
+      if(!is.null(mf$CML.method)) mf$method <- mf$CML.method
+      mf$par <- pstart
+      mf$fn <- optfun
+      mf$object <- object
+      mf[[1]] <- as.name("optim")
+      opt <- eval(mf,parent.frame())
+      #opt <- optim(log(pstart),fn=optfun,object=object,...) else
     } else {
-      optfun <- function(par,object,...) {
-        beta <- exp(par[1])
-        p <- predict(object,type="response")
-        p <- p^beta
-        p <- p/rowSums(p)
-        -sum(log(rowSums(p*object@y)))
-      }
-      if(!is.null(mf$CML.method) || !is.null(mf$method)) {
-        if(!is.null(mf$CML.method)) mf$method <- mf$CML.method
-        mf$par <- log(pstart)
-        mf$fn <- optfun
-        mf$object <- object
-        mf[[1]] <- as.name("optim")
-        opt <- eval(mf,parent.frame())
-        #opt <- optim(log(pstart),fn=optfun,object=object,...) else
-      } else {
-        opt <- optim(log(pstart),fn=optfun,method="BFGS",object=object,...)
-      }
-      #object <- setPars(object,exp(opt$par))
-      object@parameters <- setPars(object,exp(opt$par),rval="parameters",...)
-      object <- fit(object,...)
+      opt <- optim(pstart,fn=optfun,object=object,...)
     }
+    #object <- setPars(object,exp(opt$par))
+    object@parameters <- setPars(object,opt$par,rval="parameters",...)
+    object <- fit(object,...)
     object
   }
 )
+
 setMethod("predict",signature(object="RatioRuleResponse"),
   function(object,...) {
-    beta <- object@parameters$beta
-    out <- object@family$linkinv(beta*object@x)
+    #beta <- object@parameters$beta
+    out <- object@transformation(object,...)
+    out <- out/rowSums(out)
     #out <- apply(object@x,1,function(x) exp(x)/sum(exp(x)))
     if(!is.matrix(out)) out <- matrix(out,ncol=1)
     out
@@ -78,26 +68,37 @@ setMethod("logLik",signature(object="RatioRuleResponse"),
   }
 )
 
-RatioRuleResponse <- function(formula,parameters=list(beta=1),
-                        data,base=NULL,ntimes=NULL,replicate=TRUE,fixed,
-                        parStruct,family,subset) {
-  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base) else 
-    dat <- mcpl.prepare(formula,data,base=base)
+RatioRuleResponse.trans.exp <- function(object,...) {
+  exp(object@parameters$beta*object@x)
+}
+
+RatioRuleResponse.trans.none <- function(object,...) {
+  object@x
+}
+
+RatioRuleResponse <- function(formula,parameters=list(beta=1),transformation=c("exponential","none"),
+                        data,ntimes=NULL,replicate=TRUE,fixed,
+                        parStruct,subset) {
+  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset) else 
+    dat <- mcpl.prepare(formula,data)
 
   y <- dat$y
-  
-  if(!is.null(base)) {
-    #y <- y[,base]
-    if(missing(family)) if(ncol(y)==1) family <- binomial() else family <- multinomial()
-  } else {
-    if(missing(family)) if(ncol(y)==2) family <- binomial() else family <- multinomial()
-  }
   x <- dat$x
   
+  if(!is.function(transformation)) {
+    transformation <- match.arg(transformation)
+    trans <- switch(transformation,
+      exponential = RatioRuleResponse.trans.exp,
+      none = RatioRuleResponse.trans.none)
+  } else {
+    trans <- transformation
+  }
+  
   parfill <- function(parameters) {
-    pars <- list()
-    if(is.null(parameters$beta)) pars$beta <- 1 else pars$beta <- parameters$beta
-    pars
+    #pars <- list()
+    if(!is.list(parameters)) parameters <- as.list(parameters)
+    if(is.null(parameters$beta)) parameters$beta <- 1
+    parameters
   }
 
   if(is.null(ntimes) | replicate) {
@@ -133,7 +134,7 @@ RatioRuleResponse <- function(formula,parameters=list(beta=1),
     parameters = parameters,
     parStruct=parStruct,
     nTimes=nTimes,
-    family=family)
+    transformation=trans)
   mod <- fit(mod)
   mod                     
                         

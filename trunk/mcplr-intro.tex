@@ -9,12 +9,12 @@
 \affiliation{Department of Psychology \\ University College London}
 
 \abstract{
-
+This paper introduces the mcplR package, an open source package for the R software environment to fit various multiple cue learning models. The package is introduced through the implementation of the Rescorla-Wagner model. A brief description of the other models currently implemented, such as the GCM and ALCOVE. 
 }
 
 \ifapamodedoc{%
 \leftheader{Speekenbrink}
-\rightheader{MCPLR}
+\rightheader{mcplR}
 \acknowledgements{This research was supported by the ESRC Centre for Economic Learning and Social Evolution (ELSE).
 
 Address correspondence to M. Speekenbrink, Department of Psychology, University College London, Gower Street, London WC1E 6BT, England, e-mail: \texttt{m.speekenbrink@ucl.ac.uk}}
@@ -223,6 +223,22 @@ where $y_k(t)$ is the value of US $K$ at trial $t$ (this should be 0 when US $k$
 
 A Rescorla-Wagner model can be created by calling \code{RescorlaWagner(formula,data,...)}. For instance, for an event $y$ with two levels, and four cues $x_j$, we can use 
 
+\code{lMod <- RescorlaWagner(y \textasciitilde x1+x2+x3+x4,data=WPT)}
+
+which will create a Rescorla-Wagner model with default parameters. We can view the default parameter values by calling \code{getPars(lMod)}.
+
+\subsection{Creating a response model}
+
+A common choice is the (exponentiated) ratio response rule:
+\begin{equation}
+P(R=j) = \frac{\exp ( \beta \psi_j)} { \sum_k \exp (\beta \psi_k) }
+\end{equation}
+which we can create by calling
+\code{rMod <- RatioRuleResponse(r \textasciitilde 1,data=WPT)}
+
+\subsection{Estimating the model parameters}
+
+After creating a learning and response model, we can combine them into an \code{McplModel}. We can then estimate the learning and response model parameters simultaneously.
 
 \begin{figure}
 \begin{verbatim}
@@ -240,14 +256,6 @@ summary(mMod)
 \caption{Example code to create and estimate a Rescorla Wagner model} 
 \end{figure}
 
-\code{lMod <- RescorlaWagner(y \textasciitilde x1+x2+x3+x4,data=WPT)}
-
-which will create a default Rescorla-Wagner model. We can view the default parameter values by calling \code{getPars(lMod)}.
- 
-\subsection{Creating an MCPL model}
-
-\subsection{Estimating the model parameters}
- 
 \section{Other learning models currently implemented in \code{mcplR}}
 
 \subsection{Single Layer Feedforward Network}
@@ -256,13 +264,27 @@ Associative learning models such as the Rescorla-Wagner model can be implemented
 
 \subsection{Generalized Context Model}
 
+The Generalized Context Model \cite<GCM,>{Nosofsky86}. 
+
 GCM learning model can be created by the function \code{GCM(formula,data,...)}. This will create a default GCM model, with a city-block distance function and an exponential similarity gradient, with  The distance function can be changed to an euclidian or general Minkowski distance function by the option \code{distance=``euclidian''} or \code{distance=``minkowksi''}, respectively. An arbitrary function can also be used by using a function for the distance option. Similarly, the similarity gradient can be changed through the option \code{similarity=``gaussian''}. In addition, the version of the GCM allows the specification of a sampling function (or memory gradient). By default, this is set to uniform, but other options are a power and exponential function.
  
 \subsection{ALCOVE}
 
 ALCOVE \cite{Kruschke92}.
 
+\section{Extending \code{mcplR}}
 
+The \code{mcplR} package was designed with the objective of being relatively easily extendable. 
+
+To add a new learning model, users must define a new class which inherits from the \code{LearningModel} class. Then, they should minimally define a \code{predict} method. Ideally, other methods, such as \code{logLik}, would also be defined, but these are not required to estimate the models parameters when incorporated into an \code{McplModel}. In many cases, users can rely on the default methods.
+
+To add a response model, users must again define a new class which inherits from the \code{ResponseModel} class. In addition, they must also minimally define either the \code{logLik} method or the \code{predict} method. If only the latter is defined, the model parameters will be estimated by OLS, while if the former is defined, ML estimates can be obtained. 
+
+\section{Useful methods and functions}
+
+In addition to the \code{estimate} method, there are default methods for model evaluation. In particular, standard model selection criteria, such as the AIC, BIC, and (pseudo-) $R^2$ are defined. In addition, many models have default plotting methods. For instance, calling \code{plot(tMod@learningModel)}, where \code{tMod} is the one estimated in the example, we obtain the plot of Figure XXX. 
+
+\section{Conclusion}
 
 \bibliography{bibliography}
 
