@@ -1,0 +1,11 @@
+for release 0.2
+* check multiple individual parameter estimation
+
+for release 0.3
+* move parameter transformations to parStruct
+* add deterministic response with fixed error probability
+
+for release > 0.3
+* add ATRIUM
+* add RASHNL
+* add pretransformation option

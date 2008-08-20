@@ -62,13 +62,27 @@ GlmResponse <- function(formula,data,family=gaussian(),parameters=list(),ntimes=
 
 setMethod("estimate",signature(object="GlmResponse"),
 	function(object,...) {
-    # y = response
-    pars <- object@parameters
-    fit <- glm.fit(x=object@x,y=object@y,family=object@family,start=pars$coefficients)
-    pars$coefficients <- fit$coefficients
-    if(object@family$family=="gaussian") pars$sd <- sqrt(sum((object@y - predict(object))^2)/(length(object@y)-1))
+    if(object@nTimes@cases > 1) {
+      if(length(object@parStruct@id)>0) stop("Constraints in GlmResponse models are currently not implemented")
+      for(case in 1:object@nTimes@cases) {
+        repl <- getReplication(object,case=case,...)
+        x <- repl$x
+        y <- repl$y
+        pars <- repl$parameters
+        fit <- glm.fit(x=x,y=y,family=object@family,start=pars$coefficients)
+        pars$coefficients <- fit$coefficients
+        if(object@family$family=="gaussian") pars$sd <- sqrt(sum((object@y - predict(object))^2)/(length(object@y)-1))
+        object@parameters[[case]] <- pars
+      }
+    } else {
+      # y = response
+      pars <- object@parameters
+      fit <- glm.fit(x=object@x,y=object@y,family=object@family,start=pars$coefficients)
+      pars$coefficients <- fit$coefficients
+      if(object@family$family=="gaussian") pars$sd <- sqrt(sum((object@y - predict(object))^2)/(length(object@y)-1))
+      object@parameters <- setPars(object,unlist(pars),rval="parameters",...)
+    }
     #object <- setpars(object,unlist(pars))
-    object@parameters <- setPars(object,unlist(pars),rval="parameters",...)
     object <- fit(object,...)
     return(object)
 	}
@@ -86,7 +100,8 @@ setMethod("predict","GlmResponse",
 )
 setMethod("logLik","GlmResponse",
   function(object) {
-    switch(object@family$family,
+    nt <- NROW(object@y)
+    LL <- switch(object@family$family,
       gaussian = {
         mu <- predict(object,type=response)
         sum(dnorm(x=object@y,mean=mu,sd=object@parameters$sd,log=TRUE))
@@ -105,5 +120,9 @@ setMethod("logLik","GlmResponse",
       },
       stop("family",object@family$family,"not implemented (yet)")
     )
+    attr(LL,"nobs") <- nt
+    attr(LL,"df") <- length(getPars(object,which="free"))
+    class(LL) <- "logLik"
+    LL
   }
 )

@@ -124,6 +124,8 @@ setMethod("getReplication",signature(object="McplBaseModel"),
     }
     x <- object@x[bt[case]:et[case],]
     y <- object@y[bt[case]:et[case],]
+    if(!is.matrix(x)) x <- as.matrix(x)
+    if(!is.matrix(y)) y <- as.matrix(y)
     if(!object@parStruct@replicate) parameters <- object@parameters[[case]] else parameters <- object@parameters
     return(list(x=x,y=y,parameters=parameters))
   }

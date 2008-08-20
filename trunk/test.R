@@ -23,8 +23,8 @@ source("R/ALCOVE.R")
 
 # test Rescorla Wagner
 dat <- subset(WPT,id=="C")
-lmod <- RescorlaWagner(y~x1+x2+x3+x4,data=dat,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,-1)),remove.intercept=TRUE,base=1,fix=list(beta=TRUE,ws=TRUE,lambda=TRUE))
-rmod <- GlmResponse(r~predict(lmod,type="response"),data=dat,ntimes=200,family=binomial(),base=1)
+lmod <- RescorlaWagner(y~x1+x2+x3+x4,data=dat,parameters=list(alpha=.05,beta=c(1,1),lambda=c(1,-1)),remove.intercept=TRUE,base=1,fix=list(beta=TRUE,ws=TRUE,lambda=TRUE))
+rmod <- GlmResponse(r~predict(lmod,type="response")-1,data=dat,ntimes=200,family=binomial(),base=1)
 rmod <- estimate(rmod)
 logLik(rmod)
 tMod <- McplModel(learningModel = lmod,responseModel = rmod)
@@ -42,17 +42,38 @@ tMod <- McplModel(learningModel = lmod,responseModel = rmod)
 tMod <- estimate(tMod)
 logLik(tMod)
 
-# test SLFN
-dat <- subset(WPT,id=="C")
-lmod <- SLFN(y~x1+x2+x3+x4,parameters=list(eta=.3,alpha=.001),type="logistic",data=dat,remove.intercept=TRUE,base=1)
-lmod@parStruct@fix <- c(FALSE,TRUE,TRUE,TRUE)
-rmod <- RatioRuleResponse(r~predict(lmod)-1,data=dat,base=1,ntimes=200)
+# test Rescorla Wagner with two individuals
+dat <- WPT
+lmod <- RescorlaWagner(y~x1+x2+x3+x4,data=dat,parameters=list(alpha=.05,beta=c(1,1),lambda=c(1,-1)),remove.intercept=TRUE,base=1,fix=list(beta=TRUE,ws=TRUE,lambda=TRUE),replicate=FALSE,ntimes=c(200,200))
+rmod <- GlmResponse(r~predict(lmod,type="response")-1,data=dat,ntimes=c(200,200),family=binomial(),base=1,replicate=FALSE)
 rmod <- estimate(rmod)
 logLik(rmod)
 tMod <- McplModel(learningModel = lmod,responseModel = rmod)
 tMod <- estimate(tMod)
 logLik(tMod)
 
+
+# test SLFN
+dat <- subset(WPT,id=="C")
+lmod <- SLFN(y~x1+x2+x3+x4,parameters=list(eta=.3,alpha=0),type="logistic",data=dat,remove.intercept=TRUE,base=1)
+lmod@parStruct@fix <- c(FALSE,TRUE,TRUE,TRUE)
+rmod <- GlmResponse(r~predict(lmod)-1,data=dat,ntimes=200,family=binomial(),base=1)
+rmod <- estimate(rmod)
+logLik(rmod)
+tMod <- McplModel(learningModel = lmod,responseModel = rmod)
+tMod <- estimate(tMod)
+logLik(tMod)
+
+# test SLFN with redundancy
+dat <- subset(WPT,id=="C")
+lmod <- SLFN(y~x1+x2+x3+x4,parameters=list(eta=.3,alpha=0),type="logistic",data=dat,remove.intercept=TRUE)
+lmod@parStruct@fix <- c(FALSE,TRUE,TRUE,TRUE)
+rmod <- RatioRuleResponse(r~predict(lmod)-1,data=dat,ntimes=200)
+rmod <- estimate(rmod)
+logLik(rmod)
+tMod <- McplModel(learningModel = lmod,responseModel = rmod)
+tMod <- estimate(tMod)
+logLik(tMod)
 
 # test GCM
 dat <- subset(WPT,id=="C")
@@ -64,9 +85,13 @@ logLik(setPars(lmod,c(0.31243147,0.32985646,0.06847703,0.28923503,6.044744)))
 
 # test ALCOVE
 dat <- subset(WPT,id=="C")
-lmod <- ALCOVE(y~x1+x2+x3+x4,data=dat)
+lmod <- ALCOVE(y~x1+x2+x3+x4,data=dat,ntimes=200)
 lmod <- estimate(lmod)
-
+logLik(lmod)
+rmod <- RatioRuleResponse(y~predict(lmod)-1,data=dat,ntimes=200)
+tMod <- McplModel(learningModel = lmod,responseModel = rmod)
+tMod <- estimate(tMod)
+logLik(tMod)
 
 
 

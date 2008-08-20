@@ -114,7 +114,7 @@ In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the bas
 				\draw node[circle,draw] (psi1) at (0,1) {${\greekv{\psi}}_1$};
 				\draw node[circle,draw] (psi2) at (1,1) {${\greekv{\psi}}_2$};
 				\draw	node[circle,draw] (psi3) at (2,1) {${\greekv{\psi}}_3$};
-				\draw	node (psidots) at (3,1) {$\ldots$};
+				\draw	node[circle] (psidots) at (3,1) {$\ldots$};
 				\draw	node[circle,draw] (psiT) at (4,1) {${\greekv{\psi}}_T$};
 							
 				\draw node[draw] (x1) at (0,2) {$\vec{x}_1$};
@@ -183,15 +183,20 @@ In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the bas
 \label{fig:mcplmodel}
 \end{figure}
 
-An MCPL model consists of a learning and response models. A learning model describes how a representation of the environment is updated as new data comes in. A response model describes how this representation is used to form predictions of the environment. A graphical representation is given in Figure~\ref{fig:mcplmodel}. A main feature of MCPL models is that responses $R_t$ are conditionally independent given representations $\psi_t$, i.e.
+An MCPL model consists of a learning and response models. A learning model describes how a representation of the environment is updated as new data comes in. A response model describes how this representation is used to form predictions of the environment. A graphical representation is given in Figure~\ref{fig:mcplmodel}. A main feature of MCPL models is that responses $R_t$ are conditionally independent given predictions $\eta_t$, i.e.
 \begin{equation}
 P(R_1,\ldots,R_T|\greekv{\eta}_1,\ldots,\greekv{\eta}_T,\greekv{\theta}_R) = \prod_{t=1}^T P(R_t|\greekv{\eta}_t,\greekv{\theta}_R)
 \end{equation}
+The predictions follow from the task representations $\psi_t$ and probe cue patterns $\vec{x}_t$, e.g.
+\begin{equation}
+\eta_t = f(\psi_t,\vec{x}_t).
+\end{equation}
+
 While the response model is always a statistical model, in many cases the learning model is not. In many learning models, representations are updated as
 \begin{equation}
-\greekv{\psi}_{t+1} = f(\greekv{\psi}_t,\vec{x}_t,y_t,\greekv{\theta}_L),
+\greekv{\psi}_{t+1} = g(\greekv{\psi}_t,\vec{x}_t,y_t,\greekv{\theta}_L),
 \end{equation}
-where $f$ is some (non-linear) function. For instance, the Rescorla-Wagner model \cite{Rescorla72} involves updating stimulus response associations $\greekv{\psi}_t$ in this form. As we will see later, the GCM is different, but still deterministic, in the sense that a particular set of paired cue and criterion values $(\vec{x}_{1:t},y_{1:t})$ and parameters $\greekv{\theta}_L$ always result in the same representation $\greekv{\psi}_t$. There are exceptions to this (such as Anderson's \citeyear{Anderson91} Rational Model of Categorization), but these are currently not implemented in \code{mcplR}. Note that determinism is not a requirement to implement learning models in \code{mcplR}. However, the default estimation relies numerical optimization routines which will give inconsistent results if $\greekv{\psi}_{1:T}$ differs from iteration to iteration. Hence, for probabilistic learning models, a different estimation routine will have to be implemented.
+where $g$ is some (non-linear) function. For instance, the Rescorla-Wagner model \cite{Rescorla72} involves updating stimulus response associations $\greekv{\psi}_t$ in this form. As we will see later, the GCM is different, but still deterministic, in the sense that a particular set of paired cue and criterion values $(\vec{x}_{1:t},y_{1:t})$ and parameters $\greekv{\theta}_L$ always result in the same representation $\greekv{\psi}_t$. There are exceptions to this (such as Anderson's \citeyear{Anderson91} Rational Model of Categorization), but these are currently not implemented in \code{mcplR}. Note that determinism is not a requirement to implement learning models in \code{mcplR}. However, the default estimation relies numerical optimization routines which will give inconsistent results if $\greekv{\psi}_{1:T}$ differs from iteration to iteration. Hence, for probabilistic learning models, a different estimation routine will have to be implemented.
  
 \section{Implementation in \code{mcplR}}
 
