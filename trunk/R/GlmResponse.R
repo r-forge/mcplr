@@ -89,8 +89,15 @@ setMethod("estimate",signature(object="GlmResponse"),
 )
 setMethod("predict","GlmResponse",
 	function(object,type="link") {
+    if(object@nTimes@cases > 1) {
+      mu <- vector()
+      for(case in 1:object@nTimes@cases) {
+        if(NCOL(object@x) > 1) mu <- rbind(mu,object@x[object@nTimes@bt[case]:object@nTimes@et[case],]%*%as.matrix(object@parameters[[case]]$coefficients)) else mu <- c(mu,object@parameters[[case]]$coefficients*object@x[object@nTimes@bt[case]:object@nTimes@et[case],])
+      }
+    } else {
     # y = response
-    if(NCOL(object@x) > 1) mu <- object@x%*%as.matrix(object@parameters$coefficients) else mu <- object@parameters$coefficients*object@x
+      if(NCOL(object@x) > 1) mu <- object@x%*%as.matrix(object@parameters$coefficients) else mu <- object@parameters$coefficients*object@x
+    }
     if(type=="link") return(mu) else {
       if(type=="response") {
         return(object@family$linkinv(mu))
