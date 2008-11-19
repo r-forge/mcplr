@@ -7,7 +7,7 @@
 \title{Corrected Akaike Information Criterion}
 \description{
   This generic function calculates the corrected Akaike information criterion,
-  also known as Schwarz's Bayesian criterion (SBC), for one or several
+  for one or several
   fitted model objects for which a log-likelihood value can be obtained,
   according to the formula \eqn{-2 \mbox{log-likelihood} + 2 n_{par}
   (n{obs}/(n_{obs} - n_{par} -2))}{-2*log-likelihood +

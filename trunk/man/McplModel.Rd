@@ -3,7 +3,7 @@
 \docType{class}
 
 \alias{McplModel-class}
-
+\alias{McplModel}
 \alias{getReplication,McplModel-method}
 \alias{ntimes,McplModel-method}
 \alias{AIC,McplModel-method}

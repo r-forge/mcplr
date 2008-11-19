@@ -25,13 +25,13 @@ setMethod("setPars",signature(object="McplModel"),
   function(object,pars,parid=NULL,internal=FALSE,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
     if(is.null(attr(pars,"skeleton"))) {
-      parv <- getPars(object,which="free",...)
+      parv <- getPars(object,which="free",internal=internal,...)
       if(length(pars)==length(parv)) {
-        parl <- relist(pars,skeleton=relist(getPars(object,which="free",...))) #FIX ME!!
+        parl <- relist(pars,skeleton=relist(getPars(object,which="free",internal=internal,...))) #FIX ME!!
       } else {
         parv <- getPars(object,which="all",...)
         if(length(pars)==length(parv)) {
-          parl <- relist(pars,skeleton=relist(getPars(object,which="all",...))) #FIX ME!!
+          parl <- relist(pars,skeleton=relist(getPars(object,which="all",internal=internal,...))) #FIX ME!!
         } else {
           stop("cannot relist this parameter vector; please use relistable parameter vectors.")
         }
@@ -145,7 +145,7 @@ setMethod("estimate",signature(object="McplModel"),
         object@learningModel@parameters <- setPars(object@learningModel,pars,internal=TRUE,...,rval="parameters")
       #} else object <- setPars(object,pars,...)
       } else {
-        parl <- setPars(object,pars,internal=TRUE,rval="parameters",...)
+        parl <- setPars(object,pars,internal=TRUE,...,rval="parameters")
         if(!is.null(parl[[1]])) object@learningModel@parameters <- parl[[1]]
         if(!is.null(parl[[2]])) object@responseModel@parameters <- parl[[2]]
       }
