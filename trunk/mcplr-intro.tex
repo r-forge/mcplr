@@ -289,6 +289,14 @@ To add a response model, users must again define a new class which inherits from
 
 In addition to the \code{estimate} method, there are default methods for model evaluation. In particular, standard model selection criteria, such as the AIC, BIC, and (pseudo-) $R^2$ are defined. In addition, many models have default plotting methods. For instance, calling \code{plot(tMod@learningModel)}, where \code{tMod} is the one estimated in the example, we obtain the plot of Figure XXX. 
 
+\begin{table}
+\caption{Selected methods and functions in the mcplR package}
+\begin{tabular}{lll} \hline
+name & description & example call \\ \hline
+\code{plot} & plot & \code{plot(mod)} \\
+\end{tabular}
+\end{table}
+
 \section{Conclusion}
 
 We introduced the \code{mcplR} extension package for the R language and framework. The package provides a flexible framework to specify and estimate learning models. A number of common models is included. 
