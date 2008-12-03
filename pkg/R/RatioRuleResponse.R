@@ -43,6 +43,7 @@ setMethod("estimate",signature(object="RatioRuleResponse"),
     object
   }
 )
+
 setMethod("predict",signature(object="RatioRuleResponse"),
   function(object,...) {
     beta <- object@parameters$beta
@@ -126,7 +127,6 @@ RatioRuleResponse <- function(formula,parameters=list(beta=1),
 
   if(is.null(ntimes)) ntimes <- nrow(y)
   nTimes <- nTimes(ntimes)
-    
   mod <- new("RatioRuleResponse",
     x = x,
     y = y,
@@ -135,7 +135,6 @@ RatioRuleResponse <- function(formula,parameters=list(beta=1),
     nTimes=nTimes,
     family=family)
   mod <- fit(mod)
-  mod                     
-                        
+  mod
 }
 
