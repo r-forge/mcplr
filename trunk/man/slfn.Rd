@@ -51,6 +51,8 @@ parameters considered identical for each series?}
 online model predictions etc.}
 \value{A (fitted) object of class \code{SLFN} extending \code{LearningModel}}
 \references{
+Bishop, C.M. (1995). \emph{Neural Networks for Pattern Recognition}. Oxford, UK: Oxford University Press.
+
 Gluck, M. A., & Bower, G. H. (1988). From conditioning to category learning: 
 An adaptive network model. \emph{Journal of Experimental Psychology: General}, 
 \emph{117}, 227--247.
@@ -59,7 +61,7 @@ An adaptive network model. \emph{Journal of Experimental Psychology: General},
 ## open weather prediction data
 data(WPT)
 ## initialize model
-mod <- SLFN(y~x1+x2+x3+x4-1,type="logistic",data=WPT,ntimes=c(200,200))
+mod <- SLFN(y~x1+x2+x3+x4-1,type="logistic",data=WPT,ntimes=c(200,200),fix=list(beta=TRUE,ws=TRUE))
 ## estimate free parameters
 \dontrun{mod <- estimate(mod)}
 summary(mod)
