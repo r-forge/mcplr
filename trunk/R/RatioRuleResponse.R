@@ -8,11 +8,11 @@ setClass("RatioRuleResponse",
 setMethod("estimate",signature(object="RatioRuleResponse"),
   function(object,...) {
     optfun <- function(par,object,...) {
-      object@parameters <- setPars(object,par,rval="parameters",...)
+      object@parStruct@parameters <- setPars(object,par,rval="parameters",...)
       -sum(logLik(object,...))
     }
     mf <- match.call()
-    pstart <- unlist(object@parameters)
+    pstart <- unlist(object@parStruct@parameters)
     #if(length(pstart)!=1) stop("Ratio Rule response must have a single parameter")
     if(!is.null(mf$CML.method) || !is.null(mf$method)) {
       if(!is.null(mf$CML.method)) mf$method <- mf$CML.method
@@ -26,7 +26,7 @@ setMethod("estimate",signature(object="RatioRuleResponse"),
       opt <- optim(pstart,fn=optfun,object=object,...)
     }
     #object <- setPars(object,exp(opt$par))
-    object@parameters <- setPars(object,opt$par,rval="parameters",...)
+    object@parStruct@parameters <- setPars(object,opt$par,rval="parameters",...)
     object <- fit(object,...)
     object
   }
@@ -34,7 +34,7 @@ setMethod("estimate",signature(object="RatioRuleResponse"),
 
 setMethod("predict",signature(object="RatioRuleResponse"),
   function(object,...) {
-    #beta <- object@parameters$beta
+    #beta <- object@parStruct@parameters$beta
     out <- object@transformation(object,...)
     out <- out/rowSums(out)
     #out <- apply(object@x,1,function(x) exp(x)/sum(exp(x)))
@@ -69,7 +69,7 @@ setMethod("logLik",signature(object="RatioRuleResponse"),
 )
 
 RatioRuleResponse.trans.exp <- function(object,...) {
-  exp(object@parameters$beta*object@x)
+  exp(object@parStruct@parameters$beta*object@x)
 }
 
 RatioRuleResponse.trans.none <- function(object,...) {
@@ -131,7 +131,6 @@ RatioRuleResponse <- function(formula,parameters=list(beta=1),transformation=c("
   mod <- new("RatioRuleResponse",
     x = x,
     y = y,
-    parameters = parameters,
     parStruct=parStruct,
     nTimes=nTimes,
     transformation=trans)

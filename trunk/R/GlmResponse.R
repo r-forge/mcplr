@@ -52,7 +52,6 @@ GlmResponse <- function(formula,data,family=gaussian(),parameters=list(),ntimes=
   mod <- new("GlmResponse",
     x = x,
     y = y,
-    parameters = parameters,
     parStruct=parStruct,
     nTimes=nTimes,
     family=family)
@@ -72,15 +71,15 @@ setMethod("estimate",signature(object="GlmResponse"),
         fit <- glm.fit(x=x,y=y,family=object@family,start=pars$coefficients)
         pars$coefficients <- fit$coefficients
         if(object@family$family=="gaussian") pars$sd <- sqrt(sum((object@y - predict(object))^2)/(length(object@y)-1))
-        object@parameters[[case]] <- pars
+        object@parStruct@parameters[[case]] <- pars
       }
     } else {
       # y = response
-      pars <- object@parameters
+      pars <- object@parStruct@parameters
       fit <- glm.fit(x=object@x,y=object@y,family=object@family,start=pars$coefficients)
       pars$coefficients <- fit$coefficients
       if(object@family$family=="gaussian") pars$sd <- sqrt(sum((object@y - predict(object))^2)/(length(object@y)-1))
-      object@parameters <- setPars(object,unlist(pars),rval="parameters",...)
+      object@parStruct@parameters <- setPars(object,unlist(pars),rval="parameters",...)
     }
     #object <- setpars(object,unlist(pars))
     object <- fit(object,...)
@@ -92,11 +91,11 @@ setMethod("predict","GlmResponse",
     if(object@nTimes@cases > 1) {
       mu <- vector()
       for(case in 1:object@nTimes@cases) {
-        if(NCOL(object@x) > 1) mu <- rbind(mu,object@x[object@nTimes@bt[case]:object@nTimes@et[case],]%*%as.matrix(object@parameters[[case]]$coefficients)) else mu <- c(mu,object@parameters[[case]]$coefficients*object@x[object@nTimes@bt[case]:object@nTimes@et[case],])
+        if(NCOL(object@x) > 1) mu <- rbind(mu,object@x[object@nTimes@bt[case]:object@nTimes@et[case],]%*%as.matrix(object@parStruct@parameters[[case]]$coefficients)) else mu <- c(mu,object@parStruct@parameters[[case]]$coefficients*object@x[object@nTimes@bt[case]:object@nTimes@et[case],])
       }
     } else {
     # y = response
-      if(NCOL(object@x) > 1) mu <- object@x%*%as.matrix(object@parameters$coefficients) else mu <- object@parameters$coefficients*object@x
+      if(NCOL(object@x) > 1) mu <- object@x%*%as.matrix(object@parStruct@parameters$coefficients) else mu <- object@parStruct@parameters$coefficients*object@x
     }
     if(type=="link") return(mu) else {
       if(type=="response") {
@@ -111,7 +110,7 @@ setMethod("logLik","GlmResponse",
     LL <- switch(object@family$family,
       gaussian = {
         mu <- predict(object,type=response)
-        sum(dnorm(x=object@y,mean=mu,sd=object@parameters$sd,log=TRUE))
+        sum(dnorm(x=object@y,mean=mu,sd=object@parStruct@parameters$sd,log=TRUE))
       },
       binomial = {
         p <- predict(object,type="response")
@@ -132,4 +131,46 @@ setMethod("logLik","GlmResponse",
     class(LL) <- "logLik"
     LL
   }
+)
+
+setMethod("simulate",signature(object="GlmResponse"),
+	function(object,nsim=1,seed=NULL,times) {
+    if(!is.null(seed)) set.seed(seed)
+    if(missing(times)) {
+      pr <- predict(object,type=response)
+    } else {
+      pr <- predict(object,type=response)[times,]
+    }
+    nt <- nrow(pr)
+    response <- switch(object@family$family,
+      gaussian = {
+        rnorm(nt*nsim,mean=pr,sd=object@parStruct@parameters$sd)
+      },
+      binomial = {
+        if(NCOL(object@y) == 2) {
+    			rbinom(nt*nsim,size=object@y[,2],prob=pr)
+    		} else {
+    			rbinom(nt*nsim,size=1,prob=pr)
+    		}
+      },
+      poisson = {
+        rpois(nt*nsim,lambda=pr)
+      },
+      Gamma = {
+        rgamma(nt*nsim,shape=pr)
+      },
+      stop("family",object@family$family,"not implemented (yet)")
+    )
+		#if(nsim > 1) response <- matrix(response,ncol=nsim)
+		#response <- as.matrix(response)
+		
+		object@y <- as.matrix(response)
+		if(!missing(times)) object@x <- object@x[rep(times,nsim),] else object@x <- object@x[rep(1:nrow(object@x),nsim),]
+		ntim <- rep(0,length=object@nTimes@cases)
+		for(i in 1:length(ntim)) {
+		  ntim[i] <- sum(seq(object@nTimes@bt[i],object@nTimes@et[i]) %in% times)
+    }
+    object@nTimes <- nTimes(ntim)
+		return(object)
+	}
 )

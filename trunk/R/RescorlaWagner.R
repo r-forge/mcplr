@@ -20,7 +20,7 @@ setMethod("setPars",signature(object="RescorlaWagner"),
     }
     #object <- callNextMethod()
     parl <- callNextMethod(object=object,pars=pars,rval="parameters",unconstrained=unconstrained,...)
-    if(length(object@parStruct@fix)>0) fixl <- relist(object@parStruct@fix,skeleton=object@parameters) else fixl <- relist(rep(FALSE,length(unlist(object@parameters))),skeleton=object@parameters)
+    if(length(object@parStruct@fix)>0) fixl <- relist(object@parStruct@fix,skeleton=object@parStruct@parameters) else fixl <- relist(rep(FALSE,length(unlist(object@parStruct@parameters))),skeleton=object@parStruct@parameters)
     if(unconstrained) {
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases) parl[[case]] <- sP.u(parl[[case]],fixl[[case]])
@@ -30,7 +30,7 @@ setMethod("setPars",signature(object="RescorlaWagner"),
     }
     switch(rval,
       object = {
-        object@parameters <- parl
+        object@parStruct@parameters <- parl
         object
       },
       parameters = parl)
@@ -45,7 +45,7 @@ setMethod("getPars",signature(object="RescorlaWagner"),
       pars
     }
     if(unconstrained) {
-      pars <- object@parameters
+      pars <- object@parStruct@parameters
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases) pars[[case]] <- gP.u(pars[[case]])
       } else {
@@ -76,7 +76,7 @@ setMethod("fit",signature(object="RescorlaWagner"),
         object@weights[object@nTimes@bt[case]:object@nTimes@et[case],] <- fit$weights
       }
     } else {
-      pars <- object@parameters
+      pars <- object@parStruct@parameters
       fit <- R_W.fit(x=object@x,y=object@y,alpha=pars$alpha,beta=pars$beta,lambda=pars$lambda,ws=pars$ws)
       object@weights <- fit$weights
     }
@@ -201,7 +201,6 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c
     x = x,
     y = y,
     weights = matrix(nrow=nt,ncol=length(cid)),
-    parameters = parameters,
     parStruct=parStruct,
     nTimes=nTimes)
   mod <- fit(mod)

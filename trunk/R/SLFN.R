@@ -20,7 +20,7 @@ setMethod("setPars",signature(object="SLFN"),
     }
     #object <- callNextMethod()
     parl <- callNextMethod(object=object,pars=pars,internal=internal,...,rval="parameters")
-    if(length(object@parStruct@fix)>0) fixl <- relist(object@parStruct@fix,skeleton=object@parameters) else fixl <- relist(rep(FALSE,length(unlist(object@parameters))),skeleton=object@parameters)
+    if(length(object@parStruct@fix)>0) fixl <- relist(object@parStruct@fix,skeleton=object@parStruct@parameters) else fixl <- relist(rep(FALSE,length(unlist(object@parStruct@parameters))),skeleton=object@parStruct@parameters)
     if(internal && is.null(object@parStruct@constraints)) {
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases) parl[[case]] <- sP.u(parl[[case]],fixl[[case]])
@@ -30,11 +30,11 @@ setMethod("setPars",signature(object="SLFN"),
     }
     switch(rval,
       object = {
-        object@parameters <- parl
+        object@parStruct@parameters <- parl
         object
       },
       parameters = parl)
-    #object@parameters
+    #object@parStruct@parameters
     #return(object)
   }
 )
@@ -48,7 +48,7 @@ setMethod("getPars",signature(object="SLFN"),
       pars
     }
     if(internal && is.null(object@parStruct@constraints)) {
-      pars <- object@parameters
+      pars <- object@parStruct@parameters
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases) pars[[case]] <- gP.u(pars[[case]])
       } else {
@@ -77,15 +77,15 @@ setMethod("fit","SLFN",
         pars <- repl$parameters
         #x <- object@x[bt[case]:et[case],]
         #y <- object@y[bt[case]:et[case],]
-        #eta <- object@parameters$eta[case,]
-        #alpha <- object@parameters$alpha[case,]
-        #beta <- object@parameters$beta[case,]
-        #ws <- object@parameters$ws[case,]
+        #eta <- object@parStruct@parameters$eta[case,]
+        #alpha <- object@parStruct@parameters$alpha[case,]
+        #beta <- object@parStruct@parameters$beta[case,]
+        #ws <- object@parStruct@parameters$ws[case,]
         fit <- slfn.fit(x=x,y=y,eta=pars$eta,alpha=pars$alpha,beta=pars$beta,ws=pars$ws,grad=object@gradient,window.size=object@window.size)
         object@weight[object@nTimes@bt[case]:object@nTimes@et[case],,] <- fit$weight
       }
     } else {
-      fit <- slfn.fit(x=object@x,y=object@y,eta=object@parameters$eta,alpha=object@parameters$alpha,beta=object@parameters$beta,ws=object@parameters$ws,grad=object@gradient,window.size=object@window.size)
+      fit <- slfn.fit(x=object@x,y=object@y,eta=object@parStruct@parameters$eta,alpha=object@parStruct@parameters$alpha,beta=object@parStruct@parameters$beta,ws=object@parStruct@parameters$ws,grad=object@gradient,window.size=object@window.size)
       object@weight <- fit$weight
     }
     return(object)
@@ -181,7 +181,6 @@ SLFN <- function(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),type=c("li
     x=x,
     y=y,
     weight=array(dim=c(sum(nTimes@n),ncol(x),ncol(y))),
-    parameters=parameters,
     parStruct=parStruct,
     nTimes=nTimes,
     activation=type[1],

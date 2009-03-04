@@ -14,12 +14,12 @@ setClass("GaussianMixtureResponse",
 setMethod("getPars",signature(object="GaussianMixtureResponse"),
   function(object,which="all",unconstrained=FALSE,...) {
     if(unconstrained) {
-      pars <- object@parameters
+      pars <- object@parStruct@parameters
       if(!is.null(pars$sd)) pars$sd <- log(pars$sd)
       pars <- unlist(pars)
       if(which=="free") {
         if(length(object@parStruct@fix)>0) {
-          fixl <- relist(object@parStruct@fix,skeleton=object@parameters)
+          fixl <- relist(object@parStruct@fix,skeleton=object@parStruct@parameters)
           fixl$lambda <- NULL
           fix <- unlist(fixl)
           pars <- pars[!fix]
@@ -42,7 +42,7 @@ setMethod("setPars",signature(object="GaussianMixtureResponse"),
     }
     switch(rval,
       object = {
-        object@parameters <- parl
+        object@parStruct@parameters <- parl
         object
       },
       parameters = parl)
@@ -50,7 +50,7 @@ setMethod("setPars",signature(object="GaussianMixtureResponse"),
   }
 )
 # sd matrix is a regression matrix for sd.
-# If object@parameters$sd usually contains a single value sd
+# If object@parStruct@parameters$sd usually contains a single value sd
 
 setMethod("logLik",signature(object="GaussianMixtureResponse"),
   function(object,ntimes=NULL,discrete=FALSE,...) {
@@ -105,7 +105,7 @@ setMethod("predict",signature(object="GaussianMixtureResponse"),
 setMethod("fit",signature(object="GaussianMixtureResponse"),
   function(object,...) {
     for(case in 1:object@nTimes@cases) {
-      if(object@parStruct@replicate) pars <- object@parameters else pars <- object@parameters[[case]]
+      if(object@parStruct@replicate) pars <- object@parStruct@parameters else pars <- object@parStruct@parameters[[case]]
       m <- pars$mean
       sds <- pars$sd
       nx <- ncol(object@weights[[case]])
@@ -170,12 +170,12 @@ setMethod("fit",signature(object="GaussianMixtureResponse"),
 #      et <- cumsum(ntimes)
 #      bt <- c(1,et[-lt]+1)
 #      for(case in 1:lt) {
-#        tmp <- func(object@parameters[[case]],object@x[bt[case]:et[case],],object@sd[bt[case]:et[case],])
+#        tmp <- func(object@parStruct@parameters[[case]],object@x[bt[case]:et[case],],object@sd[bt[case]:et[case],])
 #        object@x[bt[case]:et[case],] <- tmp$x
 #        object@sd[bt[case]:et[case],] <- tmp$sd
 #      }
 #    } else {
-#        tmp <- func(object@parameters,object@x,object@sd)
+#        tmp <- func(object@parStruct@parameters,object@x,object@sd)
 #        object@x <- tmp$x
 #        object@sd <- tmp$sd
 #   }
@@ -184,11 +184,11 @@ setMethod("fit",signature(object="GaussianMixtureResponse"),
 )
 setMethod("estimate",signature(object="GaussianMixtureResponse"),
   function(object,method="Nelder-Mead",unconstrained=FALSE,...) {
-    #if(!is.null(object@parameters$sd)) object@parameters$sd <- log(object@parameters$sd)
+    #if(!is.null(object@parStruct@parameters$sd)) object@parStruct@parameters$sd <- log(object@parStruct@parameters$sd)
     pstart <- getPars(object,which="free",unconstrained=unconstrained,...)
     optfun <- function(par,object,unconstrained,...) {
       #object <- setPars(object,par,unconstrained=unconstrained,...)
-      object@parameters <- setPars(object,par,rval="parameters",unconstrained=unconstrained,...)
+      object@parStruct@parameters <- setPars(object,par,rval="parameters",unconstrained=unconstrained,...)
       object <- fit(object,...)
       -logLik(object)
     }
@@ -231,9 +231,9 @@ setMethod("estimate",signature(object="GaussianMixtureResponse"),
       warning("optimization failed")
     } else {
       #object <- setPars(object,opt$par,unconstrained=unconstrained,...)
-      object@parameters <- setPars(object,opt$par,rval="parameters",unconstrained=unconstrained,...)
+      object@parStruct@parameters <- setPars(object,opt$par,rval="parameters",unconstrained=unconstrained,...)
     }
-    #if(!is.null(object@parameters$sd)) object@parameters$sd <- exp(object@parameters$sd)
+    #if(!is.null(object@parStruct@parameters$sd)) object@parStruct@parameters$sd <- exp(object@parStruct@parameters$sd)
     object <- fit(object,...)
     return(object)
   }

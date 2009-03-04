@@ -21,7 +21,7 @@ setMethod("setPars",signature(object="ALCOVE"),
     }
     #object <- callNextMethod()
     parl <- callNextMethod(object=object,pars=pars,internal=internal,...,rval="parameters")
-    if(length(object@parStruct@fix)>0) fixl <- relist(object@parStruct@fix,skeleton=object@parameters) else fixl <- relist(rep(FALSE,length(unlist(object@parameters))),skeleton=object@parameters)
+    if(length(object@parStruct@fix)>0) fixl <- relist(object@parStruct@fix,skeleton=object@parStruct@parameters) else fixl <- relist(rep(FALSE,length(unlist(object@parStruct@parameters))),skeleton=object@parStruct@parameters)
     if(internal && is.null(object@parStruct@constraints)) {
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases) parl[[case]] <- sP.u(parl[[case]],fixl[[case]])
@@ -31,11 +31,11 @@ setMethod("setPars",signature(object="ALCOVE"),
     }
     switch(rval,
       object = {
-        object@parameters <- parl
+        object@parStruct@parameters <- parl
         object
       },
       parameters = parl)
-    #object@parameters
+    #object@parStruct@parameters
     #return(object)
   }
 )
@@ -51,7 +51,7 @@ setMethod("getPars",signature(object="ALCOVE"),
       pars
     }
     if(internal && is.null(object@parStruct@constraints)) {
-      pars <- object@parameters
+      pars <- object@parStruct@parameters
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases) pars[[case]] <- gP.u(pars[[case]])
       } else {
@@ -88,7 +88,7 @@ setMethod("fit",signature(object="ALCOVE"),
       object@output <- outp
     } else {
       fit <- ALCOVE.fit(x=object@x,y=object@y,e=object@exemplar.locations[[1]],
-        pars=object@parameters,humble=object@humble,...)
+        pars=object@parStruct@parameters,humble=object@humble,...)
       object@weights[[1]] <- fit$weights
       object@output <- fit$output
     }
@@ -239,7 +239,6 @@ ALCOVE <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),hu
     weights = list(length=nTimes@cases),
     humble = humble,
     exemplar.locations = exemplar.locations,
-    parameters = parameters,
     parStruct=parStruct,
     nTimes=nTimes)
   mod <- fit(mod)
