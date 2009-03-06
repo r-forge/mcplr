@@ -68,6 +68,43 @@ setMethod("logLik",signature(object="RatioRuleResponse"),
   }
 )
 
+setMethod("simulate",signature(object="RatioRuleResponse"),
+	function(object,nsim=1,seed=NULL,times) {
+    if(!is.null(seed)) set.seed(seed)
+    if(missing(times)) {
+      pr <- predict(object,type=response)
+    } else {
+      pr <- predict(object,type=response)[times,]
+    }
+    nt <- nrow(pr)
+    response <- t(apply(pr,1,rmultinom,n=1,size=1))
+    
+		#if(nsim > 1) response <- matrix(response,ncol=nsim)
+		#response <- as.matrix(response)
+		
+		object@y <- as.matrix(response)
+		if(!missing(times)) {
+      object@x <- object@x[rep(times,nsim),]
+      ntim <- rep(0,length=object@nTimes@cases)
+  		for(i in 1:length(ntim)) {
+  		  ntim[i] <- sum(seq(object@nTimes@bt[i],object@nTimes@et[i]) %in% times)
+      }
+      warning("simulation with a times argument may result in wrong parStruct argument; please check parameters.")
+      object@parStruct <- rep(object@parStruct,times=nsim)
+    } else {
+      object@x <- object@x[rep(1:nrow(object@x),nsim),]
+      ntim <- object@nTimes@n
+      object@parStruct <- rep(object@parStruct,times=nsim)
+    }
+    ntim <- rep(ntim,nsim)
+    object@nTimes <- nTimes(ntim)
+    if(!is.null(seed)) {
+      set.seed(old.seed)
+    }
+		return(object)
+	}
+)
+
 RatioRuleResponse.trans.exp <- function(object,...) {
   exp(object@parStruct@parameters$beta*object@x)
 }

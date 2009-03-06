@@ -3,6 +3,7 @@
 \alias{GlmResponse-class}
 \alias{estimate,GlmResponse-method}
 \alias{predict,GlmResponse-method}
+\alias{logLik,GlmResponse-method}
 
 \title{Class "GlmResponse"}
 \description{Use a Generalized Linear Model to model responses.}

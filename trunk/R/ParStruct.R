@@ -116,3 +116,14 @@ setMethod("setPars",signature(object="ParStruct"),
     #newpars
   }
 )
+
+setMethod("rep",signature(x="ParStruct"),
+  function(x,times=1) {
+    if(x@replicate) return(x)
+    x@parameters <- rep(x@parameters,times)
+    x@id <- rep(x@id,times)
+    x@fix <- rep(x@fix,times)
+    x@constraintsList <- rep(x@constraintsList,times=times)
+    return(x)
+  }
+)

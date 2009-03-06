@@ -11,12 +11,12 @@ setMethod("getPars",signature(object="McplBaseModel"),
   # if one element in parameters corresponding to id[i] is free, so
   #   is this parameter!
   function(object,...) {
-    callNextMethod(object=object@parStruct,...)
+    getPars(object=object@parStruct,...)
   }
 )
 setMethod("setPars",signature(object="McplBaseModel"),
   function(object,pars,...,rval=c("object","parameters")) {
-    callNextMethod(object=object@parStruct,pars=pars,...,rval=rval)
+    setPars(object=object@parStruct,pars=pars,...,rval=rval)
   }
 )
 setMethod("AIC",signature(object="McplBaseModel"),

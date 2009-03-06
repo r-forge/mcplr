@@ -10,12 +10,17 @@ mcpl.prepare <- function(formula,data,subset,base=NULL,remove.intercept=FALSE) {
   mf[[1]] <- as.name("model.frame")
   mf <- eval(mf, parent.frame())
   mt <- attr(mf, "terms")
-  if(is.factor(eval(attr(mt,"variables"),envir=mf)[[1]])) {
-    Y <- model.response(mf)
+  Y <- model.response(mf,"any")
+#  if(is.factor(eval(attr(mt,"variables"),envir=mf)[[1]])) {
+#    Y <- model.response(mf)
+#    Y <- model.matrix(~Y-1)
+#    if(!is.null(base)) Y <- Y[,-base]
+#  } else {
+#    Y <- model.response(mf)
+#  }
+  if(is.factor(Y)) {
     Y <- model.matrix(~Y-1)
     if(!is.null(base)) Y <- Y[,-base]
-  } else {
-    Y <- model.response(mf)
   }
   if(is.vector(Y)) Y <- matrix(Y,ncol=1)
   X <- if(!is.empty.model(mt)) {

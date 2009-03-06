@@ -8,6 +8,9 @@
 \alias{getPars,GCM-method}
 \alias{predict,GCM-method}
 \alias{setPars,GCM-method}
+\alias{logLik,GCM-method}
+\alias{logLik,GCMnominal-method}
+\alias{logLik,GCMinterval-method}
 
 \title{Generalized Context Model}
 \description{
@@ -82,9 +85,11 @@ mod <- GCM(y~x1+x2+x3+x4,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)
 summary(mod)
 
 # now a model with a general minkowski distance function, and an exponential
-#    memory decay
-mod <- GCM(y~x1+x2+x3+x4-1,distance="minkowski",
-sampling="uniform",data=WPT,ntimes=c(200,200))
+#    memory decay. Using numerical predictors and removing the intercept (-1) in
+#    the model formula removes the need for the remove.intercept argument.
+mod <- GCM(y~as.numeric(x1==1)+as.numeric(x2==1)+as.numeric(x3==1)+
+as.numeric(x4==1)-1,distance="minkowski",sampling="uniform",data=WPT,
+ntimes=c(200,200))
 
 }
 \keyword{models}
