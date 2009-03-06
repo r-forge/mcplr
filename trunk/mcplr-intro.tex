@@ -229,7 +229,7 @@ A Rescorla-Wagner model can be created by calling \code{RescorlaWagner(formula,d
 
 \code{lMod <- RescorlaWagner(y \textasciitilde x1+x2+x3+x4,data=WPT)}
 
-which will create a Rescorla-Wagner model with default parameters. We can view the default parameter values by calling \code{getPars(lMod)}, which shows the contents of the model's parameter list. By default, the model has a single $\alpha$ parameter, identical for each cue. All $\beta$ parameters are initialized to 1, while 
+which will create a Rescorla-Wagner model with default parameters. We can view the default parameter values by calling \code{getPars(lMod)}, which shows the contents of the model's parameter list. By default, the model has a single $\alpha$ parameter, identical for each cue, initialized at $\alpha = 0.1$ All $\beta$ parameters are initialized to 1, while 
 
 \subsection{Creating a response model}
 

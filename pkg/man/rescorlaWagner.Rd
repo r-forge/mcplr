@@ -55,7 +55,7 @@ Appleton-Century-Crofts. pp. 64-99.
 ## open weather prediction data
 data(WPT)
 ## initialize model
-mod <- RescorlaWagner(y~x1+x2+x3+x4-1,data=WPT,ntimes=c(200,200),
+mod <- RescorlaWagner(y~x1+x2+x3+x4,data=WPT,ntimes=c(200,200),
 remove.intercept=TRUE)
 ## estimate free parameters
 \dontrun{mod <- estimate(mod)}
