@@ -72,30 +72,32 @@ setMethod("fit",signature(object="RescorlaWagner"),
         x <- repl$x
         y <- repl$y
         pars <- repl$parameters
-        fit <- R_W.fit(x=x,y=y,alpha=pars$alpha,beta=pars$beta,lambda=pars$lambda,ws=pars$ws)
+        fit <- R_W.fit(x=x,y=y,alpha=pars$alpha,beta=pars$beta,ws=pars$ws)
         object@weights[object@nTimes@bt[case]:object@nTimes@et[case],] <- fit$weights
       }
     } else {
       pars <- object@parStruct@parameters
-      fit <- R_W.fit(x=object@x,y=object@y,alpha=pars$alpha,beta=pars$beta,lambda=pars$lambda,ws=pars$ws)
+      fit <- R_W.fit(x=object@x,y=object@y,alpha=pars$alpha,beta=pars$beta,lws=pars$ws)
       object@weights <- fit$weights
     }
     return(object)
   }
 )
 
-R_W.fit <- function(y,x,alpha,beta,lambda,ws) {
+R_W.fit <- function(y,x,alpha,beta,ws) {
   nx <- ncol(x)
   nt <- nrow(x)
   ny <- ncol(y)
   #if(length(alpha)==1) alpha <- rep(alpha,nx)
-  if(length(beta)==1) beta <- rep(beta,ny)
+  if(length(beta)==1) beta <- matrix(beta,nrow=ny,ncol=2)
+  if(is.vector(beta)) beta <- matrix(beta,nrow=ny,ncol=2)
   cid <- matrix(1:(nx*ny),nrow=nx)
   weight <- matrix(,nrow=nt,ncol=length(cid))
   weight[1,] <- w <- ws
   for(i in 1:(nt-1)) {
     for(k in 1:ny) {
-      weight[i+1,cid[,k]] <- weight[i,cid[,k]] + alpha*sum(c(y[i,k],1-y[i,k])*beta[k,])*(sum(c(y[i,k],1-y[i,k])*lambda[k,])-t(weight[i,cid[,k]])%*%x[i,])*x[i,]
+      if(y[i,k] == 0) bet <- beta[k,1] else bet <- beta[k,2]
+      weight[i+1,cid[,k]] <- weight[i,cid[,k]] + alpha*bet*(y[i,k]-t(weight[i,cid[,k]])%*%x[i,])*x[i,]
     }
   }
   return(list(weights=weight))
@@ -134,7 +136,7 @@ setMethod("plot",signature(x="RescorlaWagner",y="missing"),
   }
 )
 
-RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,0),ws=0),data,subset,fixed=list(alpha=FALSE,beta=TRUE,lambda=TRUE,ws=TRUE),parStruct,remove.intercept=FALSE,base=NULL,ntimes=NULL,replicate=TRUE) {
+RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),ws=0),data,subset,fixed=list(alpha=FALSE,beta=TRUE,ws=TRUE),parStruct,remove.intercept=FALSE,base=NULL,ntimes=NULL,replicate=TRUE) {
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remove.intercept) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remove.intercept)
   x <- dat$x
   y <- dat$y
@@ -144,16 +146,7 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c
   parfill <- function(parameters) {
     if(is.null(parameters$alpha)) parameters$alpha <- .1
     if(is.null(parameters$beta)) parameters$beta <- c(1,1)
-    if(is.null(parameters$lambda)) parameters$lambda <- c(1,0)
     if(is.null(parameters$ws)) parameters$ws <- 0
-    if(!is.matrix(parameters$lambda)) {
-      if(length(parameters$lambda)!=2 && length(parameters$lambda)!=2*ny) stop("lambda should have length 2 or 2*ny")
-      parameters$lambda <- matrix(parameters$lambda,ncol=2,nrow=ny,byrow=T)
-    } else {
-      if(ncol(parameters$lambda)!=2) stop("lambda should be an ny*2 matrix")
-      if(nrow(parameters$lambda)==1) parameters$lambda <- matrix(parameters$lambda,ncol=2,nrow=ny,byrow=T)
-      if(nrow(parameters$lamda)!=ny) stop("lambda should be an ny*2 matrix")
-    }
     # initialize alpha
     if(length(parameters$alpha)!=1 && length(parameters$alpha)!=nx) stop("alpha must have length 1 or nx")
     # initialize beta

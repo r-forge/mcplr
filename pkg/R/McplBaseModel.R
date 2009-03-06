@@ -126,12 +126,12 @@ setMethod("summary",signature(object="McplBaseModel"),
 setMethod("estimate",signature(object="McplBaseModel"),
   function(object,method="Nelder-Mead",...) {
     MLoptfun <- function(pars,object,...) {
-      object@parameters <- setPars(object,pars,...,rval="parameters",internal=TRUE)
+      object@parStruct@parameters <- setPars(object,pars,...,rval="parameters",internal=TRUE)
       object <- fit(object,...)
       -logLik(object)
     }
     LSoptfun <- function(pars,object,...) {
-      object@parameters <- setPars(object,pars,...,rval="parameters",internal=TRUE)
+      object@parStruct@parameters <- setPars(object,pars,...,rval="parameters",internal=TRUE)
       object <- fit(object,...)
       sum((predict(object,type="response")-object@y)^2)
     }
@@ -157,7 +157,7 @@ setMethod("estimate",signature(object="McplBaseModel"),
        )
     } else {
       opt <- optim(pars,fn=optfun,method=method,object=object,...)
-      object@parameters <- setPars(object,opt$par,...,rval="parameters",internal=TRUE)
+      object@parStruct@parameters <- setPars(object,opt$par,...,rval="parameters",internal=TRUE)
     }
     object <- fit(object,...)
     object

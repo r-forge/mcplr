@@ -12,9 +12,9 @@
 Constructs a Rescorla-Wagner learning model.
 }
 \usage{
-RescorlaWagner(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=c(1,0),ws=0),
-data,subset,fixed=list(alpha=FALSE,beta=TRUE,lambda=TRUE,ws=TRUE),parStruct,
-remove.intercept=FALSE,base=NULL,ntimes=NULL,replicate=TRUE)
+RescorlaWagner(formula,parameters=list(alpha=.1,beta=c(1,1),ws=0),data,subset,
+fixed=list(alpha=FALSE,beta=TRUE,ws=TRUE),parStruct,remove.intercept=FALSE,
+base=NULL,ntimes=NULL,replicate=TRUE)
 }
 \arguments{
 \item{formula}{an object of class \code{formula} (or one that can be coerced to 

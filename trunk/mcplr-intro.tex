@@ -214,9 +214,14 @@ The Rescorla-Wagner model \cite{Rescorla72} is a well-known associative learning
 
 From trial $t$ to $t+1$, the associative strength between a CS (cue) $j$ and US (criterion) $k$ is updated as
 \begin{equation}
-\psi_{j,k}(t+1) = \psi_{j,k}(t) + y_k(t) \alpha_j \beta_k [\lambda_k - \sum_i x_i(t) \psi_{i,k}(t)] .
+V_{j,k}(t+1) = \begin{cases} \psi_{j,k}(t) + \alpha_j \beta_{k,2} [\lambda_k - \sum_j x_j(t) V_{i,k}(t)] \quad \text{when US $k$ is present at trial $t$} \\
+V_{j,k}(t) + \alpha_j \beta_{k,2} [0 - \sum_j x_j(t) V_{i,k}(t)] \quad \text{when US $k$ is absent on trial $t$} \\
+\end{cases}
 \end{equation}
-where $y_k(t)$ is the value of US $k$ at trial $t$ (this should be 0 when US $k$ is not present at $t$), $x_j(t)$ the value of the CS $j$ ate trial $t$ (again, this should be 0 when $j$ is not present at $t$), $\alpha_j$ the salience of CS $j$, and $\beta_k$ the rate parameter for US $k$, which can be dependent on the presence or absence of $y_k(t)$. 
+where $\lambda_k$ is the maximum level of associative strength of US $k$ at trial $t$ (this should be 0 when US $k$ is absent on trial $t$), $x_j(t)$ the value of the CS $j$ at trial $t$ (0 when CS $j$ is not present at $t$), $\alpha_j$ the salience of CS $j$, and $\beta_k$ the salience of the US $k$, which can be dependent on the presence or absence of $y_k(t)$.
+
+Let $\vec{y}_t = (y_ty_k(t)$ be a variable with value 0 when US $k$ is absent on trial $t$, and $\lambda$ when US $k$ is present (note that this does not have to be a single value, e.g., US $k$ can be present in different magnitudes). Similarly, let  
+As responses will normally depend on the expectancy, we let $\eta_k(t) = \sum_j V_{j,k} x_j$
 
 \subsection{Creating a Rescorla-Wagner learning model}
 
@@ -224,7 +229,7 @@ A Rescorla-Wagner model can be created by calling \code{RescorlaWagner(formula,d
 
 \code{lMod <- RescorlaWagner(y \textasciitilde x1+x2+x3+x4,data=WPT)}
 
-which will create a Rescorla-Wagner model with default parameters. We can view the default parameter values by calling \code{getPars(lMod)}.
+which will create a Rescorla-Wagner model with default parameters. We can view the default parameter values by calling \code{getPars(lMod)}, which shows the contents of the model's parameter list. By default, the model has a single $\alpha$ parameter, identical for each cue. All $\beta$ parameters are initialized to 1, while 
 
 \subsection{Creating a response model}
 
