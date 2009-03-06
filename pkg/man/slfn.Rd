@@ -53,7 +53,7 @@ online model predictions etc.}
 \references{
 Bishop, C.M. (1995). \emph{Neural Networks for Pattern Recognition}. Oxford, UK: Oxford University Press.
 
-Gluck, M.A., & Bower, G.H. (1988). From conditioning to category learning: 
+Gluck, M. A., & Bower, G. H. (1988). From conditioning to category learning: 
 An adaptive network model. \emph{Journal of Experimental Psychology: General}, 
 \emph{117}, 227--247.
 }

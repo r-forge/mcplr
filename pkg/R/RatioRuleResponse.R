@@ -1,53 +1,42 @@
 setClass("RatioRuleResponse",
   contains="ResponseModel",
   representation(
-    family="ANY"
+    transformation = "function"
   )
 )
+
 setMethod("estimate",signature(object="RatioRuleResponse"),
   function(object,...) {
-    mf <- match.call()
-    pstart <- unlist(object@parameters)
-    if(length(pstart)!=1) stop("Ratio Rule response must have a single parameter")
-    if(ncol(object@y) == 1) {
-      # use glm.fit
-      fit <- glm.fit(x=object@x,y=object@y,family=object@family,...)
-      pars <- as.relistable(object@parameters)
-      pars$beta <- fit$coefficients
-      #object <- setPars(object,unlist(pars))
-      object@parameters <- setPars(object,unlist(pars),rval="parameters",...)
-      object <- fit(object,...)
-    } else {
-      optfun <- function(par,object,...) {
-        beta <- exp(par[1])
-        p <- predict(object,type="response")
-        p <- p^beta
-        p <- p/rowSums(p)
-        -sum(log(rowSums(p*object@y)))
-      }
-      if(!is.null(mf$CML.method) || !is.null(mf$method)) {
-        if(!is.null(mf$CML.method)) mf$method <- mf$CML.method
-        mf$par <- log(pstart)
-        mf$fn <- optfun
-        mf$object <- object
-        mf[[1]] <- as.name("optim")
-        opt <- eval(mf,parent.frame())
-        #opt <- optim(log(pstart),fn=optfun,object=object,...) else
-      } else {
-        opt <- optim(log(pstart),fn=optfun,method="BFGS",object=object,...)
-      }
-      #object <- setPars(object,exp(opt$par))
-      object@parameters <- setPars(object,exp(opt$par),rval="parameters",...)
-      object <- fit(object,...)
+    optfun <- function(par,object,...) {
+      object@parStruct@parameters <- setPars(object,par,rval="parameters",...)
+      -sum(logLik(object,...))
     }
+    mf <- match.call()
+    pstart <- unlist(object@parStruct@parameters)
+    #if(length(pstart)!=1) stop("Ratio Rule response must have a single parameter")
+    if(!is.null(mf$CML.method) || !is.null(mf$method)) {
+      if(!is.null(mf$CML.method)) mf$method <- mf$CML.method
+      mf$par <- pstart
+      mf$fn <- optfun
+      mf$object <- object
+      mf[[1]] <- as.name("optim")
+      opt <- eval(mf,parent.frame())
+      #opt <- optim(log(pstart),fn=optfun,object=object,...) else
+    } else {
+      opt <- optim(pstart,fn=optfun,object=object,...)
+    }
+    #object <- setPars(object,exp(opt$par))
+    object@parStruct@parameters <- setPars(object,opt$par,rval="parameters",...)
+    object <- fit(object,...)
     object
   }
 )
 
 setMethod("predict",signature(object="RatioRuleResponse"),
   function(object,...) {
-    beta <- object@parameters$beta
-    out <- object@family$linkinv(beta*object@x)
+    #beta <- object@parStruct@parameters$beta
+    out <- object@transformation(object,...)
+    out <- out/rowSums(out)
     #out <- apply(object@x,1,function(x) exp(x)/sum(exp(x)))
     if(!is.matrix(out)) out <- matrix(out,ncol=1)
     out
@@ -79,26 +68,74 @@ setMethod("logLik",signature(object="RatioRuleResponse"),
   }
 )
 
-RatioRuleResponse <- function(formula,parameters=list(beta=1),
-                        data,base=NULL,ntimes=NULL,replicate=TRUE,fixed,
-                        parStruct,family,subset) {
-  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base) else 
-    dat <- mcpl.prepare(formula,data,base=base)
+setMethod("simulate",signature(object="RatioRuleResponse"),
+	function(object,nsim=1,seed=NULL,times) {
+    if(!is.null(seed)) set.seed(seed)
+    if(missing(times)) {
+      pr <- predict(object,type=response)
+    } else {
+      pr <- predict(object,type=response)[times,]
+    }
+    nt <- nrow(pr)
+    response <- t(apply(pr,1,rmultinom,n=1,size=1))
+    
+		#if(nsim > 1) response <- matrix(response,ncol=nsim)
+		#response <- as.matrix(response)
+		
+		object@y <- as.matrix(response)
+		if(!missing(times)) {
+      object@x <- object@x[rep(times,nsim),]
+      ntim <- rep(0,length=object@nTimes@cases)
+  		for(i in 1:length(ntim)) {
+  		  ntim[i] <- sum(seq(object@nTimes@bt[i],object@nTimes@et[i]) %in% times)
+      }
+      warning("simulation with a times argument may result in wrong parStruct argument; please check parameters.")
+      object@parStruct <- rep(object@parStruct,times=nsim)
+    } else {
+      object@x <- object@x[rep(1:nrow(object@x),nsim),]
+      ntim <- object@nTimes@n
+      object@parStruct <- rep(object@parStruct,times=nsim)
+    }
+    ntim <- rep(ntim,nsim)
+    object@nTimes <- nTimes(ntim)
+    if(!is.null(seed)) {
+      set.seed(old.seed)
+    }
+		return(object)
+	}
+)
+
+RatioRuleResponse.trans.exp <- function(object,...) {
+  exp(object@parStruct@parameters$beta*object@x)
+}
+
+RatioRuleResponse.trans.none <- function(object,...) {
+  object@x
+}
+
+RatioRuleResponse <- function(formula,parameters=list(beta=1),transformation=c("exponential","none"),
+                        data,ntimes=NULL,replicate=TRUE,fixed,
+                        parStruct,subset) {
+  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset) else 
+    dat <- mcpl.prepare(formula,data)
 
   y <- dat$y
-  
-  if(!is.null(base)) {
-    #y <- y[,base]
-    if(missing(family)) if(ncol(y)==1) family <- binomial() else family <- multinomial()
-  } else {
-    if(missing(family)) if(ncol(y)==2) family <- binomial() else family <- multinomial()
-  }
   x <- dat$x
   
+  if(!is.function(transformation)) {
+    transformation <- match.arg(transformation)
+    trans <- switch(transformation,
+      exponential = RatioRuleResponse.trans.exp,
+      none = RatioRuleResponse.trans.none)
+  } else {
+    trans <- transformation
+  }
+  
   parfill <- function(parameters) {
-    pars <- list()
-    if(is.null(parameters$beta)) pars$beta <- 1 else pars$beta <- parameters$beta
-    pars
+    #pars <- list()
+    if(!is.list(parameters)) parameters <- as.list(parameters)
+    if(is.null(parameters$beta)) parameters$beta <- 1
+    parameters
   }
 
   if(is.null(ntimes) | replicate) {
@@ -127,14 +164,15 @@ RatioRuleResponse <- function(formula,parameters=list(beta=1),
 
   if(is.null(ntimes)) ntimes <- nrow(y)
   nTimes <- nTimes(ntimes)
+    
   mod <- new("RatioRuleResponse",
     x = x,
     y = y,
-    parameters = parameters,
     parStruct=parStruct,
     nTimes=nTimes,
-    family=family)
+    transformation=trans)
   mod <- fit(mod)
-  mod
+  mod                     
+                        
 }
 

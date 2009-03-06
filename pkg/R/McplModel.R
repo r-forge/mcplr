@@ -25,13 +25,13 @@ setMethod("setPars",signature(object="McplModel"),
   function(object,pars,parid=NULL,internal=FALSE,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
     if(is.null(attr(pars,"skeleton"))) {
-      parv <- getPars(object,which="free",...)
+      parv <- getPars(object,which="free",internal=internal,...)
       if(length(pars)==length(parv)) {
-        parl <- relist(pars,skeleton=relist(getPars(object,which="free",...))) #FIX ME!!
+        parl <- relist(pars,skeleton=relist(getPars(object,which="free",internal=internal,...))) #FIX ME!!
       } else {
         parv <- getPars(object,which="all",...)
         if(length(pars)==length(parv)) {
-          parl <- relist(pars,skeleton=relist(getPars(object,which="all",...))) #FIX ME!!
+          parl <- relist(pars,skeleton=relist(getPars(object,which="all",internal=internal,...))) #FIX ME!!
         } else {
           stop("cannot relist this parameter vector; please use relistable parameter vectors.")
         }
@@ -142,12 +142,12 @@ setMethod("estimate",signature(object="McplModel"),
     optfun <- function(pars,object,CML,CML.method,...) {
       if(CML) {
         #object@learningModel <- setPars(object@learningModel,pars,...)
-        object@learningModel@parameters <- setPars(object@learningModel,pars,internal=TRUE,...,rval="parameters")
+        object@learningModel@parStruct@parameters <- setPars(object@learningModel,pars,internal=TRUE,...,rval="parameters")
       #} else object <- setPars(object,pars,...)
       } else {
-        parl <- setPars(object,pars,internal=TRUE,rval="parameters",...)
-        if(!is.null(parl[[1]])) object@learningModel@parameters <- parl[[1]]
-        if(!is.null(parl[[2]])) object@responseModel@parameters <- parl[[2]]
+        parl <- setPars(object,pars,internal=TRUE,...,rval="parameters")
+        if(!is.null(parl[[1]])) object@learningModel@parStruct@parameters <- parl[[1]]
+        if(!is.null(parl[[2]])) object@responseModel@parStruct@parameters <- parl[[2]]
       }
       object@learningModel <- fit(object@learningModel,...)
       object@responseModel <- lFr(object,...)
@@ -164,15 +164,15 @@ setMethod("estimate",signature(object="McplModel"),
     opt <- optim(par=pars,fn=optfun,object=object,CML=CML,CML.method=CML.method,...)
     if(CML) {
       #object@learningModel <- setPars(object@learningModel,opt$par,...)
-      object@learningModel@parameters <- setPars(object@learningModel,opt$par,internal=TRUE,...,rval="parameters")
+      object@learningModel@parStruct@parameters <- setPars(object@learningModel,opt$par,internal=TRUE,...,rval="parameters")
       tmp <- optfun(pars=opt$par,object=object,CML=CML,CML.method=CML.method,...)
       #object@responseModel <- setPars(object@responseModel,attr(tmp,"rPars"),...)
-      object@responseModel@parameters <- setPars(object@responseModel,attr(tmp,"rPars"),internal=TRUE,...,rval="parameters")
+      object@responseModel@parStruct@parameters <- setPars(object@responseModel,attr(tmp,"rPars"),internal=TRUE,...,rval="parameters")
     #} else object <- setPars(object,opt$par,...)
     } else {
       parl <- setPars(object,opt$par,internal=TRUE,rval="parameters",...)
-      if(!is.null(parl[[1]])) object@learningModel@parameters <- parl[[1]]
-      if(!is.null(parl[[2]])) object@responseModel@parameters <- parl[[2]]
+      if(!is.null(parl[[1]])) object@learningModel@parStruct@parameters <- parl[[1]]
+      if(!is.null(parl[[2]])) object@responseModel@parStruct@parameters <- parl[[2]]
     }
     object <- fit(object,...)
     object
@@ -238,3 +238,22 @@ setMethod("rFl",signature(x="ResponseModel",y="LearningModel"),
   }
 )
 
+setMethod("simulate",signature(object="McplModel"),
+  function(object,nsim=1,seed=NULL,times,...) {
+    if(!missing(times)) {
+      object@responseModel <- simulate(object@responseModel,nsim=nsim,seed=NULL,times,...)
+      warning("simulation with a ``times'' argument may result in wrong parStructs!")
+      object@learningModel@x <- object@learningModel@x[rep(times,nsim),]
+      object@learningModel@y <- object@learningModel@y[rep(times,nsim),]
+      object@learningModel@parStruct <- rep(object@learningModel@parStruct,times=nsim,...)
+    } else {
+      object@responseModel <- simulate(object@responseModel,nsim=nsim,seed=NULL,...)
+      object@learningModel@x <- object@learningModel@x[rep(1:nrow(object@learningModel@x),nsim),]
+      object@learningModel@y <- object@learningModel@y[rep(1:nrow(object@learningModel@y),nsim),]
+      object@learningModel@parStruct <- rep(object@learningModel@parStruct,times=nsim,...)
+    }
+    object@learningModel@nTimes <- object@responseModel@nTimes
+    object <- fit(object,...)
+    object
+  }
+)
