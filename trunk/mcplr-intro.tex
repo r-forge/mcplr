@@ -200,29 +200,23 @@ where $g$ is some (non-linear) function. For instance, the Rescorla-Wagner model
  
 \section{Implementation in \code{mcplR}}
 
-MCPL models are implemented in \code{mcplR} through the \code{McplModel} class. The class has two slots: one for a \code{LearningModel} and one for a \code{ResponseModel}. Both these have a similar structure, and consist minimally of a (predictor) matrix $x$, a (criterion) matrix $y$, and a parameter list. For the learning model, the predictor matrix will usually contain the cues, and the criterion matrix the criterion. For the response model, the predictor matrix will usually contain $\greekv{\eta}$, and the response matrix the responses $R$. 
+MCPL models are implemented in \code{mcplR} through the \code{McplModel} class. The class has two slots: one for a \code{LearningModel} and one for a \code{ResponseModel}. Both these derive from the same basic class and consist minimally of a (predictor) matrix $x$, a (criterion) matrix $y$, and a parameter list. For the learning model, the predictor matrix will usually contain the cues \vec{x}, and the criterion matrix the criterion $Y$. For the response model, the predictor matrix will usually contain $\greekv{\eta}$, and the response matrix the responses $R$. 
 
-In the implementation of MCPL models, we distinguish between learning and response models. A learning model
+%At the heart of the \coded{mcplR} package is the class \code{McplModel}. An \code{McplModel} contains of two submodels, namely a \code{LearningModel} and a \code{ResponseModel}. Both these are derived from a general \code{McplBaseModel}, which contains a slot for a dependent variable ($y$), a slot for predictor variables ($x$), and a slot for a list with parameters. For a \code{LearningModel}, the criterion will usually be the dependent variable, and the cues the predictor variables. For a \code{ResponseModel}, the dependent variable will usually be the response variable, and the predictor variables (some function of) the predictions of the learning model. Both learning and response model can contain free variables.
 
-At the heart of the mcplR package is the class \code{McplModel}. An \code{McplModel} contains of two submodels, namely a \code{LearningModel} and a \code{ResponseModel}. Both these are derived from a general \code{McplBaseModel}, which contains a slot for a dependent variable ($y$), a slot for predictor variables ($x$), and a slot for a list with parameters. For a \code{LearningModel}, the criterion will usually be the dependent variable, and the cues the predictor variables. For a \code{ResponseModel}, the dependent variable will usually be the response variable, and the predictor variables (some function of) the predictions of the learning model. Both learning and response model can contain free variables.
+In addition to class definitions, the \code{mcplR} package defines a number of methods which operate on these classes. The most important from the users viewpoint is no doubt the \code{estimate} method, by which to obtain (ML) estimates of model parameters. By default, estimate uses the \code{optim} function of R to numerically minimize the negative log-likelihood of the model. If the \code{logLik} method is unavailable, the least squares estimation will be attempted.
 
-In addition to class definitions, the mcplR package defines a number of methods which operate on these classes. The most important from the users viewpoint is no doubt the \code{estimate} method, by which to obtain (ML) estimates of model parameters.  
-
-Estimate:
-\begin{enumerate}
-\item Compute $\greekv{\psi}$ from $\vec{y}$ and $\vec{x}$. \code{fit(learningModel)}.
-\item Compute $\greekv{\eta}$ from $\greekv{\psi}$ and $\vec{x}$. \code{responseModel@x <- predict(learningModel)} 
-\end{enumerate}
+In the following section, we will illustrate the various options with an example 
 
 \section{Example: the Rescorla-Wagner model}
 
-The Rescorla-Wagner model of associative learning \cite{Rescorla72}.
+The Rescorla-Wagner model \cite{Rescorla72} is a well-known associative learning model. It describes the strengthening of associative links between unconditioned stimuli $Y$ and conditioned stimuli $X$. On a given trial, a number of conditioned stimuli are presented and associated with an unconditioned stimulus. From these paired presentations, a (human) animal learns to expect the unconditioned stimulus when encountering the conditioned stimulus, and as a result shows a conditioned response. The expectation is due to the formation of associative links between conditioned and unconditioned stimulus, resulting in a link between the conditioned stimulus and the conditioned response. 
 
 From trial $t$ to $t+1$, the associative strength between a CS (cue) $j$ and US (criterion) $k$ is updated as
 \begin{equation}
-\psi_{j,k}(t+1) = \psi_{j,k}(t) + \alpha_j \beta_k(y_k(t)) (\lambda_k y_k(t) - \sum_i x_i(t) \psi_{i,k}(t)) .
+\psi_{j,k}(t+1) = \psi_{j,k}(t) + y_k(t) \alpha_j \beta_k [\lambda_k - \sum_i x_i(t) \psi_{i,k}(t)] .
 \end{equation}
-where $y_k(t)$ is the value of US $K$ at trial $t$ (this should be 0 when US $k$ is not present at $t$), $x_j(t)$ the value of the CS $j$ ate trial $t$ (again, this should be 0 when $j$ is not present at $t$), $\alpha_j$ the salience of CS $j$, and $\beta_k$ the rate parameter for US $k$, which can be dependent on the presence or absence of $y_k(t)$. 
+where $y_k(t)$ is the value of US $k$ at trial $t$ (this should be 0 when US $k$ is not present at $t$), $x_j(t)$ the value of the CS $j$ ate trial $t$ (again, this should be 0 when $j$ is not present at $t$), $\alpha_j$ the salience of CS $j$, and $\beta_k$ the rate parameter for US $k$, which can be dependent on the presence or absence of $y_k(t)$. 
 
 \subsection{Creating a Rescorla-Wagner learning model}
 
@@ -258,7 +252,7 @@ mMod <- estimate(mMod)
 # summary
 summary(mMod)
 \end{verbatim}
-\caption{Example code to create and estimate a Rescorla Wagner model} 
+\caption{Example code to create and estimate a Rescorla Wagner model with a ratio response rule.} 
 \end{figure}
 
 \section{Other learning models currently implemented in \code{mcplR}}

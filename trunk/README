@@ -1,5 +1,0 @@
-mcplR provides a general framework to estimate Multiple Cue Probability Learning models in R.
-
-mcplR should be considered in a beta stage. While I tried to check all model implementations for bugs, some may remain. 
-Please use mcplR, but at your own risk! Report bugs on the project website: http://r-forge.r-project.org/mcplr 
-
