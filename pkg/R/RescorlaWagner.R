@@ -77,7 +77,7 @@ setMethod("fit",signature(object="RescorlaWagner"),
       }
     } else {
       pars <- object@parStruct@parameters
-      fit <- R_W.fit(x=object@x,y=object@y,alpha=pars$alpha,beta=pars$beta,lws=pars$ws)
+      fit <- R_W.fit(x=object@x,y=object@y,alpha=pars$alpha,beta=pars$beta,ws=pars$ws)
       object@weights <- fit$weights
     }
     return(object)
