@@ -228,7 +228,7 @@ ALCOVE <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),hu
       }
     } else {
       for(case in 1:nTimes@cases) {
-        exemplar.locations[[case]] <- x[nTimes@bt[case]:nTimes@et[case],]
+        exemplar.locations[[case]] <- unique(x[nTimes@bt[case]:nTimes@et[case],])
       }
     }
   }
