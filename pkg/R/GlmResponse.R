@@ -55,11 +55,11 @@ GlmResponse <- function(formula,data,family=gaussian(),parameters=list(),ntimes=
     parStruct=parStruct,
     nTimes=nTimes,
     family=family)
-  mod <- fit(mod)
+  mod <- runm(mod)
   mod
 }
 
-setMethod("estimate",signature(object="GlmResponse"),
+setMethod("fit",signature(object="GlmResponse"),
 	function(object,...) {
     if(object@nTimes@cases > 1) {
       if(length(object@parStruct@id)>0) stop("Constraints in GlmResponse models are currently not implemented")
@@ -68,21 +68,21 @@ setMethod("estimate",signature(object="GlmResponse"),
         x <- repl$x
         y <- repl$y
         pars <- repl$parameters
-        fit <- glm.fit(x=x,y=y,family=object@family,start=pars$coefficients)
-        pars$coefficients <- fit$coefficients
+        runm <- glm.fit(x=x,y=y,family=object@family,start=pars$coefficients)
+        pars$coefficients <- runm$coefficients
         if(object@family$family=="gaussian") pars$sd <- sqrt(sum((object@y - predict(object))^2)/(length(object@y)-1))
         object@parStruct@parameters[[case]] <- pars
       }
     } else {
       # y = response
       pars <- object@parStruct@parameters
-      fit <- glm.fit(x=object@x,y=object@y,family=object@family,start=pars$coefficients)
-      pars$coefficients <- fit$coefficients
+      runm <- glm.fit(x=object@x,y=object@y,family=object@family,start=pars$coefficients)
+      pars$coefficients <- runm$coefficients
       if(object@family$family=="gaussian") pars$sd <- sqrt(sum((object@y - predict(object))^2)/(length(object@y)-1))
       object@parStruct@parameters <- setPars(object,unlist(pars),rval="parameters",...)
     }
     #object <- setpars(object,unlist(pars))
-    object <- fit(object,...)
+    object <- runm(object,...)
     return(object)
 	}
 )

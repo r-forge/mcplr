@@ -8,8 +8,8 @@
 \alias{AIC,McplModel-method}
 \alias{AICc,McplModel-method}
 \alias{BIC,McplModel-method}
-\alias{estimate,McplModel-method}
 \alias{fit,McplModel-method}
+\alias{runm,McplModel-method}
 \alias{getPars,McplModel-method}
 \alias{logLik,McplModel-method}
 \alias{Rsq,McplModel-method}
@@ -40,8 +40,8 @@
     \item{AIC}{\code{signature(object = "McplModel")}: Akaike Information Criterion- based on response model.}
     \item{AICc}{\code{signature(object = "McplModel")}: Corrected Akaike Information Criterion - based on response model.}
     \item{BIC}{\code{signature(object = "McplModel")}: Bayesian Information Criterion/Schwartz Information Criterion - based on response model.}
-    \item{estimate}{\code{signature(object = "McplModel")}: Estimate model parameters (by Maximum Likelihood).}
-    \item{fit}{\code{signature(object = "McplModel")}: Estimate (trial dependent) model states given current parameters.}
+    \item{fit}{\code{signature(object = "McplModel")}: Estimate model parameters (by Maximum Likelihood).}
+    \item{runm}{\code{signature(object = "McplModel")}: Calculate (trial dependent) model states given current parameters.}
     \item{getPars}{\code{signature(object = "McplModel")}: Get current parameter values.}
     \item{logLik}{\code{signature(object = "McplModel")}: Log-likelihood for current parameter values - based on response model.}
     \item{RSquare}{\code{signature(object = "McplModel")}: Squared correlation coefficient - a.k.a "proportion variance explained" - based on response model.}

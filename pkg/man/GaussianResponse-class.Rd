@@ -2,7 +2,7 @@
 \docType{class}
 \alias{GaussianResponse}
 \alias{GaussianResponse-class}
-\alias{estimate,GaussianResponse-method}
+\alias{fit,GaussianResponse-method}
 \alias{logLik,GaussianResponse-method}
 \alias{predict,GaussianResponse-method}
 
@@ -26,7 +26,7 @@ Class \code{"\linkS4class{McplBaseModel}"}, by class "ResponseModel", distance 2
 }
 \section{Methods}{
   \describe{
-    \item{estimate}{\code{signature(object = "GaussianResponse")}: ... }
+    \item{fit}{\code{signature(object = "GaussianResponse")}: ... }
     \item{logLik}{\code{signature(object = "GaussianResponse")}: ... }
     \item{predict}{\code{signature(object = "GaussianResponse")}: ... }
 	 }

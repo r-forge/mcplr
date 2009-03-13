@@ -1,12 +1,12 @@
 setClass("GaussianResponse",
   contains="ResponseModel"
 )
-setMethod("estimate",signature(object="GaussianResponse"),
+setMethod("fit",signature(object="GaussianResponse"),
 	function(object) {
     pars <- object@parStruct@parameters
     pars$sd <- sd(object@x-object@y)
     object@parStruct@parameters <- setPars(object,unlist(pars),rval="parameters",...)
-    object <- fit(object,...)
+    object <- runm(object,...)
     return(object)
 	}
 )

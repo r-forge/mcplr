@@ -64,7 +64,7 @@ setMethod("getPars",signature(object="RescorlaWagner"),
     return(pars)
   }
 )
-setMethod("fit",signature(object="RescorlaWagner"),
+setMethod("runm",signature(object="RescorlaWagner"),
   function(object,...) {
     if(object@nTimes@cases>1) {
       for(case in 1:object@nTimes@cases) {
@@ -72,19 +72,19 @@ setMethod("fit",signature(object="RescorlaWagner"),
         x <- repl$x
         y <- repl$y
         pars <- repl$parameters
-        fit <- R_W.fit(x=x,y=y,alpha=pars$alpha,beta=pars$beta,ws=pars$ws)
-        object@weights[object@nTimes@bt[case]:object@nTimes@et[case],] <- fit$weights
+        runm <- R_W.runm(x=x,y=y,alpha=pars$alpha,beta=pars$beta,ws=pars$ws)
+        object@weights[object@nTimes@bt[case]:object@nTimes@et[case],] <- runm$weights
       }
     } else {
       pars <- object@parStruct@parameters
-      fit <- R_W.fit(x=object@x,y=object@y,alpha=pars$alpha,beta=pars$beta,ws=pars$ws)
-      object@weights <- fit$weights
+      runm <- R_W.runm(x=object@x,y=object@y,alpha=pars$alpha,beta=pars$beta,ws=pars$ws)
+      object@weights <- runm$weights
     }
     return(object)
   }
 )
 
-R_W.fit <- function(y,x,alpha,beta,ws) {
+R_W.runm <- function(y,x,alpha,beta,ws) {
   nx <- ncol(x)
   nt <- nrow(x)
   ny <- ncol(y)
@@ -196,6 +196,6 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),ws=0),da
     weights = matrix(nrow=nt,ncol=length(cid)),
     parStruct=parStruct,
     nTimes=nTimes)
-  mod <- fit(mod)
+  mod <- runm(mod)
   mod
 }

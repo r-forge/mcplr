@@ -3,10 +3,10 @@
 \alias{GCM-class}
 \alias{GCMinterval-class}
 \alias{GCMnominal-class}
-\alias{estimate,GCM-method}
 \alias{fit,GCM-method}
 \alias{getPars,GCM-method}
 \alias{predict,GCM-method}
+\alias{runm,GCM-method}
 \alias{setPars,GCM-method}
 \alias{logLik,GCM-method}
 \alias{logLik,GCMnominal-method}
@@ -65,7 +65,7 @@ similarities. See the package manual for more information.
 The model implemented by \code{GCM} extends the original GCM (Nosofsky, 1986) 
 by allowing (1) a continuous criterion, and (2) memory decay of exemplars.
 }
-\value{A (fitted) object of class \code{GCMinterval} or \code{GCMnominal}.}
+\value{An object of class \code{GCMinterval} or \code{GCMnominal}.}
 
 \references{
 Nosofsky, R.M. (1986). Attention, Similarity, and the 
@@ -81,7 +81,7 @@ data(WPT)
 ##   four columns.
 mod <- GCM(y~x1+x2+x3+x4,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)
 ## estimate free parameters
-\dontrun{mod <- estimate(mod)}
+\dontrun{mod <- fit(mod)}
 summary(mod)
 
 # now a model with a general minkowski distance function, and an exponential

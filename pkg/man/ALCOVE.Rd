@@ -1,12 +1,11 @@
 \name{ALCOVE}
 \alias{ALCOVE}
 \alias{ALCOVE-class}
-\alias{estimate,ALCOVE-method}
+\alias{runm,ALCOVE-method}
 \alias{fit,ALCOVE-method}
 \alias{getPars,ALCOVE-method}
 \alias{predict,ALCOVE-method}
 \alias{setPars,ALCOVE-method}
-
 
 \title{Attention Learning COVEring map model (ALCOVE)}
 \description{
@@ -60,7 +59,7 @@ data(WPT)
 ## initialize model
 mod <- ALCOVE(y~x1+x2+x3+x4,data=WPT,ntimes=c(200,200))
 ## estimate free parameters
-\dontrun{mod <- estimate(mod)}
+\dontrun{mod <- fit(mod)}
 summary(mod)
 }
 

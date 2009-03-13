@@ -1,8 +1,8 @@
 \name{RescorlaWagner}
 \alias{RescorlaWagner}
 \alias{RescorlaWagner-class}
-\alias{estimate,RescorlaWagner-method}
 \alias{fit,RescorlaWagner-method}
+\alias{runm,RescorlaWagner-method}
 \alias{getPars,RescorlaWagner-method}
 \alias{predict,RescorlaWagner-method}
 \alias{setPars,RescorlaWagner-method}
@@ -43,7 +43,7 @@ parameters considered identical for each series?}
 \details{The Rescorla-Wagner model (Rescorla & Wagner, 1972) is an associative
 learning model. 
 }
-\value{A (fitted) object of class \code{LearningModel}}
+\value{An object of class \code{LearningModel}}
 \references{
 Rescorla, R. A., and Wagner, A. R. (1972). A theory of Pavlovian conditioning: 
 Variations in the effectiveness of reinforcement and nonreinforcement. In A. H. 
@@ -58,6 +58,6 @@ data(WPT)
 mod <- RescorlaWagner(y~x1+x2+x3+x4,data=WPT,ntimes=c(200,200),
 remove.intercept=TRUE)
 ## estimate free parameters
-\dontrun{mod <- estimate(mod)}
+\dontrun{mod <-fit(mod)}
 summary(mod)
 }

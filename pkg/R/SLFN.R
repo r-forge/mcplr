@@ -67,7 +67,7 @@ setMethod("getPars",signature(object="SLFN"),
     return(pars)
   }
 )
-setMethod("fit","SLFN",
+setMethod("runm","SLFN",
   function(object,...) {
     if(object@nTimes@cases>1) {
       for(case in 1:object@nTimes@cases) {
@@ -81,17 +81,17 @@ setMethod("fit","SLFN",
         #alpha <- object@parStruct@parameters$alpha[case,]
         #beta <- object@parStruct@parameters$beta[case,]
         #ws <- object@parStruct@parameters$ws[case,]
-        fit <- slfn.fit(x=x,y=y,eta=pars$eta,alpha=pars$alpha,beta=pars$beta,ws=pars$ws,grad=object@gradient,window.size=object@window.size)
-        object@weight[object@nTimes@bt[case]:object@nTimes@et[case],,] <- fit$weight
+        runm <- slfn.runm(x=x,y=y,eta=pars$eta,alpha=pars$alpha,beta=pars$beta,ws=pars$ws,grad=object@gradient,window.size=object@window.size)
+        object@weight[object@nTimes@bt[case]:object@nTimes@et[case],,] <- runm$weight
       }
     } else {
-      fit <- slfn.fit(x=object@x,y=object@y,eta=object@parStruct@parameters$eta,alpha=object@parStruct@parameters$alpha,beta=object@parStruct@parameters$beta,ws=object@parStruct@parameters$ws,grad=object@gradient,window.size=object@window.size)
-      object@weight <- fit$weight
+      runm <- slfn.runm(x=object@x,y=object@y,eta=object@parStruct@parameters$eta,alpha=object@parStruct@parameters$alpha,beta=object@parStruct@parameters$beta,ws=object@parStruct@parameters$ws,grad=object@gradient,window.size=object@window.size)
+      object@weight <- runm$weight
     }
     return(object)
   }
 )
-slfn.fit <- function(y,x,ws,eta,alpha,beta,grad,window.size=0) {
+slfn.runm <- function(y,x,ws,eta,alpha,beta,grad,window.size=0) {
   if(!all(alpha >= 0)) stop("negative alpha not allowed")
   if(!all(beta >= 0)) stop("negative beta not allowed")
   if(!all(beta <= 1)) stop("beta must be maximum 1")
@@ -188,7 +188,7 @@ SLFN <- function(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),type=c("li
     gradient=grad,
     window.size=window.size
   )
-  mod <- fit(mod)
+  mod <- runm(mod)
   mod
 }
 

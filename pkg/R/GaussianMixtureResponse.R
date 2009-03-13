@@ -102,7 +102,7 @@ setMethod("predict",signature(object="GaussianMixtureResponse"),
     res
   }
 )
-setMethod("fit",signature(object="GaussianMixtureResponse"),
+setMethod("runm",signature(object="GaussianMixtureResponse"),
   function(object,...) {
     for(case in 1:object@nTimes@cases) {
       if(object@parStruct@replicate) pars <- object@parStruct@parameters else pars <- object@parStruct@parameters[[case]]
@@ -182,14 +182,14 @@ setMethod("fit",signature(object="GaussianMixtureResponse"),
     object
   }
 )
-setMethod("estimate",signature(object="GaussianMixtureResponse"),
+setMethod("fit",signature(object="GaussianMixtureResponse"),
   function(object,method="Nelder-Mead",unconstrained=FALSE,...) {
     #if(!is.null(object@parStruct@parameters$sd)) object@parStruct@parameters$sd <- log(object@parStruct@parameters$sd)
     pstart <- getPars(object,which="free",unconstrained=unconstrained,...)
     optfun <- function(par,object,unconstrained,...) {
       #object <- setPars(object,par,unconstrained=unconstrained,...)
       object@parStruct@parameters <- setPars(object,par,rval="parameters",unconstrained=unconstrained,...)
-      object <- fit(object,...)
+      object <- runm(object,...)
       -logLik(object)
     }
     if(length(pstart)==1 & names(pstart)=="sd") {
@@ -234,7 +234,7 @@ setMethod("estimate",signature(object="GaussianMixtureResponse"),
       object@parStruct@parameters <- setPars(object,opt$par,rval="parameters",unconstrained=unconstrained,...)
     }
     #if(!is.null(object@parStruct@parameters$sd)) object@parStruct@parameters$sd <- exp(object@parStruct@parameters$sd)
-    object <- fit(object,...)
+    object <- runm(object,...)
     return(object)
   }
 )

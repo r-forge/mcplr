@@ -83,7 +83,7 @@ setMethod("getPars",signature(object="RBFN"),
   }
 )
 
-setMethod("fit","RBFN",
+setMethod("runm","RBFN",
   function(object,...) {
     x2phi.additive <- function(x,fun,loc,sca) {
       out <- vector()
@@ -118,8 +118,8 @@ setMethod("fit","RBFN",
 #        }
         if(intercept) bx <- cbind(1,bx) # NOTE: phi does not contain intercept!!!
         pars <- repl$parameters
-        fit <- slfn.fit(x=bx,y=y,eta=pars$eta,alpha=pars$alpha,beta=pars$beta,ws=pars$ws,grad=object@gradient,window.size=object@window.size)
-        object@weight[object@nTimes@bt[case]:object@nTimes@et[case],,] <- fit$weight
+        runm <- slfn.runm(x=bx,y=y,eta=pars$eta,alpha=pars$alpha,beta=pars$beta,ws=pars$ws,grad=object@gradient,window.size=object@window.size)
+        object@weight[object@nTimes@bt[case]:object@nTimes@et[case],,] <- runm$weight
       }
     } else {
       x <- object@x
@@ -134,14 +134,14 @@ setMethod("fit","RBFN",
         object@phi <- bx <- x2phi.configural(x=x,fun=object@basis.function,loc=object@basis.location[[1]],sca=object@parameters$basis.scale)
       }
       if(intercept) bx <- cbind(1,bx)
-      fit <- slfn.fit(x=bx,y=object@y,eta=object@parameters$eta,alpha=object@parameters$alpha,beta=object@parameters$beta,ws=object@parameters$ws,grad=object@gradient,window.size=object@window.size)
-      object@weight <- fit$weight
+      runm <- slfn.runm(x=bx,y=object@y,eta=object@parameters$eta,alpha=object@parameters$alpha,beta=object@parameters$beta,ws=object@parameters$ws,grad=object@gradient,window.size=object@window.size)
+      object@weight <- runm$weight
     }
     return(object)
   }
 )
 
-setMethod("fit","RBFN2",
+setMethod("runm","RBFN2",
   function(object,...) {
     x2phi.additive <- function(x,fun,loc,sca) {
       out <- vector()
@@ -178,8 +178,8 @@ setMethod("fit","RBFN2",
           object@y.phi[object@nTimes@bt[case]:object@nTimes@et[case],] <- phiy <- x2phi.configural(x=y,fun=object@y.basis.function,loc=object@y.basis.location[[1]],sca=object@parameters$y.basis.scale)
         }
         pars <- repl$parameters
-        fit <- slfn.fit(x=bx,y=phiy,eta=pars$eta,alpha=pars$alpha,beta=pars$beta,ws=pars$ws,grad=object@gradient,window.size=object@window.size)
-        object@weight[object@nTimes@bt[case]:object@nTimes@et[case],,] <- fit$weight
+        runm <- slfn.runm(x=bx,y=phiy,eta=pars$eta,alpha=pars$alpha,beta=pars$beta,ws=pars$ws,grad=object@gradient,window.size=object@window.size)
+        object@weight[object@nTimes@bt[case]:object@nTimes@et[case],,] <- runm$weight
       }
     } else {
       x <- object@x
@@ -202,8 +202,8 @@ setMethod("fit","RBFN2",
       } else {
         object@y.phi <- phiy <- x2phi.configural(x=y,fun=object@y.basis.function,loc=object@y.basis.location[[1]],sca=object@parameters$y.basis.scale)
       }
-      fit <- slfn.fit(x=bx,y=phiy,eta=object@parameters$eta,alpha=object@parameters$alpha,beta=object@parameters$beta,ws=object@parameters$ws,grad=object@gradient,window.size=object@window.size)
-      object@weight <- fit$weight
+      runm <- slfn.runm(x=bx,y=phiy,eta=object@parameters$eta,alpha=object@parameters$alpha,beta=object@parameters$beta,ws=object@parameters$ws,grad=object@gradient,window.size=object@window.size)
+      object@weight <- runm$weight
     }
     return(object)
   }

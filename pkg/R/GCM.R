@@ -35,7 +35,7 @@ setMethod("is.unconstrained",signature(object="GCM"),
   }
 )
 
-setMethod("fit",signature(object="GCM"),
+setMethod("runm",signature(object="GCM"),
   function(object,...) {
     if(object@nTimes@cases>1) {
       for(case in 1:object@nTimes@cases) {
@@ -43,18 +43,18 @@ setMethod("fit",signature(object="GCM"),
         x <- repl$x
         y <- repl$y
         pars <- repl$parameters
-        fit <- gcm.fit(x=x,y=y,parameters=pars,distance=object@distance,similarity=object@similarity,sampling=object@sampling)
-        object@weights[[case]] <- fit$weights
+        runm <- gcm.runm(x=x,y=y,parameters=pars,distance=object@distance,similarity=object@similarity,sampling=object@sampling)
+        object@weights[[case]] <- runm$weights
       }
     } else {
-      fit <- gcm.fit(x=object@x,y=object@y,parameters=object@parStruct@parameters,distance=object@distance,similarity=object@similarity,sampling=object@sampling)
-      object@weights[[1]] <- fit$weights
+      runm <- gcm.runm(x=object@x,y=object@y,parameters=object@parStruct@parameters,distance=object@distance,similarity=object@similarity,sampling=object@sampling)
+      object@weights[[1]] <- runm$weights
     }
     return(object)    
   }
 )
 
-gcm.fit <- gcm.cont.fit <- gcm.discr.fit <- function(x,y,parameters,distance,similarity,sampling,...) {
+gcm.runm <- gcm.cont.runm <- gcm.discr.runm <- function(x,y,parameters,distance,similarity,sampling,...) {
   dis <- distance(x=x,parameters=parameters,...)
   sim <- similarity(distance=dis,parameters=parameters,...)
   sam <- sampling(nt=nrow(x),parameters=parameters,...)
@@ -74,7 +74,7 @@ gcm.fit <- gcm.cont.fit <- gcm.discr.fit <- function(x,y,parameters,distance,sim
   return(list(weights=w))
 }
 
-gcm.fit.unconstrained <- function(x,y,parameters,distance,similarity,sampling,...) {
+gcm.runm.unconstrained <- function(x,y,parameters,distance,similarity,sampling,...) {
   parameters$lambda <- sum(parameters$w)
   parameters$w <- parameters$w/parameters$lambda
   if(is.null(parameters$r)) {
@@ -248,12 +248,12 @@ setMethod("logLik",signature(object="GCMinterval"),
   }
 )
 
-setMethod("estimate",signature(object="GCM"),
+setMethod("fit",signature(object="GCM"),
   function(object,method="Nelder-Mead",...) {
     optfun <- function(pars,object,repar,...) {
       #object <- setPars(object,pars,unconstrained=unconstrained)
       object@parStruct@parameters <- setPars(object,pars,repar=repar,...,rval="parameters")
-      object <- fit(object,...)
+      object <- runm(object,...)
       -logLik(object)
     }
     if(!is.unconstrained(object,...)) {
@@ -280,7 +280,7 @@ setMethod("estimate",signature(object="GCM"),
       opt <- optim(pars,fn=optfun,method=method,object=object,repar=TRUE,...)
       object@parStruct@parameters <- setPars(object,opt$par,internal=TRUE,...,rval="parameters")
     }
-    object <- fit(object,...)
+    object <- runm(object,...)
     object
   }
 )
@@ -480,7 +480,7 @@ GCM <- function(formula,level=c("nominal","interval"),distance=c("cityblock","eu
       sampling=sampling
     )
   }
-  mod <- fit(mod)
+  mod <- runm(mod)
   mod
 }
 

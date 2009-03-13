@@ -9,7 +9,7 @@ McplModel <- function(learningModel,responseModel) {
   mod <- new("McplModel",
     learningModel = learningModel,
     responseModel = responseModel)
-  fit(mod)
+  runm(mod)
 }
 
 setMethod("getPars",signature(object="McplModel"),
@@ -87,11 +87,11 @@ setMethod("setPars",signature(object="McplModel"),
   }
 )
 
-setMethod("fit",signature(object="McplModel"),
+setMethod("runm",signature(object="McplModel"),
   function(object,lfr=TRUE,rfl=FALSE,...) {
-      object@learningModel <- fit(object@learningModel,...)
+      object@learningModel <- runm(object@learningModel,...)
       if(lfr) object@responseModel <- lFr(object,...)
-      object@responseModel <- fit(object@responseModel,...)
+      object@responseModel <- runm(object@responseModel,...)
       if(rfl) object@learningModel <- rFl(object,...)
       return(object)
   }
@@ -137,7 +137,7 @@ setMethod("Rsq",signature(object="McplModel"),
   }
 )
 
-setMethod("estimate",signature(object="McplModel"),
+setMethod("fit",signature(object="McplModel"),
   function(object,method="Nelder-Mead",CML=FALSE,CML.method=method,...) {
     optfun <- function(pars,object,CML,CML.method,...) {
       if(CML) {
@@ -149,9 +149,9 @@ setMethod("estimate",signature(object="McplModel"),
         if(!is.null(parl[[1]])) object@learningModel@parStruct@parameters <- parl[[1]]
         if(!is.null(parl[[2]])) object@responseModel@parStruct@parameters <- parl[[2]]
       }
-      object@learningModel <- fit(object@learningModel,...)
+      object@learningModel <- runm(object@learningModel,...)
       object@responseModel <- lFr(object,...)
-      if(CML) object@responseModel <- estimate(object@responseModel,method=CML.method,...) else object@responseModel <- fit(object@responseModel,...)
+      if(CML) object@responseModel <- fit(object@responseModel,method=CML.method,...) else object@responseModel <- runm(object@responseModel,...)
       object@learningModel <- rFl(object,...)
       out <- -logLik(object,...)
       if(CML) attr(out,"rPars") <- getPars(object@responseModel,internal=TRUE,...)
@@ -174,7 +174,7 @@ setMethod("estimate",signature(object="McplModel"),
       if(!is.null(parl[[1]])) object@learningModel@parStruct@parameters <- parl[[1]]
       if(!is.null(parl[[2]])) object@responseModel@parStruct@parameters <- parl[[2]]
     }
-    object <- fit(object,...)
+    object <- runm(object,...)
     object
   }
 )
@@ -253,7 +253,7 @@ setMethod("simulate",signature(object="McplModel"),
       object@learningModel@parStruct <- rep(object@learningModel@parStruct,times=nsim,...)
     }
     object@learningModel@nTimes <- object@responseModel@nTimes
-    object <- fit(object,...)
+    object <- runm(object,...)
     object
   }
 )

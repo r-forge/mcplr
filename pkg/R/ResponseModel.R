@@ -2,7 +2,7 @@ setClass("ResponseModel",
   contains="McplBaseModel"
 )
 
-setMethod("fit",signature(object="ResponseModel"),
+setMethod("runm",signature(object="ResponseModel"),
   function(object,...) {
     object
   }

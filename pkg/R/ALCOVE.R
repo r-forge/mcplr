@@ -71,7 +71,7 @@ setMethod("getPars",signature(object="ALCOVE"),
   }
 )
 
-setMethod("fit",signature(object="ALCOVE"),
+setMethod("runm",signature(object="ALCOVE"),
   function(object,...) {
     if(object@nTimes@cases>1) {
       outp <- vector()
@@ -80,23 +80,23 @@ setMethod("fit",signature(object="ALCOVE"),
         x <- repl$x
         y <- repl$y
         pars <- repl$parameters
-        fit <- ALCOVE.fit(x=x,y=y,e=object@exemplar.locations[[case]],
+        runm <- ALCOVE.runm(x=x,y=y,e=object@exemplar.locations[[case]],
           pars=pars,humble=object@humble,...)
-        object@weights[[case]] <- fit$weights
-        outp <- rbind(outp,fit$output)
+        object@weights[[case]] <- runm$weights
+        outp <- rbind(outp,runm$output)
       }
       object@output <- outp
     } else {
-      fit <- ALCOVE.fit(x=object@x,y=object@y,e=object@exemplar.locations[[1]],
+      runm <- ALCOVE.runm(x=object@x,y=object@y,e=object@exemplar.locations[[1]],
         pars=object@parStruct@parameters,humble=object@humble,...)
-      object@weights[[1]] <- fit$weights
-      object@output <- fit$output
+      object@weights[[1]] <- runm$weights
+      object@output <- runm$output
     }
     return(object)    
   }
 )
 
-ALCOVE.fit <- function(y,x,e,pars,w.start,a.start,humble=TRUE,train.max=1,
+ALCOVE.runm <- function(y,x,e,pars,w.start,a.start,humble=TRUE,train.max=1,
 train.min=-1,...) {
   # y: T*k (dummy) matrix for categories
   # x: T*M matrix of cues
@@ -241,6 +241,6 @@ ALCOVE <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),hu
     exemplar.locations = exemplar.locations,
     parStruct=parStruct,
     nTimes=nTimes)
-  mod <- fit(mod)
+  mod <- runm(mod)
   mod
 }

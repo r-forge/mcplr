@@ -2,7 +2,7 @@
 \docType{class}
 \alias{RatioRuleResponse}
 \alias{RatioRuleResponse-class}
-\alias{estimate,RatioRuleResponse-method}
+\alias{fit,RatioRuleResponse-method}
 \alias{logLik,RatioRuleResponse-method}
 \alias{predict,RatioRuleResponse-method}
 
@@ -28,7 +28,7 @@ Class \code{\linkS4class{McplBaseModel}}, by class "ResponseModel", distance 2.
 }
 \section{Methods}{
   \describe{
-    \item{estimate}{\code{signature(object = "RatioRuleResponse")}: ... }
+    \item{fit}{\code{signature(object = "RatioRuleResponse")}: ... }
     \item{logLik}{\code{signature(object = "RatioRuleResponse")}: ... }
     \item{predict}{\code{signature(object = "RatioRuleResponse")}: ... }
 	 }

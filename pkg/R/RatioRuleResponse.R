@@ -5,7 +5,7 @@ setClass("RatioRuleResponse",
   )
 )
 
-setMethod("estimate",signature(object="RatioRuleResponse"),
+setMethod("fit",signature(object="RatioRuleResponse"),
   function(object,...) {
     optfun <- function(par,object,...) {
       object@parStruct@parameters <- setPars(object,par,rval="parameters",...)
@@ -27,7 +27,7 @@ setMethod("estimate",signature(object="RatioRuleResponse"),
     }
     #object <- setPars(object,exp(opt$par))
     object@parStruct@parameters <- setPars(object,opt$par,rval="parameters",...)
-    object <- fit(object,...)
+    object <- runm(object,...)
     object
   }
 )
@@ -171,7 +171,7 @@ RatioRuleResponse <- function(formula,parameters=list(beta=1),transformation=c("
     parStruct=parStruct,
     nTimes=nTimes,
     transformation=trans)
-  mod <- fit(mod)
+  mod <- runm(mod)
   mod                     
                         
 }

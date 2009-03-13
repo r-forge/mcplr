@@ -3,7 +3,7 @@
 
 \docType{data}
 
-\title{Weather Prediction TAsk Data}
+\title{Weather Prediction Task data}
 
 \description{
 	This data set contains responses of two participants (one amnesic and one

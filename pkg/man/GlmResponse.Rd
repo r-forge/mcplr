@@ -1,7 +1,7 @@
 \name{GlmResponse-class}
 \docType{class}
 \alias{GlmResponse-class}
-\alias{estimate,GlmResponse-method}
+\alias{fit,GlmResponse-method}
 \alias{predict,GlmResponse-method}
 \alias{logLik,GlmResponse-method}
 
@@ -26,7 +26,7 @@ Class \code{"\linkS4class{McplBaseModel}"}, by class "ResponseModel", distance 2
 }
 \section{Methods}{
   \describe{
-    \item{estimate}{\code{signature(object = "GlmResponse")}: ... }
+    \item{fit}{\code{signature(object = "GlmResponse")}: ... }
     \item{predict}{\code{signature(object = "GlmResponse")}: ... }
 	 }
 }

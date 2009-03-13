@@ -1,8 +1,8 @@
 \name{SLFN}
 \alias{SLFN}
 \alias{SLFN-class}
-\alias{estimate,SLFN-method}
 \alias{fit,SLFN-method}
+\alias{runm,SLFN-method}
 \alias{getPars,SLFN-method}
 \alias{predict,SLFN-method}
 \alias{setPars,SLFN-method}
@@ -63,7 +63,7 @@ data(WPT)
 ## initialize model
 mod <- SLFN(y~x1+x2+x3+x4-1,type="logistic",data=WPT,ntimes=c(200,200),fix=list(beta=TRUE,ws=TRUE))
 ## estimate free parameters
-\dontrun{mod <- estimate(mod)}
+\dontrun{mod <- fit(mod)}
 summary(mod)
 
 ## TODO: add other activation function

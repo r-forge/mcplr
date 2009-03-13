@@ -1,11 +1,12 @@
-\name{fit-methods}
+\name{runm-methods}
 \docType{methods}
-\alias{fit-methods}
-\alias{fit,ANY-method}
+\alias{runm-methods}
+\alias{runm,ANY-method}
 
-\title{Fit a model to the data.}
+\title{Run a model over the data.}
 \description{
-The \code{fit} method fits a model to the data.
+The \code{runm} runs a model over data, i.e., calculates certain aspects of the
+model on the basis of the model data.
 }
 \section{Methods}{
 \describe{
