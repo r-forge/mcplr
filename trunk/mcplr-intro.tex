@@ -6,7 +6,7 @@
 
 \title{mcplR: An R package to fit categorization and other multiple cue probability learning models}
 \author{Maarten Speekenbrink}
-\affiliation{Department of Psychology \\ University College London}
+\affiliation{Department of Cognitive, Perceptual and Brain Sciences \\ University College London}
 
 \abstract{
 This paper introduces the mcplR package, an open source package for the R software environment to fit various multiple cue learning models. The package is introduced through the implementation of the Rescorla-Wagner model. A brief description of the other models currently implemented, such as the GCM and ALCOVE. 
@@ -22,7 +22,7 @@ Address correspondence to M. Speekenbrink, Department of Psychology, University 
 
 \ifapamodejou{%
 \leftheader{Speekenbrink}
-\rightheader{MCPLR}
+\rightheader{mcplR}
 \acknowledgements{Address correspondence to M. Speekenbrink, Department of Psychology, University College London, Gower Street, London WC1E 6BT, England, e-mail: \texttt{m.speekenbrink@ucl.ac.uk}}
 }
 
@@ -74,11 +74,9 @@ Address correspondence to M. Speekenbrink, Department of Psychology, University 
 \begin{document}
 \maketitle
 
-Multiple Cue Probability Learning (MCPL) tasks require the prediction of a criterion variable on the basis of a number of cues which are probabilistically related to the criterion. This class of tasks is quite general, and a number of paradigms in (cognitive) psychology fall under it header. A numerical criterion variable is often used in Social Judgement Theory. When the criterion is a nominal variable, it is also common to speak of category learning tasks. 
+Multiple Cue Probability Learning (MCPL) tasks involve predicting a criterion variable on the basis of a number of cues which are probabilistically related to the criterion. This is a general type of task, and a number of paradigms in (cognitive) psychology fall under its header. When the criterion is a categorical variable, they are usually referred to as (probabilistic) category learning tasks. When the criterion is a metric variable, they are often referred to as function learning or Social Judgement tasks. A large number of formal models have been proposed to describe how people learn to perform MCPL tasks. We describe here an \code{R} package in which a number of these have been implemented, and which has been designed such that users can relatively easily add other models. 
 
-A large number of formal models have been proposed to describe how people learn to perform MCPL tasks. We describe here an \code{R} package in which a number of these have been implemented, and which has been designed such that users can relatively easily add other models. 
-
-We will describe the features of the package through the package's implementation of the Rescorla-Wagner. We will also briefly illustrate how to specify a new model. 
+We will introduce the basic features of the package through its implementation of the Rescorla-Wagner model. We will also briefly illustrate how to specify a new model. 
 
 \section{The general structure of MCPL models}
 
@@ -227,9 +225,9 @@ As responses will normally depend on the expectancy, we let $\eta_k(t) = \sum_j 
 
 A Rescorla-Wagner model can be created by calling \code{RescorlaWagner(formula,data,...)}. For instance, for an event $y$ with two levels, and four cues $x_j$, we can use 
 
-\code{lMod <- RescorlaWagner(y \textasciitilde x1+x2+x3+x4,data=WPT)}
+\code{lMod <- RescorlaWagner(y \textasciitilde x1+x2+x3+x4,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)}
 
-which will create a Rescorla-Wagner model with default parameters. We can view the default parameter values by calling \code{getPars(lMod)}, which shows the contents of the model's parameter list. By default, the model has a single $\alpha$ parameter, identical for each cue, initialized at $\alpha = 0.1$ All $\beta$ parameters are initialized to 1, while 
+which will create a Rescorla-Wagner model with default parameters. We can view the default parameter values by calling \code{getPars(lMod)}, which shows the contents of the model's parameter list. By default, the model has a single $\alpha$ parameter, identical for each cue, initialized at $\alpha = 0.1$ All $\beta$ parameters are initialized to 1, while the associative strength of each cue is initialized at 0. The \code{ntimes} argument is used to indicate that the dataset contains data of two participants, each consisting of 200 learning trials. The \code{remove.intercept} argument is used to force removal of the intercept that R includes in the design matrix by default. 
 
 \subsection{Creating a response model}
 
@@ -247,13 +245,13 @@ After creating a learning and response model, we can combine them into an \code{
 \begin{figure}
 \begin{verbatim}
 # create a learning model
-lMod <- RescorlaWagner(y ~ x1+x2+x3+x4,data=WPT,ntimes=c(200,200))
+lMod <- RescorlaWagner(y ~ x1+x2+x3+x4,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)
 # create a response model
 rMod <- RatioRuleResponse(r~1,data=WPT,ntimes=c(200,200))
 # combine in an McplModel
 mMod <- McplModel(lMod,rMod)
 # estimate the free parameters
-mMod <- estimate(mMod)
+mMod <- fit(mMod)
 # summary
 summary(mMod)
 \end{verbatim}
@@ -262,11 +260,22 @@ summary(mMod)
 
 \section{Other learning models currently implemented in \code{mcplR}}
 
-\subsection{Single Layer Feedforward Network}
+\subsection{Single Layer Feedforward Network (SLFN)}
 
-Associative learning models such as the Rescorla-Wagner model can be implemented by an artificial neural network \cite{Gluck88} with one input layer and one output layer. These networks are also known as Single Layer Feedforward Network models \cite<SLFN,>{Bishop95}.  
+Associative learning models such as the Rescorla-Wagner model can be implemented by an artificial neural network \cite{Gluck88} with one input layer and one output layer. These networks are also known as Single Layer Feedforward Network models \cite<SLFN,>{Bishop95}. The SLFN model offers a general implementation which learns the connection weights by the delta (or LMS) rule. 
 
-\subsection{Generalized Context Model}
+\begin{equation}
+\vec{w}_{t+1}^{(i,j)} = \vec{w}_{t}^{(i,j)} + \frac{\greekv{\eta}^{(i,j)}}{t^{\alpha^{(i,j)}}} \delta^{(i,j)}_t + \greekv{\beta}^{(i,j)}(\vec{w}_t^{(i,j)} - \vec{w}^{(i,j)}_{t-1})
+\end{equation}
+where $\delta^{(i,j)}_t$ is the gradient of the activation function, e.g.
+\begin{equation}
+\delta^{(i,j)}_t = (Y_{t}^{(j)} - \vec{w}_t^{(i,j)} \vec{x}_t^{(i)}) \vec{x}_t^{(i)}
+\end{equation}
+if the activation function is linear. The parameters $\alpha$, $\beta$, and $\eta$ are usually scalars, so that they are identical for all cues $i$ and criterion values $j$. But they can optionally be vectors or matrices. 
+
+A SLFN learning model can be created by the function \code{SLFN(formula,data,...)}. 
+
+\subsection{Generalized Context Model (GCM)}
 
 The Generalized Context Model \cite<GCM,>{Nosofsky86}. 
 
