@@ -2,13 +2,13 @@ setClass("GaussianResponse",
   contains="ResponseModel"
 )
 setMethod("fit",signature(object="GaussianResponse"),
-	function(object) {
+  function(object,...) {
     pars <- object@parStruct@parameters
     pars$sd <- sd(object@x-object@y)
     object@parStruct@parameters <- setPars(object,unlist(pars),rval="parameters",...)
     object <- runm(object,...)
     return(object)
-	}
+  }
 )
 setMethod("predict","GaussianResponse",
 	function(object,type="link") {
@@ -60,14 +60,40 @@ setMethod("simulate",signature(object="GaussianResponse"),
 	}
 )
 
-GaussianResponse <- function(formula,parameters=list(sd=1),data,subset,ntimes=NULL) {
+GaussianResponse <- function(formula,parameters=list(sd=1),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE) {
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,remove.intercept=TRUE)
   y <- dat$y
   x <- dat$x
-  if(is.null(ntimes)) ntimes <- nrow(y)
-  nTimes <- nTimes(ntimes)
+  
+  if(is.null(ntimes) | replicate) {
+    if(is.null(parameters$sd)) {
+      parameters$sd <- 1
+    } else {
+      if(length(parameters$sd) > 1) {
+        warning("sd should have length 1. Only first value will be used")
+        parameters$sd <- parameters$sd[1]
+      }
+    }
+  } else {
+    # setup a parlist
+    if(length(parameters)==0) {
+      nrep <- length(ntimes)
+      parameters$sd <- 1
+      parameters <- rep(list(parameters),nrep)
+    } else warning("there is no validity check for the given parameters when combined with ntimes and replicate=FALSE \n Please make sure the supplied list is valid")
+  }
+  
+  if(is.null(ntimes)) nTimes <- nTimes(nrow(y)) else nTimes <- nTimes(ntimes)
+  
+  if(missing(parStruct)) {
+    parStruct <- ParStruct(parameters=parameters,replicate=replicate,
+      fixed = if(missing(fixed)) NULL else fixed,
+      ntimes = if(missing(ntimes)) NULL else ntimes)
+  }
+  
   new("GaussianResponse",
     y = y,
     x = x,
+    parStruct=parStruct,
     nTimes=nTimes)
 }
