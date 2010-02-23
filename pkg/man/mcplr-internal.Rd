@@ -1,5 +1,15 @@
 \name{mcplR-internal}
 
+\alias{rFl}
+\alias{lFr}
+\alias{lFr,GCMinterval,GaussianMixtureResponse-method}
+\alias{lFr,LearningModel,GlmResponse-method}
+\alias{lFr,LearningModel,ResponseModel-method}
+\alias{lFr,McplModel,missing-method}
+\alias{rFl,McplModel,missing-method}
+\alias{rFl,ResponseModel,LearningModel-method}
+
+
 \alias{rFl-methods}
 \alias{lFr-methods}
 \alias{mcpl.prepare}

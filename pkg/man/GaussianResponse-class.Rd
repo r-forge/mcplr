@@ -15,8 +15,7 @@ Objects can be created by calls of the form \code{new("GaussianResponse", ...)}.
 	 \describe{
     \item{\code{x}:}{A \code{"matrix"}, containing values of the response options.}
     \item{\code{y}:}{Object of class \code{"matrix"}, containing dummy coded response variable.}
-    \item{\code{parameters}:}{A (named) \code{"list"} with parameters. }
-    \item{\code{parStruct}:}{Object of class \code{"ParStruct"}, specifying parameter constraints.}
+    \item{\code{parStruct}:}{Object of class \code{"ParStruct"}, specifying parameters and (optional) constraints.}
     \item{\code{nTimes}:}{Object of class \code{"NTimes"}.}
   }
 }

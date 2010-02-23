@@ -3,61 +3,13 @@
 setClass("GlmResponse",
   contains="ResponseModel",
   representation(
-    family="ANY"
+    family="ANY",
+    formula="formula",
+    data = "list",
+    LearnModPredName = "character"
     #sigma="matrix"
   )
 )
-
-
-GlmResponse <- function(formula,data,family=gaussian(),parameters=list(),ntimes=NULL,replicate=TRUE,fixed,base=NULL,
-                        parStruct,subset) {
-  if(!missing(subset)) dat <- mcpl.prepare(formula=formula,data=data,subset=subset,base=base) else
-    dat <- mcpl.prepare(formula=formula,data=data,base=base)
-  y <- dat$y
-  x <- dat$x
-  
-  parfill <- function(parameters) {
-    if(family$family=="gaussian") if(is.null(parameters$sd)) parameters$sd <- 1 else parameters$sd <- parameters$sd
-    if(is.null(parameters$coefficients)) parameters$coefficients <- rep(0,NCOL(x))
-    parameters
-  }
-  
-  if(is.null(ntimes) | replicate) {
-    # intialize
-    parameters <- parfill(parameters)
-  } else {
-    # setup a parlist
-    nrep <- length(ntimes)
-    # check structure of supplied list
-    if(all(lapply(parameters,is.list)) && length(parameters)==nrep) {
-      for(i in 1:nrep) {
-        parameters[[i]] <- parfill(parameters[[i]])
-      }
-    } else {
-      parameters <- parfill(parameters)
-      parameters <- rep(list(parameters),nrep)
-    }
-  }
-
-  if(missing(parStruct)) {
-    tfix <- NULL
-    if(!missing(fixed)) tfix <- fixed
-    parStruct <- ParStruct(parameters,replicate=replicate,
-                    fixed=tfix,ntimes=ntimes)
-  }
-
-  if(is.null(ntimes)) ntimes <- nrow(y)
-  nTimes <- nTimes(ntimes)
-
-  mod <- new("GlmResponse",
-    x = x,
-    y = y,
-    parStruct=parStruct,
-    nTimes=nTimes,
-    family=family)
-  mod <- runm(mod)
-  mod
-}
 
 setMethod("fit",signature(object="GlmResponse"),
 	function(object,...) {
@@ -189,3 +141,74 @@ setMethod("simulate",signature(object="GlmResponse"),
 		return(object)
 	}
 )
+
+setMethod("lFr",signature(x="LearningModel",y="GlmResponse"),
+  function(x,y,...) {
+    assign(y@LearnModPredName,predict(x,type="link",...))
+    y@x <- model.matrix(object=y@formula,data=y@data,...)
+    #y@x <- eval(y@x.call,envir=list(parent.frame(),y@data)) #predict(x,type="link",...)
+    y
+  }
+)
+
+GlmResponse <- function(formula,learnpredname,data,family=gaussian(),parameters=list(),ntimes=NULL,replicate=TRUE,fixed,base=NULL,
+                        parStruct,subset) {
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("formula", "data", "subset"), names(mf), 0)
+  mf <- mf[c(1, m)]
+  mf$drop.unused.levels <- TRUE
+  mf[[1]] <- as.name("model.frame")
+  #mf[[2]] <- eval(substitute(mf$formula, list(as.name(predname) = as.name("learningModelPrediction"))))
+  mf <- eval(mf, parent.frame())
+  
+  if(!missing(subset)) dat <- mcpl.prepare(formula=formula,data=data,subset=subset,base=base) else
+    dat <- mcpl.prepare(formula=formula,data=data,base=base)
+  y <- dat$y
+  x <- dat$x
+  
+  parfill <- function(parameters) {
+    if(family$family=="gaussian") if(is.null(parameters$sd)) parameters$sd <- 1 else parameters$sd <- parameters$sd
+    if(is.null(parameters$coefficients)) parameters$coefficients <- rep(0,NCOL(x))
+    parameters
+  }
+  
+  if(is.null(ntimes) | replicate) {
+    # intialize
+    parameters <- parfill(parameters)
+  } else {
+    # setup a parlist
+    nrep <- length(ntimes)
+    # check structure of supplied list
+    if(all(lapply(parameters,is.list)) && length(parameters)==nrep) {
+      for(i in 1:nrep) {
+        parameters[[i]] <- parfill(parameters[[i]])
+      }
+    } else {
+      parameters <- parfill(parameters)
+      parameters <- rep(list(parameters),nrep)
+    }
+  }
+
+  if(missing(parStruct)) {
+    tfix <- NULL
+    if(!missing(fixed)) tfix <- fixed
+    parStruct <- ParStruct(parameters,replicate=replicate,
+                    fixed=tfix,ntimes=ntimes)
+  }
+
+  if(is.null(ntimes)) ntimes <- nrow(y)
+  nTimes <- nTimes(ntimes)
+
+  mod <- new("GlmResponse",
+    x = x,
+    y = y,
+    parStruct=parStruct,
+    nTimes=nTimes,
+    family=family,
+    formula=formula,
+    LearnModPredName=learnpredname,
+    data=as.data.frame(mf[,colnames(mf)!=learnpredname])
+  )
+  mod <- runm(mod)
+  mod
+}

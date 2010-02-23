@@ -3,7 +3,7 @@
 \usepackage{graphicx,apacite,amsmath,rotating,verbatim,epsfig,subfigure}
 \usepackage{dcolumn}
 
-\title{mcplR: An R package to fit categorization and other multiple cue probability learning models}
+\title{mcplR: An R package for multiple cue probability learning models}
 \author{Maarten Speekenbrink}
 \affiliation{Department of Psychology \\ University College London}
 
@@ -72,17 +72,18 @@ Address correspondence to M. Speekenbrink, Department of Psychology, University 
 \begin{document}
 \maketitle
 
-Multiple cue probability learning tasks require the prediction of a criterion variable on the basis of a number of cues which are probabilistically related to the criterion. This class of task is quite general. A numerical criterion variable is often used in Social Judgement Theory. When the criterion is a nominal variable, it is also common to speak of category learning tasks. 
+Multiple cue probability learning (MCPL) tasks involve predicting a criterion variable on the basis of a number of cues which are probabilistically related to the criterion. When the criterion is a categorical variable, these tasks are more commonly referred to as category learning; when the criterion is a metric variable, they are also referred to as social judgement tasks. %  These tasks are quite general type of task is quite general. A numerical criterion variable is often used in Social Judgement Theory. When the criterion is a nominal variable, it is also common to speak of category learning tasks. 
 
-A large number of formal models have been proposed to describe how people learn to perform MCPL tasks. We describe here an R package in which a number of these have been implemented, and which has been designed such that users can relatively easily add other models. 
+A large number of formal models have been proposed to describe how people learn to perform MCPL tasks. The \code{mcplR} package for the R statistical software environment allows users to estimate a number of these. Moreover, its flexible design makes it relatively easy to implement other MCPL models. %It has been designed The \code{mcplR} package has been designed such that users can relatively easily add other models. 
 
-We will describe the features of the package through the package's implementation of the Generalized Context Model (GCM). We will also briefly illustrate how to specify a new model. 
+After introducing the general structure of MCPL models, the main features of the package are illustrated through the package's implementation of the Rescorla-Wagner model. %We will describe the features of the package through the package's implementation of the Generalized Context Model (GCM). 
+We will also briefly illustrate how to specify a new model. 
 
 \section{The general structure of MCPL models}
 
-In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the basis of a number of cues $X_{j,t}$. On each trial $t$, cue values are presented, and a prediction $R_t$ is made about the value of the criterion.
+In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the basis of a number of cues $X_{jt}$. On each trial $t$, cue values are presented, and a prediction $R_t$ is made about the value of the criterion.
 
-An MCPL model consists of a learning and response models. A learning model describes how a representation of the environment is updated as new data comes in. A response model describes how this representation is used to form predictions of the environment. A graphical representation is given in Figure~\ref{fig:mcplmodel}. A main feature of MCPL models is that responses $R_t$ are conditionally independent given representations $\psi_t$, i.e.
+An MCPL model consists of a learning and a response model. The learning model describes how a representation of the environment is updated as new data comes in. The response model describes how this representation is used to form predictions of the environment. A graphical representation is given in Figure~\ref{fig:mcplmodel}. A main feature of MCPL models is that responses $R_t$ are conditionally independent given representations $\psi_t$, i.e.
 \begin{equation}
 P(R_1,\ldots,R_T|\psi_1,\ldots,\psi_T,\greekv{\theta}_R) = \prod_{t=1}^T P(R_t|\psi_t,\greekv{\theta}_R)
 \end{equation}

@@ -4,7 +4,7 @@
 \usepackage{dcolumn}
 \usepackage{tikz}
 
-\title{mcplR: An R package to fit categorization and other multiple cue probability learning models}
+\title{mcplR: An R package for multiple cue probability learning models}
 \author{Maarten Speekenbrink}
 \affiliation{Department of Cognitive, Perceptual and Brain Sciences \\ University College London}
 
@@ -74,13 +74,13 @@ Address correspondence to M. Speekenbrink, Department of Psychology, University 
 \begin{document}
 \maketitle
 
-Multiple Cue Probability Learning (MCPL) tasks involve predicting a criterion variable on the basis of a number of cues which are probabilistically related to the criterion. This is a general type of task, and a number of paradigms in (cognitive) psychology fall under its header. When the criterion is a categorical variable, they are usually referred to as (probabilistic) category learning tasks. When the criterion is a metric variable, they are often referred to as function learning or Social Judgement tasks. A large number of formal models have been proposed to describe how people learn to perform MCPL tasks. We describe here an \code{R} package in which a number of these have been implemented, and which has been designed such that users can relatively easily add other models. 
+Multiple Cue Probability Learning (MCPL) tasks involve predicting a criterion variable on the basis of a number of cues which are probabilistically related to the criterion. This is a general type of task, and a number of paradigms in (cognitive) psychology fall under its header. When the criterion is a nominal variable, they are usually referred to as (probabilistic) category learning tasks. When the criterion is a metric variable, they are often referred to as function learning or Social Judgement tasks. A large number of formal models have been proposed to describe how people learn to perform MCPL tasks. We describe here an \code{R} package in which a number of these have been implemented, and which has been designed such that users can relatively easily add other models. 
 
-We will introduce the basic features of the package through its implementation of the Rescorla-Wagner model. We will also briefly illustrate how to specify a new model. 
+In the following, we will describe the general structure of MCPL models, and then discuss their implementation in \code{mcplR}. Basic features of the package are introduced through the implementation of the Rescorla-Wagner model. We end by briefly illustrating how to specify a new model. 
 
 \section{The general structure of MCPL models}
 
-In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the basis of a number of cues $X_{j,t}$. On each trial $t = 1,\ldots,T$, cue values are presented, and a prediction $R_t$ is made about the value of the criterion.
+In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the basis of a number of cues $x_{jt}$. On each trial $t = 1,\ldots,T$, cue values $\vec{x}_t = (x_{1t},\ldots,x_{mt})$ are presented, and the learner makes a prediction $R_t$ about the value of the criterion. After this, outcome feedback on the true value of the criterion, $y_t$, is given.
 
 \begin{figure}
 \centering
@@ -181,28 +181,45 @@ In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the bas
 \label{fig:mcplmodel}
 \end{figure}
 
-An MCPL model consists of a learning and response models. A learning model describes how a representation of the environment is updated as new data comes in. A response model describes how this representation is used to form predictions of the environment. A graphical representation is given in Figure~\ref{fig:mcplmodel}. A main feature of MCPL models is that responses $R_t$ are conditionally independent given predictions $\eta_t$, i.e.
+An MCPL model consists of a learning and response submodel. A learning model describes how a representation of the environment (e.g., the conditional distribution $P(Y_t|\vec{x}_t)$) is updated as new data comes in. A response model describes how this representation is used to form predictions of the environment. A graphical representation is given in Figure~\ref{fig:mcplmodel}. A main feature of MCPL models is that responses $R_t$ are conditionally independent given $\greekv{\eta}_t$, i.e.
 \begin{equation}
 P(R_1,\ldots,R_T|\greekv{\eta}_1,\ldots,\greekv{\eta}_T,\greekv{\theta}_R) = \prod_{t=1}^T P(R_t|\greekv{\eta}_t,\greekv{\theta}_R)
 \end{equation}
 The predictions follow from the task representations $\psi_t$ and probe cue patterns $\vec{x}_t$, e.g.
 \begin{equation}
-\eta_t = f(\psi_t,\vec{x}_t).
+\greekv{\eta}_t = f(\greekv{\psi}_t,\vec{x}_t).
 \end{equation}
 
-While the response model is always a statistical model, in many cases the learning model is not. In many learning models, representations are updated as
+While the response model is always assumed a statistical model, in many cases the learning model is not. In many learning models, representations are updated as
 \begin{equation}
 \greekv{\psi}_{t+1} = g(\greekv{\psi}_t,\vec{x}_t,y_t,\greekv{\theta}_L),
 \end{equation}
-where $g$ is some (non-linear) function. For instance, the Rescorla-Wagner model \cite{Rescorla72} involves updating stimulus response associations $\greekv{\psi}_t$ in this form. As we will see later, the GCM is different, but still deterministic, in the sense that a particular set of paired cue and criterion values $(\vec{x}_{1:t},y_{1:t})$ and parameters $\greekv{\theta}_L$ always result in the same representation $\greekv{\psi}_t$. There are exceptions to this (such as Anderson's \citeyear{Anderson91} Rational Model of Categorization), but these are currently not implemented in \code{mcplR}. Note that determinism is not a requirement to implement learning models in \code{mcplR}. However, the default estimation relies numerical optimization routines which will give inconsistent results if $\greekv{\psi}_{1:T}$ differs from iteration to iteration. Hence, for probabilistic learning models, a different estimation routine will have to be implemented.
- 
+where $g$ is some (non-linear) deterministic function. For instance, the Rescorla-Wagner model \cite{Rescorla72} involves updating stimulus response associations $\greekv{\psi}_t$ in this form. As we will see later, the GCM is different, but still deterministic, in the sense that a particular set of paired cue and criterion values $(\vec{x}_{1:t},y_{1:t})$ and parameters $\greekv{\theta}_L$ always result in the same representation $\greekv{\psi}_t$. There are exceptions to this (such as Anderson's \citeyear{Anderson91} Rational Model of Categorization), but these are currently not implemented in \code{mcplR}. Note that determinism is not a requirement to implement learning models in \code{mcplR}. However, the default estimation relies numerical optimization routines which will give inconsistent results if $\greekv{\psi}_{1:T}$ differs from iteration to iteration. Hence, for probabilistic learning models, a different estimation routine will have to be implemented.
+
+\begin{equation}
+\greekv{\eta}_t = g(\greekv{\psi}_t,\vec{x}_t)
+\end{equation}
+
 \section{Implementation in \code{mcplR}}
 
-MCPL models are implemented in \code{mcplR} through the \code{McplModel} class. The class has two slots: one for a \code{LearningModel} and one for a \code{ResponseModel}. Both these derive from the same basic class and consist minimally of a (predictor) matrix $x$, a (criterion) matrix $y$, and a parameter list. For the learning model, the predictor matrix will usually contain the cues \vec{x}, and the criterion matrix the criterion $Y$. For the response model, the predictor matrix will usually contain $\greekv{\eta}$, and the response matrix the responses $R$. 
+The mcplR package has an object-oriented design. MCPL models are defined by the \code{McplModel} class. This class has two slots: one for a \code{LearningModel} and one for a \code{ResponseModel}. Both these derive from the same basic \code{McplBaseModel} class, and consist minimally of a (predictor) matrix $\mat{X}$, a (criterion) matrix $\mat{Y}$, and a parameter list $\greekv{\theta}$. For the learning model, the predictor matrix will typically contain the cues $\vec{x}_t$ and the criterion matrix the values of the criterion $y_t$, $t=1,\ldots,T$. For the response model, the predictor matrix will typically contain the values of $\greekv{\eta}_t$, and the response matrix the responses $r_t$. 
 
 %At the heart of the \coded{mcplR} package is the class \code{McplModel}. An \code{McplModel} contains of two submodels, namely a \code{LearningModel} and a \code{ResponseModel}. Both these are derived from a general \code{McplBaseModel}, which contains a slot for a dependent variable ($y$), a slot for predictor variables ($x$), and a slot for a list with parameters. For a \code{LearningModel}, the criterion will usually be the dependent variable, and the cues the predictor variables. For a \code{ResponseModel}, the dependent variable will usually be the response variable, and the predictor variables (some function of) the predictions of the learning model. Both learning and response model can contain free variables.
 
-In addition to class definitions, the \code{mcplR} package defines a number of methods which operate on these classes. The most important from the users viewpoint is no doubt the \code{estimate} method, by which to obtain (ML) estimates of model parameters. By default, estimate uses the \code{optim} function of R to numerically minimize the negative log-likelihood of the model. If the \code{logLik} method is unavailable, the least squares estimation will be attempted.
+In addition to class definitions, the \code{mcplR} package defines a number of methods which operate on these classes. The most important from the users viewpoint is probably the \code{fit} method, by which to obtain (ML) estimates of the model parameters $\greekv{\theta} = (\greekv{\theta}_L,\greekv{\theta}_R)$. By default, estimation relies on the the \code{optim} function of \code{R} to numerically minimize the negative log-likelihood of the model. If the \code{logLik} method is unavailable for the response model, least squares estimation will be attempted. Another important method is the \code{runm} method, which when applied to a learning model computes the representations $\greekv{\psi}_t$, and when applied to an MCPL model, computes both representations $\greekv{\psi}_t$ and $\greekv{\eta}_t$. By default, the latter values are computed by calling the \code{predict} method on the learning model, with argument \code{type="link"} (this terminology is borrowed from Generalized Linear Models and indicates that the prediction is not on the scale of the criterion $y_t$, but on the scale of the internal representation $\greekv{\eta}_t$). The \code{lFr} method then passes this prediction on to the \code{x} slot of the response model. Usually, the \code{runm} method need not perform any further action on a response model\footnote{To save unneccesary computions, the \code{has.runm} method is called to check whether the \code{runm} method performs any computation. By default, this method returns FALSE.}.
+
+The mechanics of the fit method are as follows:
+\begin{enumerate}
+\item Call \code{runm} method on the MCPL model:
+\begin{enumerate}
+\item Call \code{runm} on the learning model to compute $\greekv{\psi}_t$
+\item Call the \code{lFr} method on the MCPL model. By default, this method calls the \code{predict(...,type="link")} method on the learning model, and copies the result to the \code{x} slot of the response model
+\item If required, call the \code{runm} method on the response model to compute $\greekv{\eta}_t$
+\item If required, call the \code{rFl} method on the MCPL model to pass the result back to the learning model
+\end{enumerate}
+\item Call the \code{logLik} method on the MCPL model to compute the negative log likelihood (of the responses)
+\end{enumerate}
+Starting with initial parameters, the optim routine loops through these steps until a (local) minimum in the negative log-likelihood is found. Users should be warned that there may multiple local minima, and it is good practice to try a number of different starting values to increase the chance of finding the global minimum.
 
 In the following section, we will illustrate the various options with an example 
 
@@ -212,14 +229,15 @@ The Rescorla-Wagner model \cite{Rescorla72} is a well-known associative learning
 
 From trial $t$ to $t+1$, the associative strength between a CS (cue) $j$ and US (criterion) $k$ is updated as
 \begin{equation}
-V_{j,k}(t+1) = \begin{cases} \psi_{j,k}(t) + \alpha_j \beta_{k,2} [\lambda_k - \sum_j x_j(t) V_{i,k}(t)] \quad \text{when US $k$ is present at trial $t$} \\
-V_{j,k}(t) + \alpha_j \beta_{k,2} [0 - \sum_j x_j(t) V_{i,k}(t)] \quad \text{when US $k$ is absent on trial $t$} \\
+\psi_{j,k}(t+1) = \begin{cases} \psi_{j,k}(t) + \alpha_j \beta_{k,2} [\lambda_k - \sum_j x_j(t) \psi_{i,k}(t)] \quad \text{when US $k$ is present at trial $t$} \\
+\psi_{j,k}(t) + \alpha_j \beta_{k,2} [0 - \sum_j x_j(t) \psi_{i,k}(t)] \quad \text{when US $k$ is absent on trial $t$} \\
 \end{cases}
 \end{equation}
 where $\lambda_k$ is the maximum level of associative strength of US $k$ at trial $t$ (this should be 0 when US $k$ is absent on trial $t$), $x_j(t)$ the value of the CS $j$ at trial $t$ (0 when CS $j$ is not present at $t$), $\alpha_j$ the salience of CS $j$, and $\beta_k$ the salience of the US $k$, which can be dependent on the presence or absence of $y_k(t)$.
 
-Let $\vec{y}_t = (y_ty_k(t)$ be a variable with value 0 when US $k$ is absent on trial $t$, and $\lambda$ when US $k$ is present (note that this does not have to be a single value, e.g., US $k$ can be present in different magnitudes). Similarly, let  
-As responses will normally depend on the expectancy, we let $\eta_k(t) = \sum_j V_{j,k} x_j$
+Let $\vec{y}_t = (y_k(t)$ be a variable with value 0 when US $k$ is absent on trial $t$, and $\lambda$ when US $k$ is present (note that this does not have to be a single value, e.g., US $k$ can be present in different magnitudes). Similarly, let 
+
+As responses will usually be dependent on the expectancies, we let $\eta_k(t) = \sum_j \psi_{j,k} x_j$
 
 \subsection{Creating a Rescorla-Wagner learning model}
 

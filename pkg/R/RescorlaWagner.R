@@ -11,23 +11,27 @@ setClass("RescorlaWagner",
     weights="matrix"
   )
 )
-setMethod("setPars",signature(object="RescorlaWagner"),
-  function(object,pars,unconstrained=FALSE,...,rval=c("object","parameters")) {
+setMethod("canRepar",signature(object="RescorlaWagner"),
+  function(object,...) {
+  
+  }
+)
+
+setMethod("setTransPars",signature(object="RescorlaWagner"),
+  function(object,pars,...,rval=c("object","parameters")) {
     sP.u <- function(pars,fixl) {
       if(!is.null(pars$alpha) && !fixl$alpha) pars$alpha <- exp(pars$alpha)
       if(!is.null(pars$beta) && !fixl$beta) pars$beta <- exp(pars$beta)
       pars
     }
     #object <- callNextMethod()
-    parl <- callNextMethod(object=object,pars=pars,rval="parameters",unconstrained=unconstrained,...)
+    parl <- getPars(object=object,pars=pars,rval="parameters",...)
     if(length(object@parStruct@fix)>0) fixl <- relist(object@parStruct@fix,skeleton=object@parStruct@parameters) else fixl <- relist(rep(FALSE,length(unlist(object@parStruct@parameters))),skeleton=object@parStruct@parameters)
-    if(unconstrained) {
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases) parl[[case]] <- sP.u(parl[[case]],fixl[[case]])
       } else {
         parl <- sP.u(parl,fixl)
       }
-    }
     switch(rval,
       object = {
         object@parStruct@parameters <- parl
@@ -37,14 +41,14 @@ setMethod("setPars",signature(object="RescorlaWagner"),
   }
 )
 
-setMethod("getPars",signature(object="RescorlaWagner"),
-  function(object,which="all",unconstrained=FALSE,...) {
+
+setMethod("getTransPars",signature(object="RescorlaWagner"),
+  function(object,which="all",...) {
     gP.u <- function(pars) {
       pars$alpha <- log(pars$alpha)
       pars$beta <- log(pars$beta)
       pars
     }
-    if(unconstrained) {
       pars <- object@parStruct@parameters
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases) pars[[case]] <- gP.u(pars[[case]])
@@ -57,10 +61,6 @@ setMethod("getPars",signature(object="RescorlaWagner"),
           pars <- pars[!object@parStruct@fix]
         }
       }
-    } else {
-      #pars <- callNextMethod()
-      pars <- callNextMethod(object=object,which=which,unconstrained=unconstrained,...)
-    }
     return(pars)
   }
 )
@@ -72,19 +72,19 @@ setMethod("runm",signature(object="RescorlaWagner"),
         x <- repl$x
         y <- repl$y
         pars <- repl$parameters
-        runm <- R_W.runm(x=x,y=y,alpha=pars$alpha,beta=pars$beta,ws=pars$ws)
+        runm <- R_W.runm(x=x,y=y,alpha=pars$alpha,beta=pars$beta,lambda=pars$lambda,ws=pars$ws)
         object@weights[object@nTimes@bt[case]:object@nTimes@et[case],] <- runm$weights
       }
     } else {
       pars <- object@parStruct@parameters
-      runm <- R_W.runm(x=object@x,y=object@y,alpha=pars$alpha,beta=pars$beta,ws=pars$ws)
+      runm <- R_W.runm(x=object@x,y=object@y,alpha=pars$alpha,beta=pars$beta,lambda=pars$lambda,ws=pars$ws)
       object@weights <- runm$weights
     }
     return(object)
   }
 )
 
-R_W.runm <- function(y,x,alpha,beta,ws) {
+R_W.runm <- function(y,x,alpha,beta,lambda,ws) {
   nx <- ncol(x)
   nt <- nrow(x)
   ny <- ncol(y)
@@ -97,7 +97,7 @@ R_W.runm <- function(y,x,alpha,beta,ws) {
   for(i in 1:(nt-1)) {
     for(k in 1:ny) {
       if(y[i,k] == 0) bet <- beta[k,1] else bet <- beta[k,2]
-      weight[i+1,cid[,k]] <- weight[i,cid[,k]] + alpha*bet*(y[i,k]-t(weight[i,cid[,k]])%*%x[i,])*x[i,]
+      weight[i+1,cid[,k]] <- weight[i,cid[,k]] + alpha*bet*(lambda[k]*y[i,k]-t(weight[i,cid[,k]])%*%x[i,])*x[i,]
     }
   }
   return(list(weights=weight))
@@ -128,15 +128,15 @@ setMethod("plot",signature(x="RescorlaWagner",y="missing"),
       xid=factor(rep(rep(1:nx,each=nt),ny),labels=paste("x",1:nx,sep="")),
       yid=factor(rep(1:ny,each=nt*nx),labels=paste("y",1:ny,sep="")))
     if(x@nTimes@cases>1) {
-      plot <- xyplot(w~trial|yid*id,groups=xid,data=dat,type="l",as.table=TRUE,auto.key=TRUE,...)
+      plot <- xyplot(w~trial|yid*id,groups=dat$xid,data=dat,type="l",as.table=TRUE,auto.key=TRUE,...)
     } else {
-      plot <- xyplot(w~trial|yid,groups=xid,data=dat,type="l",as.table=TRUE,auto.key=TRUE,...)
+      plot <- xyplot(w~trial|yid,groups=dat$xid,data=dat,type="l",as.table=TRUE,auto.key=TRUE,...)
     }
     plot
   }
 )
 
-RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),ws=0),data,subset,fixed=list(alpha=FALSE,beta=TRUE,ws=TRUE),parStruct,remove.intercept=FALSE,base=NULL,ntimes=NULL,replicate=TRUE) {
+RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=1,ws=0),data,subset,fixed=list(alpha=FALSE,beta=TRUE,lambda=TRUE,ws=TRUE),parStruct,remove.intercept=FALSE,base=NULL,ntimes=NULL,replicate=TRUE) {
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remove.intercept) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remove.intercept)
   x <- dat$x
   y <- dat$y
@@ -146,6 +146,7 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),ws=0),da
   parfill <- function(parameters) {
     if(is.null(parameters$alpha)) parameters$alpha <- .1
     if(is.null(parameters$beta)) parameters$beta <- c(1,1)
+    if(is.null(parameters$lambda)) parameters$lambda
     if(is.null(parameters$ws)) parameters$ws <- 0
     # initialize alpha
     if(length(parameters$alpha)!=1 && length(parameters$alpha)!=nx) stop("alpha must have length 1 or nx")
@@ -160,6 +161,7 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),ws=0),da
     }
     #if(length(parameters$beta)!=1 && length(parameters$beta)!=ny) stop("beta must have length 1 or ny")
     # intialize ws
+    if(length(parameters$lambda) != ny) parameters$lambda <- rep(parameters$lambda,length=ny)
     if(length(parameters$ws)!=1 && length(parameters$ws)!=nx*ny) stop("ws must have length 1 or nx*ny")
     parameters
   }

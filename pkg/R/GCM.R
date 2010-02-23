@@ -25,13 +25,14 @@ setClass("GCMinterval",
   contains="GCM"
 )
 
-setMethod("is.unconstrained",signature(object="GCM"),
+setMethod("canRepar",signature(object="GCM"),
   function(object,...) {
+    repar <- TRUE
     if(is(object@parStruct@constraints,"LinConstraintsList") || is(object@parStruct@constraints,"BoxConstraintsList")) {
-      return(FALSE)
-    } else {
-      return(TRUE)
+      res <- FALSE
     }
+    # TODO: check whether \lambda is fixed
+    return(repar)
   }
 )
 
@@ -92,23 +93,9 @@ gcm.runm.unconstrained <- function(x,y,parameters,distance,similarity,sampling,.
   return(list(weights=w))
 }
 
-setMethod("setPars",signature(object="GCM"),
+setMethod("setTransPars",signature(object="GCM"),
   function(object,pars,internal=FALSE,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
-    if(!internal || !is.null(object@parStruct@constraints)) {
-      parl <- callNextMethod(object=object,pars=pars,internal=internal,rval="parameters",...)
-      if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
-        for(case in 1:object@nTimes@cases){
-          if(length(parl[[case]]$w) == ncol(object@x) - 1) {
-            parl[[case]]$w <- c(parl[[case]]$w,1-sum(parl[[case]]$w))
-          }
-        }
-      } else {
-        if(length(parl$w) == ncol(object@x) - 1) {
-          parl$w <- c(parl$w,1-sum(parl$w))
-        }
-      }
-    } else {
       # use reparametrization
       sP.u <- function(pars,fix) {
         pr <- pars$r
@@ -144,7 +131,6 @@ setMethod("setPars",signature(object="GCM"),
         parl <- sP.u(parl,fix)
       }
       object@parStruct@fix <- fixold
-    }
     switch(rval,
       object = {
         object@parStruct@parameters <- parl
@@ -153,21 +139,21 @@ setMethod("setPars",signature(object="GCM"),
   }
 )
 
-setMethod("getPars",signature(object="GCM"),
-  function(object,which="all",internal=FALSE,...) {
+
+setMethod("getTransPars",signature(object="GCM"),
+  function(object,which="all",...) {
     gP.u <- function(pars) {
-      pr <- pars$r
-      pq <- pars$q
-      if(is.null(pr)) if(attr(object@distance,"name") == "euclidian") pr <- 2 else pr <- 1
-      if(is.null(pq)) if(attr(object@distance,"name") == "gaussian") pq <- 2 else pq <- 1
-      pars$lambda <- pars$lambda^{pq/pr}
-      pars$w <- log(pars$lambda*pars$w)
-      pars$lambda <- NULL
-      if(!is.null(pars$gamma)) pars$gamma <- log(pars$gamma)
-      if(!is.null(pars$sdy)) pars$sdy <- log(pars$sdy)
-      pars
-    }
-    if(internal && is.null(object@parStruct@constraints)) {
+          pr <- pars$r
+          pq <- pars$q
+          #if(is.null(pr)) if(attr(object@distance,"name") == "euclidian") pr <- 2 else pr <- 1
+          #if(is.null(pq)) if(attr(object@distance,"name") == "gaussian") pq <- 2 else pq <- 1
+          pars$lambda <- pars$lambda^{pq/pr}
+          pars$w <- log(pars$lambda*pars$w)
+          pars$lambda <- NULL
+          if(!is.null(pars$gamma)) pars$gamma <- log(pars$gamma)
+          if(!is.null(pars$sdy)) pars$sdy <- log(pars$sdy)
+          pars
+        }
       pars <- object@parStruct@parameters
       if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
         for(case in 1:object@nTimes@cases){
@@ -191,13 +177,9 @@ setMethod("getPars",signature(object="GCM"),
           pars <- pars[!fix]
         }
       }
-    } else {
-      pars <- callNextMethod(object=object,which=which,...)
-    }
     return(pars)
   }
 )
-
 setMethod("predict",signature(object="GCM"),
   function(object,...) {
     pred <- vector()
@@ -454,8 +436,9 @@ GCM <- function(formula,level=c("nominal","interval"),distance=c("cityblock","eu
   
   if(missing(parStruct)) {
     parStruct <- ParStruct(parameters=parameters,replicate=replicate,
-      fixed = if(missing(fixed)) NULL else fixed,
-      ntimes = if(missing(ntimes)) NULL else ntimes)
+        fixed = if(missing(fixed)) NULL else fixed,
+        ntimes = if(missing(ntimes)) NULL else ntimes
+      )
   }
   
   if(level=="nominal") {

@@ -1,36 +1,48 @@
-\name{GlmResponse-class}
-\docType{class}
-\alias{GlmResponse-class}
-\alias{fit,GlmResponse-method}
-\alias{predict,GlmResponse-method}
-\alias{logLik,GlmResponse-method}
+\name{GlmResponse}
+\alias{GlmResponse}
 
-\title{Class "GlmResponse"}
-\description{Use a Generalized Linear Model to model responses.}
-\section{Objects from the Class}{
-Objects can be created by calls of the form \code{new("GlmResponse", ...)}.
+\title{Generate a Generalized Linear Model (GLM) Response model}
+\description{
+Constructs a \code{\linkS4class{GlmResponse}} object.
 }
-\section{Slots}{
-	 \describe{
-    \item{\code{x}:}{A \code{"matrix"}, containing values of the response options.}
-    \item{\code{y}:}{Object of class \code{"matrix"}, containing dummy coded response variable.}
-    \item{\code{parameters}:}{A (named) \code{"list"} with parameters. }
-    \item{\code{parStruct}:}{Object of class \code{"ParStruct"}, specifying parameter constraints.}
-    \item{\code{nTimes}:}{Object of class \code{"NTimes"}.}
-    \item{\code{family}:}{A family object. See \code{\link[stats]{glm}}}
-  }
+\usage{
+GlmResponse(formula,learnpredname,data,family=gaussian(),parameters=list(),
+  ntimes=NULL,replicate=TRUE,fixed,base=NULL,parStruct,subset)
 }
-\section{Extends}{
-Class \code{"\linkS4class{ResponseModel}"}, directly.
-Class \code{"\linkS4class{McplBaseModel}"}, by class "ResponseModel", distance 2.
+\arguments{
+\item{formula}{an object of class \code{formula} (or one that can be coerced to
+ that class): a symbolic description of the model to be fitted. For more details
+ of model specification, see \code{\link{lm}} or \code{\link{glm}}.}
+\item{learnpredname}{a character vector specifying the name of the learning 
+ model predictions in the formula. See details.}
+\item{data}{(optional) data frame.}
+\item{family}{a \code{\link{family}} object. For more details, see 
+ \code{\link{glm}}.}
+\item{parameters}{an (optional) named list with (starting) values of the 
+parameters. If no values are supplied, defaults are used. }
+\item{ntimes}{an optional vector with, for each repetition in the data, the
+total number of trials.}
+\item{replicate}{logical to indicate whether model parameters are identical for 
+each replication in ntimes.}
+\item{fixed}{a logical vector indicating whether model parameters are fixed or 
+free}
+\item{base}{assign one of the levels of the criterion variable the role of base 
+category.}
+\item{parStruct}{a ParStruct object. If supplied, the fixed argument above will 
+be ignored}
+\item{subset}{(optional) subset.}
 }
-\section{Methods}{
-  \describe{
-    \item{fit}{\code{signature(object = "GlmResponse")}: ... }
-    \item{predict}{\code{signature(object = "GlmResponse")}: ... }
-	 }
-}
+\details{The \code{GlmResponse} function sets up a GLM to use as ResponseModel.
+If the returned \code{\linkS4class{GlmResponse}} is to be used as part of an
+\code{\linkS4class{McplModel}}, then the formula should contain an entry
+for the predictions of the learningModel in that McplModel. When fitting the
+McplModel, the predictions of the learningModel at the current iteration will be 
+used. It is therefore necessary to give the name of the predictions of the 
+learning model in the formula, so that this variable can be replaced with
+the current variable in the estimation. Ideally, the variable specified by
+\code{learnmmodpred} should not be contained in the data.frame specified 
+by \code{data}.}
 
-\author{Maarten Speekenbrink}
+\value{A (fitted) object of class \code{\linkS4class{GlmResponse}}.}
 
-\keyword{classes}
+\keyword{models}

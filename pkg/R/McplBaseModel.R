@@ -163,3 +163,27 @@ setMethod("fit",signature(object="McplBaseModel"),
     object
   }
 )
+
+setMethod("has.runm",signature(object="McplBaseModel"),
+  function(object,...) {
+    FALSE
+  }
+)
+
+setMethod("has.lFr",signature(object="McplBaseModel"),
+  function(object,...) {
+    FALSE
+  }
+)
+
+setMethod("has.rFl",signature(object="McplBaseModel"),
+  function(object,...) {
+    FALSE
+  }
+)
+
+setMethod("canRepar",signature(object="McplBaseModel"),
+  function(object,...) {
+    FALSE
+  }
+)

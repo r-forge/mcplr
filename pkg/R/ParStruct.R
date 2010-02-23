@@ -9,7 +9,7 @@ setClass("ParStruct",
 )
 
 ParStruct <- function(parameters,replicate=TRUE,fixed=NULL,ntimes=NULL,
-                constraints=NULL) {
+                constraints=NULL) {         
   parStruct <- new("ParStruct")
   parStruct@parameters <- parameters
   if(replicate) parStruct@replicate <- TRUE else parStruct@replicate <- FALSE

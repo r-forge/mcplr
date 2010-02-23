@@ -12,8 +12,8 @@
 Constructs a Rescorla-Wagner learning model.
 }
 \usage{
-RescorlaWagner(formula,parameters=list(alpha=.1,beta=c(1,1),ws=0),data,subset,
-fixed=list(alpha=FALSE,beta=TRUE,ws=TRUE),parStruct,remove.intercept=FALSE,
+RescorlaWagner(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=1,ws=0),data,subset,
+fixed=list(alpha=FALSE,beta=TRUE,lambda=TRUE,ws=TRUE),parStruct,remove.intercept=FALSE,
 base=NULL,ntimes=NULL,replicate=TRUE)
 }
 \arguments{
@@ -41,7 +41,14 @@ total number of trials.}
 parameters considered identical for each series?}
 }
 \details{The Rescorla-Wagner model (Rescorla & Wagner, 1972) is an associative
-learning model. 
+learning model.
+
+The associative strength of the connection between an CS j and US k is updated as:
+
+\deqn{w_{jk}(t) = w_{jk}(t-1) + [\alpha_j \beta_k](\lambda_k y_k - \sum_i w_{ik}(t-1) x_i(t))}{w[jk](t) = w[jk](t-1) + (alpha[j]*beta[k])*(lambda[k] y[k] - sum w[ik](t-1) x[i](t))}
+
+In this expression \eqn{\lambda_k}{lambda[k]} is a scaling parameter; when \eqn{y_k}{y[k]} takes values 0 and 1 when US k is absent/present respectively, then \eqn{\lambda_k}{lambda[k]} reflects the maximum conditioning US k can produce, i.e.,  it represents the limit of learning. The \eqn{\alpha_j}{alpha[j]} and \eqn{\beta_k}{beta[k]} are rate parameters dependent, respectively, on the CS \eqn{x_j}{x[j]} and US \eqn{y_k}{y[k]}. These parameters are viewed as having fixed values based on the physical properties of the particular CS and US. On any given trial the current associative strength, \eqn{\sum_i w_{ik}x_i(t)}{sum[i] w[ik]x[i](t)}, is compared with \eqn{\lambda_k y_k}{lambda[k]*y[k]} and the difference is treated like an error to be corrected; this happens by producing a change in associative strength accordingly. Consequently, the Rescorla-Wagner model is an error-correction model.
+
 }
 \value{An object of class \code{LearningModel}}
 \references{
@@ -57,6 +64,8 @@ data(WPT)
 ## initialize model
 mod <- RescorlaWagner(y~x1+x2+x3+x4,data=WPT,ntimes=c(200,200),
 remove.intercept=TRUE)
+## compute associative strengths
+mod <- runm(mod)
 ## estimate free parameters
 \dontrun{mod <-fit(mod)}
 summary(mod)

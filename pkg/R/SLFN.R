@@ -219,9 +219,9 @@ setMethod("plot",signature(x="SLFN",y="missing"),
       xid=factor(rep(rep(1:nx,each=nt),ny),labels=paste("x",1:nx,sep="")),
       yid=factor(rep(1:ny,each=nt*nx),labels=paste("y",1:ny,sep="")))
     if(x@nTimes@cases>1) {
-      plot <- xyplot(w~trial|yid*id,groups=xid,data=dat,type="l",as.table=TRUE,auto.key=TRUE,...)
+      plot <- xyplot(w~trial|yid*id,groups=dat$xid,data=dat,type="l",as.table=TRUE,auto.key=TRUE,...)
     } else {
-      plot <- xyplot(w~trial|yid,groups=xid,data=dat,type="l",as.table=TRUE,auto.key=TRUE,...)
+      plot <- xyplot(w~trial|yid,groups=dat$xid,data=dat,type="l",as.table=TRUE,auto.key=TRUE,...)
     }
     plot
   }

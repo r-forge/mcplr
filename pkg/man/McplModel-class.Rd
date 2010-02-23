@@ -30,7 +30,7 @@
 
 	\item{\code{learningModel}:}{A \code{\link{LearningModel-class}} object.}
 
-	\item{\code{learningModel}:}{A \code{\link{ResponseModel-class}} object.}
+	\item{\code{responseModel}:}{A \code{\link{ResponseModel-class}} object.}
 
 	}
 }

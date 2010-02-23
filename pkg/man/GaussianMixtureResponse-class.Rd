@@ -21,8 +21,7 @@ Objects can be created by calls of the form \code{new("GaussianMixtureResponse",
     \item{\code{sds}:}{A \code{"list"}, with for each repetition in nTimes, the standard deviation of the mixture components. Currently, only components with identical means are supported, and the values in this slot are set by a single "sd" parameter (see "parameters" slot).}
     \item{\code{x}:}{A \code{"matrix"}, containing values of the response options.}
     \item{\code{y}:}{Object of class \code{"matrix"}, containing dummy coded response variable.}
-    \item{\code{parameters}:}{A (named) \code{"list"} with parameters.}
-    \item{\code{parStruct}:}{Object of class \code{"ParStruct"}, specifying parameter constraints.}
+    \item{\code{parStruct}:}{Object of class \code{"ParStruct"}, specifying parameters and (optional) constraints.}
     \item{\code{nTimes}:}{Object of class \code{"NTimes"}.}
   }
 }

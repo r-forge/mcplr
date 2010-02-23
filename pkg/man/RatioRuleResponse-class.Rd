@@ -14,11 +14,10 @@ or by \code{new("RatioRuleResponse", ...)}.
 }
 \section{Slots}{
 	 \describe{
-    \item{\code{family}:}{Object of S3 class "family". See \code{\link{family}} for details.}
+    \item{\code{transformation}:}{The transformation function.}
     \item{\code{x}:}{A \code{"matrix"}, containing values of the response options.}
     \item{\code{y}:}{Object of class \code{"matrix"}, containing dummy coded response variable.}
-    \item{\code{parameters}:}{A (named) \code{"list"} with parameters. }
-    \item{\code{parStruct}:}{Object of class \code{"ParStruct"}, specifying parameter constraints.}
+    \item{\code{parStruct}:}{Object of class \code{"ParStruct"}, specifying parameters and (optional) constraints.}
     \item{\code{nTimes}:}{Object of class \code{"NTimes"}.}
   }
 }

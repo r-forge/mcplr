@@ -6,7 +6,7 @@
 \alias{AICc,logLik-method}
 \title{Corrected Akaike Information Criterion}
 \description{
-  This generic function calculates the corrected Akaike information criterion,
+  This generic function calculates the small-sample corrected Akaike information criterion,
   for one or several
   fitted model objects for which a log-likelihood value can be obtained,
   according to the formula \eqn{-2 \mbox{log-likelihood} + 2 n_{par}
@@ -21,7 +21,7 @@ AICc(object, \dots)
 \arguments{
   \item{object}{An object of a suitable class for the AICc to be
     calculated - usually a \code{"logLik"} object or an object for which
-    a \code{\link[stats4:logLik-method]{logLik}} method exists.
+    a \code{\link[stats:logLik]{logLik}} method exists.
   }
   \item{\dots}{Some methods for this generic function may take
     additional, optional arguments.  At present none do.}
@@ -35,7 +35,7 @@ AICc(object, \dots)
 }
 \author{Maarten Speekenbrink}
 %\note{}
-\seealso{\code{\link[stats4:logLik-method]{logLik}}, \code{\link[stats4:AIC-method]{AIC}}}
+\seealso{\code{\link[stats:logLik]{logLik}}, \code{\link[stats4:AIC-methods]{AIC}}}
 \examples{
 
 }

@@ -37,12 +37,14 @@ exportMethods(
 	AIC,
 	AICc,
 	BIC,
+	fit,
+	getPars,
+	lFr,
+	predict,
+	rFl,
 	Rsq,
 	runm,
-	fit,
 	setPars,
-	getPars,
-	predict,
 	show,
 	summary
 )
