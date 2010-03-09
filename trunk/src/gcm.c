@@ -38,11 +38,11 @@ void gcm_nominal(int *y, int *ny, double *x, int *nx, int *bt, int *et, int *lt,
 	    }
 	    // make prediction
 	    syp = 0.0;
-		for(int j=0; j < *ny; j++)
-		{
-		  ypred[j + t * *ny] = pow(sim[j], *gamma);
-		  syp += ypred[j + t * *ny];
-		}
+			for(int j=0; j < *ny; j++)
+			{
+			  ypred[j + t * *ny] = pow(sim[j], *gamma);
+			  syp += ypred[j + t * *ny];
+			}
 	    for(int j=0; j < *ny; j++)
 	    {
 	      ypred[j + t * *ny] = ypred[j + t * *ny] / syp;
@@ -50,3 +50,4 @@ void gcm_nominal(int *y, int *ny, double *x, int *nx, int *bt, int *et, int *lt,
 	  }
   }
 }
+

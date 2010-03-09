@@ -372,10 +372,32 @@ gcm.sampling <- function(type="uniform") {
   fun
 }
 
-GCM <- function(formula,level=c("nominal","interval"),distance=c("cityblock","euclidian","minkowski"),similarity=c("exponential","gaussian","general"),sampling=c("uniform","power","exponential"),parameters=list(w=NULL,lambda=1),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL,remove.intercept=FALSE) {
+GCM <- function(formula,level=c("nominal","interval"),distance=c("cityblock","euclidian","minkowski"),similarity=c("exponential","gaussian","general"),sampling=c("uniform","power","exponential"),parameters=list(w=NULL,lambda=1,r=1,q=1),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL,remove.intercept=FALSE) {
   level <- match.arg(level)
-  if(!is.function(distance)) distance <- gcm.distance(match.arg(distance))
-  if(!is.function(similarity)) similarity <- gcm.similarity(match.arg(similarity))
+  if(!is.function(distance)) {
+  	distance <- match.arg(distance)
+  	if(!is.null(parameters$r)) {
+  		dist <- switch(parameters$r,
+  		  "cityblock",
+  		  "euclidian")
+  		if(is.null(dist)) dist <- "minkowski"
+  		if(dist != distance) warning("mismatch between distance argument and parameter r; will use",dist,"distance function")
+  		distance <- dist
+  	}
+  	distance <- gcm.distance(distance)
+  }
+  if(!is.function(similarity)) {
+    similarity <- match.arg(similarity)
+  	if(!is.null(parameters$q)) {
+  		sim <- switch(parameters$q,
+  		  "exponential",
+  		  "gaussian")
+  		if(is.null(sim)) sim <- "general"
+  		if(sim != similarity) warning("mismatch between similarity argument and parameter q; will use",sim,"similarity function")
+  		similarity <- sim
+  	}
+  	similarity <- gcm.similarity(similarity)
+  }
   if(!is.function(sampling)) sampling <- gcm.sampling(match.arg(sampling))
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remove.intercept) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remove.intercept)
   x <- dat$x
