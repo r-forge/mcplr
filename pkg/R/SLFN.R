@@ -115,7 +115,11 @@ slfn.runm <- function(y,x,ws,eta,alpha,beta,grad,window.size=0) {
   for(i in 1:(nt-1)) {
     j <- ifelse(i-window.size > 0, i-window.size,1)
     #for(k in 1:ny) weight[i+1,cid[,k]] <- weight[i,cid[,k]] - (eta/(i)^alpha)*(1/abs(i-j+1))*grad(y=y[j:i,k],x=x[j:i,],w=weight[i,cid[,k]]) + ifelse(i>1,beta*(weight[i,cid[,k]]-as.numeric(weight[i-1,cid[,k]])),0)
-    weight[i+1,,] <- weight[i,,] - (eta/(i)^alpha)*(1/abs(i-j+1))*grad(y=y[j:i,],x=x[j:i,],w=weight[i,,]) + ifelse(i>1,beta*(weight[i,,]-weight[i-1,,]),0)
+    if(i>1 & any(beta > 0)) {
+    	weight[i+1,,] <- weight[i,,] - (eta/(i)^alpha)*(1/abs(i-j+1))*grad(y=y[j:i,],x=x[j:i,],w=weight[i,,]) + beta*(weight[i,,]-weight[i-1,,])
+    } else {
+    	weight[i+1,,] <- weight[i,,] - (eta/(i)^alpha)*(1/abs(i-j+1))*grad(y=y[j:i,],x=x[j:i,],w=weight[i,,])
+    }
   }
   #if(ny==1) dimnames(weight)[[2]] <- xnames
   return(list(weight=weight))
