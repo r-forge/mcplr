@@ -18,7 +18,12 @@ setClass("ContinuousRescorlaWagner",
 
 setMethod("canRepar",signature(object="RescorlaWagner"),
   function(object,...) {
-  
+    repar <- TRUE
+    if(is(object@parStruct@constraints,"LinConstraintsList") || is(object@parStruct@constraints,"BoxConstraintsList")) {
+      res <- FALSE
+    }
+    # TODO: check whether \lambda is fixed
+    return(repar)
   }
 )
 
