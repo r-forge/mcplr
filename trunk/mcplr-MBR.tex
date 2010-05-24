@@ -80,7 +80,7 @@ In the following, we will first describe the general structure of MCPL models, a
 
 \section{The general structure of MCPL models}
 
-In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the basis of a number of cues $X_{jt}$. On each trial $t = 1,\ldots,T$, cue values $\vec{x}_t = (x_{1t},\ldots,x_{mt})$ are presented, and the learner makes a prediction $R_t$ about the value of the criterion. After this, outcome feedback on the true value of the criterion, $y_t$, is given.
+In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the basis of a number of cues $X_{jt}$. On each trial $t = 1,\ldots,T$, cue values $\vec{x}_t = (x_{1t},\ldots,x_{mt})$ are presented, and the learner makes a prediction $R_t$ about the value of the criterion. After this, outcome feedback on the true value of the criterion, $y_t$, is given. The learner is to use this outcome feedback to improve upon his or her predictions.
 
 \begin{figure}
 \centering
@@ -181,7 +181,12 @@ In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the bas
 \label{fig:mcplmodel}
 \end{figure}
 
-An MCPL model consists of a learning and response submodel. A learning model describes how a representation of the environment (e.g., the conditional distribution $P(Y_t|\vec{x}_t)$) is updated as new data comes in. A response model describes how this representation is used to form predictions of the environment. A graphical representation is given in Figure~\ref{fig:mcplmodel}. A main feature of MCPL models is that responses $R_t$ are conditionally independent given $\greekv{\eta}_t$, i.e.
+An MCPL model consists of a learning and response submodel. In general, the learning model describes how a representation of the environment is updated as new data comes in. The response model describes how this representation is used to form predictions of the environment. A graphical representation is given in Figure~\ref{fig:mcplmodel}. 
+
+The learning model uses the feedback $y_t$ on trial $t$ to update its representation of the environment. This representation is generally the conditional distribution $P(Y_t|\vec{x}_t)$ that is formed by the learning model is abstracted as a set of parameters 
+(e.g., the conditional distribution ) 
+
+A main feature of MCPL models is that responses $R_t$ are conditionally independent given $\greekv{\eta}_t$, i.e.
 \begin{equation}
 P(R_1,\ldots,R_T|\greekv{\eta}_1,\ldots,\greekv{\eta}_T,\greekv{\theta}_R) = \prod_{t=1}^T P(R_t|\greekv{\eta}_t,\greekv{\theta}_R)
 \end{equation}
