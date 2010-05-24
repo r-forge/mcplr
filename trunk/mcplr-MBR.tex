@@ -74,13 +74,13 @@ Address correspondence to M. Speekenbrink, Department of Psychology, University 
 \begin{document}
 \maketitle
 
-Multiple Cue Probability Learning (MCPL) tasks involve predicting a criterion variable on the basis of a number of cues which are probabilistically related to the criterion. This is a general type of task, and a number of paradigms in (cognitive) psychology fall under its header. When the criterion is a nominal variable, they are usually referred to as (probabilistic) category learning tasks. When the criterion is a metric variable, they are often referred to as function learning or Social Judgement tasks. A large number of formal models have been proposed to describe how people learn to perform MCPL tasks. We describe here an \code{R} package in which a number of these have been implemented, and which has been designed such that users can relatively easily add other models. 
+Multiple Cue Probability Learning (MCPL) tasks involve predicting a criterion variable on the basis of a number of cues which are probabilistically related to the criterion. This is a general type of task, and a number of paradigms in (cognitive) psychology fall under its header. When the criterion is a nominal variable, they are usually referred to as (probabilistic) category learning tasks. When the criterion is a metric variable, they are often referred to as function learning or Social Judgement tasks. A large number of formal models have been proposed to describe how people learn to perform MCPL tasks. We describe here an \code{R} package in which a number of these have been implemented. The package has been designed such that users can relatively easily add other models. 
 
-In the following, we will describe the general structure of MCPL models, and then discuss their implementation in \code{mcplR}. Basic features of the package are introduced through the implementation of the Rescorla-Wagner model. We end by briefly illustrating how to specify a new model. 
+In the following, we will first describe the general structure of MCPL models, and then discuss their implementation in \code{mcplR}. Basic features of the package are introduced through the implementation of the Rescorla-Wagner model. After an overview of the other models and methods implemented in the package, we end by briefly illustrating how to specify a new model. 
 
 \section{The general structure of MCPL models}
 
-In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the basis of a number of cues $x_{jt}$. On each trial $t = 1,\ldots,T$, cue values $\vec{x}_t = (x_{1t},\ldots,x_{mt})$ are presented, and the learner makes a prediction $R_t$ about the value of the criterion. After this, outcome feedback on the true value of the criterion, $y_t$, is given.
+In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the basis of a number of cues $X_{jt}$. On each trial $t = 1,\ldots,T$, cue values $\vec{x}_t = (x_{1t},\ldots,x_{mt})$ are presented, and the learner makes a prediction $R_t$ about the value of the criterion. After this, outcome feedback on the true value of the criterion, $y_t$, is given.
 
 \begin{figure}
 \centering
