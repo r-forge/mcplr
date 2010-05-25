@@ -8,7 +8,7 @@
 setClass("RescorlaWagner",
   contains="LearningModel",
   representation(
-    weights="matrix"
+    weights="array"
   )
 )
 
@@ -83,7 +83,7 @@ setMethod("runm",signature(object="RescorlaWagner"),
         y <- repl$y
         pars <- repl$parameters
         runm <- R_W.runm(x=x,y=y,alpha=pars$alpha,beta=pars$beta,lambda=pars$lambda,ws=pars$ws)
-        object@weights[object@nTimes@bt[case]:object@nTimes@et[case],] <- runm$weights
+        object@weights[,,object@nTimes@bt[case]:object@nTimes@et[case]] <- runm$weights
       }
     } else {
       pars <- object@parStruct@parameters
@@ -103,7 +103,7 @@ setMethod("runm",signature(object="ContinuousRescorlaWagner"),
         y <- repl$y
         pars <- repl$parameters
         runm <- C_R_W.runm(x=x,y=y,alpha=pars$alpha,beta=pars$beta,lambda=pars$lambda,ws=pars$ws)
-        object@weights[object@nTimes@bt[case]:object@nTimes@et[case],] <- runm$weights
+        object@weights[,,object@nTimes@bt[case]:object@nTimes@et[case]] <- runm$weights
       }
     } else {
       pars <- object@parStruct@parameters
@@ -122,36 +122,64 @@ R_W.runm <- function(y,x,alpha,beta,lambda,ws) {
   if(length(lambda) == 1) lambda <- rep(lambda,length=ny)
   if(length(beta)==1) beta <- matrix(beta,nrow=ny,ncol=2)
   if(is.vector(beta)) beta <- matrix(beta,nrow=ny,ncol=2)
-  cid <- matrix(1:(nx*ny),nrow=nx)
-  weight <- matrix(,nrow=nt,ncol=length(cid))
-  weight[1,] <- w <- ws
+  
+  #cid <- matrix(1:(nx*ny),nrow=nx)
+  weights <- array(0.0,dim=c(nx,ny,nt))
+  weights[,,1] <- w <- ws
   for(i in 1:(nt-1)) {
     for(k in 1:ny) {
       if(y[i,k] == 0) bet <- beta[k,1] else bet <- beta[k,2]
-      weight[i+1,cid[,k]] <- weight[i,cid[,k]] + alpha*bet*(lambda[k]*y[i,k]-t(weight[i,cid[,k]])%*%x[i,])*x[i,]
+      weights[,k,i+1] <- weights[,k,i] + alpha*bet*(lambda[k]*y[i,k]-t(weights[,k,i])%*%x[i,])*x[i,]
     }
   }
-  return(list(weights=weight))
+  return(list(weights=weights))
 }
 
 C_R_W.runm <- function(y,x,alpha,beta,lambda,ws) {
   nx <- ncol(x)
   nt <- nrow(x)
   ny <- ncol(y)
-  #if(length(alpha)==1) alpha <- rep(alpha,nx)
+  if(length(alpha)==1) alpha <- rep(alpha,nx)
+  if(length(alpha)!=nx) stop("alpha needs to have length 1 or nx")
   if(length(beta)==1) beta <- rep(beta,ny)
-  #if(is.vector(beta)) beta <- matrix(beta,nrow=ny,ncol=2)
-  cid <- matrix(1:(nx*ny),nrow=nx)
-  weight <- matrix(,nrow=nt,ncol=length(cid))
-  weight[1,] <- w <- ws
-  for(i in 1:(nt-1)) {
-    for(k in 1:ny) {
-      #if(y[i,k] == 0) bet <- beta[k,1] else bet <- beta[k,2]
-      weight[i+1,cid[,k]] <- weight[i,cid[,k]] + alpha*bet[k]*(lambda[k]*y[i,k]-t(weight[i,cid[,k]])%*%x[i,])*x[i,]
-    }
+  if(length(alpha)!=nx) stop("beta needs to have length 1 or ny")
+  if(length(lambda)==1) y <- y*lambda else {
+    if(length(lambda)!=ny) stop("lambda needs to have length 1 or ny") 
+    y <- t(t(y)*lambda)
   }
-  return(list(weights=weight))
+  eta <- outer(alpha,beta)
+  weights <- array(0.0,dim=c(nx,ny,nt))
+  weights[,,1] <- ws
+  ypred <- array(0.0,dim=c(ny,nt))
+  weights <- array(.C("slfn",
+	  y=as.double(y),
+	  ny=as.integer(ny), 
+	  x=as.double(x), 
+	  nx=as.integer(nx), 
+	  bt=as.integer(1),
+	  et=as.integer(nt),
+	  lt=as.integer(1), 
+	  eta=as.double(eta), 
+	  actfun = as.integer(1),
+	  w = as.double(weights),
+	  ypred = as.double(ypred),
+	  PACKAGE="mcplR"
+  )$w,dim=c(nx,ny,nt))
+  
+  return(list(weights=weights))
 }
+  #if(is.vector(beta)) beta <- matrix(beta,nrow=ny,ncol=2)
+#  cid <- matrix(1:(nx*ny),nrow=nx)
+#  weight <- matrix(,nrow=nt,ncol=length(cid))
+#  weight[1,] <- w <- ws
+#  for(i in 1:(nt-1)) {
+#    for(k in 1:ny) {
+#      #if(y[i,k] == 0) bet <- beta[k,1] else bet <- beta[k,2]
+#      weight[i+1,cid[,k]] <- weight[i,cid[,k]] + alpha*beta[k]*(lambda[k]*y[i,k]-t(weight[i,cid[,k]])%*%x[i,])*x[i,]
+#    }
+#  }
+#  return(list(weights=weight))
+#}
 
 setMethod("predict",signature(object="RescorlaWagner"),
   function(object,...) {
@@ -160,7 +188,7 @@ setMethod("predict",signature(object="RescorlaWagner"),
     nx <- ncol(object@x)
     cid <- matrix(1:(nx*ny),nrow=nx)
     pred <- matrix(nrow=nt,ncol=ny)
-    for(i in 1:ny) pred[,i] <- rowSums(object@x*object@weights[,cid[,i]])
+    if(!is.matrix(object@weights)) for(i in 1:ny) pred[,i] <- colSums(t(object@x)*object@weights[,i,]) else pred <- colSums(t(object@x)*object@weights)
     return(pred)
   }
 )
@@ -190,7 +218,7 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=1
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remove.intercept) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remove.intercept)
   x <- dat$x
   y <- dat$y
-  if(!all(y) %in% c(0,1)) {
+  if(!all(y %in% c(0,1))) {
   	warning("The criterion variable is not dichotomous. Will create a Rescorla Wagner model for continuous criterion.")
   	cont <- TRUE
   } else cont <- FALSE
@@ -219,7 +247,7 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=1
     } else {
     	if(length(parameters$beta)!=ny && length(parameters$beta)!=2) stop("beta should have length 1 or ny")
     	parameters$beta <- as.vector(parameters$beta)
-    	}
+    	#}
     }
     #if(length(parameters$beta)!=1 && length(parameters$beta)!=ny) stop("beta must have length 1 or ny")
     # intialize ws
@@ -258,14 +286,14 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=1
 		mod <- new("RescorlaWagner",
 		  x = x,
 		  y = y,
-		  weights = matrix(nrow=nt,ncol=length(cid)),
+		  weights = array(0.0,dim=c(nx,ny,nt)),
 		  parStruct=parStruct,
 		  nTimes=nTimes)
   } else {
 		mod <- new("ContinuousRescorlaWagner",
 		  x = x,
 		  y = y,
-		  weights = matrix(nrow=nt,ncol=length(cid)),
+		  weights = array(0.0,dim=c(nx,ny,nt)),
 		  parStruct=parStruct,
 		  nTimes=nTimes)
   }  

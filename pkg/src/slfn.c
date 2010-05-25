@@ -8,7 +8,7 @@ void slfn(double *y, int *ny, double *x, int *nx, int *bt, int *et, int *lt, dou
   x = nx*nt matrix
   eta = nx*ny matrix
   actfun: 1 = linear, 2 = logistic, 3 = softmax
-  w = nx*ny*nt matrix
+  w = nx*ny*nt array
   ypred = ny*nt matrix
   */ 
  

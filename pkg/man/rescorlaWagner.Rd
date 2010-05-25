@@ -1,8 +1,10 @@
 \name{RescorlaWagner}
 \alias{RescorlaWagner}
 \alias{RescorlaWagner-class}
+\alias{ContinuousRescorlaWagner-class}
 \alias{fit,RescorlaWagner-method}
 \alias{runm,RescorlaWagner-method}
+\alias{runm,ContinuousRescorlaWagner-method}
 \alias{getPars,RescorlaWagner-method}
 \alias{predict,RescorlaWagner-method}
 \alias{setPars,RescorlaWagner-method}

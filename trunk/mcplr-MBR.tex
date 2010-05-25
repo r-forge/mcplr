@@ -4,7 +4,7 @@
 \usepackage{dcolumn}
 \usepackage{tikz}
 
-\title{mcplR: An R package for multiple cue probability learning models}
+\title{mcplR: An R package for multiple cue learning models}
 \author{Maarten Speekenbrink}
 \affiliation{Department of Cognitive, Perceptual and Brain Sciences \\ University College London}
 
@@ -23,7 +23,7 @@ Address correspondence to M. Speekenbrink, Department of Psychology, University 
 \ifapamodejou{%
 \leftheader{Speekenbrink}
 \rightheader{mcplR}
-\acknowledgements{Address correspondence to M. Speekenbrink, Department of Psychology, University College London, Gower Street, London WC1E 6BT, England, e-mail: \texttt{m.speekenbrink@ucl.ac.uk}}
+\acknowledgements{Address correspondence to M. Speekenbrink, Division of Psychology and Language Sciences, University College London, 26 Bedford Way, London WC1H 0AP, England, e-mail: \texttt{m.speekenbrink@ucl.ac.uk}}
 }
 
 \ifapamodeman{%
@@ -74,7 +74,7 @@ Address correspondence to M. Speekenbrink, Department of Psychology, University 
 \begin{document}
 \maketitle
 
-Multiple Cue Probability Learning (MCPL) tasks involve predicting a criterion variable on the basis of a number of cues which are probabilistically related to the criterion. This is a general type of task, and a number of paradigms in (cognitive) psychology fall under its header. When the criterion is a nominal variable, they are usually referred to as (probabilistic) category learning tasks. When the criterion is a metric variable, they are often referred to as function learning or Social Judgement tasks. A large number of formal models have been proposed to describe how people learn to perform MCPL tasks. We describe here an \code{R} package in which a number of these have been implemented. The package has been designed such that users can relatively easily add other models. 
+In Multiple Cue Probability Learning (MCPL) tasks, the objective is to predict a criterion variable from a number of cues which are probabilistically related to the criterion. This is an obiqutous task in daily life. For instance, a stockbroker predicts share price from market indicators, and a doctor diagnoses diseases from multiple symptoms. Understandably, MCPL has received much attention in (cognitive) psychology. When the criterion is a nominal variable, it is commonly referred to as (probabilistic) category learning. When the criterion is a metric variable, it is often described as function learning or Social Judgement. Over the years, a large number of formal models have been proposed to describe how people learn to perform MCPL tasks. We describe here an \code{R} package which implements a number of these. Although formal modelling of learning processes has become more mainstream, it is still . Fitting these models to data By designing this package, I hope that researchers will find it more easy to estimate these models in their research. Although the number of models implemented is still limited, we plan to add more in the future. Moreover, the package has been designed such that users can relatively easily add their own preferred models. 
 
 In the following, we will first describe the general structure of MCPL models, and then discuss their implementation in \code{mcplR}. Basic features of the package are introduced through the implementation of the Rescorla-Wagner model. After an overview of the other models and methods implemented in the package, we end by briefly illustrating how to specify a new model. 
 
@@ -183,8 +183,7 @@ In MCPL tasks, the objective is to predict a criterion variable $Y_t$ on the bas
 
 An MCPL model consists of a learning and response submodel. In general, the learning model describes how a representation of the environment is updated as new data comes in. The response model describes how this representation is used to form predictions of the environment. A graphical representation is given in Figure~\ref{fig:mcplmodel}. 
 
-The learning model uses the feedback $y_t$ on trial $t$ to update its representation of the environment. This representation is generally the conditional distribution $P(Y_t|\vec{x}_t)$ that is formed by the learning model is abstracted as a set of parameters 
-(e.g., the conditional distribution ) 
+The learning model uses the feedback $y_t$ on trial $t$ to update its representation of the environment. This representation is generally the conditional distribution $P(Y_t|\vec{x}_t,\greekv{\psi}_t)$, where $\greekv{\psi}_t$ is the (abstract) representation as learned by the model.
 
 A main feature of MCPL models is that responses $R_t$ are conditionally independent given $\greekv{\eta}_t$, i.e.
 \begin{equation}

@@ -20,8 +20,8 @@ Constructs a Generalized Context Model.
 GCM(formula,level=c("nominal","interval"),
 distance=c("cityblock","euclidian","minkowski"),
 similarity=c("exponential","gaussian","general"),
-sampling=c("uniform","power","exponential"),parameters=list(w=NULL,lambda=1),
-fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL,
+sampling=c("uniform","power","exponential"),parameters=list(w=NULL,lambda=1, 
+r = 1, q = 1),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL,
 remove.intercept=FALSE)
 }
 \arguments{
