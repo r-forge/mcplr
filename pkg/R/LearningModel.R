@@ -16,4 +16,8 @@ setMethod("show",signature(object="LearningModel"),
   }
 )
 
-
+setMethod("has.lFr",signature(object="LearningModel"),
+  function(object,...) {
+    TRUE
+  }
+)

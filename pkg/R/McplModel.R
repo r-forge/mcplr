@@ -144,7 +144,7 @@ setMethod("has.rFl",signature(object="McplModel"),
 )
 
 setMethod("runm",signature(object="McplModel"),
-  function(object,lfr=TRUE,rfl=FALSE,...) {
+  function(object,...) {
       if(has.runm(object@learningModel)) object@learningModel <- runm(object@learningModel,...)
       if(has.lFr(object)) object@responseModel <- lFr(object,...)
       if(has.runm(object@responseModel)) object@responseModel <- runm(object@responseModel,...)

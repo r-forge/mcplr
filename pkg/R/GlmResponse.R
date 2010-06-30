@@ -6,6 +6,7 @@ setClass("GlmResponse",
     family="ANY",
     formula="formula",
     data = "list",
+    covariate = "logical",
     LearnModPredName = "character"
     #sigma="matrix"
   )
@@ -13,7 +14,8 @@ setClass("GlmResponse",
 
 setMethod("fit",signature(object="GlmResponse"),
 	function(object,...) {
-    if(object@nTimes@cases > 1) {
+    if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
+      cat("herro!\n")
       if(length(object@parStruct@id)>0) stop("Constraints in GlmResponse models are currently not implemented")
       for(case in 1:object@nTimes@cases) {
         repl <- getReplication(object,case=case,...)
@@ -40,7 +42,7 @@ setMethod("fit",signature(object="GlmResponse"),
 )
 setMethod("predict","GlmResponse",
 	function(object,type="link") {
-    if(object@nTimes@cases > 1) {
+    if(object@nTimes@cases > 1 & !object@parStruct@replicate) {
       mu <- vector()
       for(case in 1:object@nTimes@cases) {
         if(NCOL(object@x) > 1) mu <- rbind(mu,object@x[object@nTimes@bt[case]:object@nTimes@et[case],]%*%as.matrix(object@parStruct@parameters[[case]]$coefficients)) else mu <- c(mu,object@parStruct@parameters[[case]]$coefficients*object@x[object@nTimes@bt[case]:object@nTimes@et[case],])
@@ -61,7 +63,7 @@ setMethod("logLik","GlmResponse",
     nt <- NROW(object@y)
     LL <- switch(object@family$family,
       gaussian = {
-        mu <- predict(object,type=response)
+        mu <- predict(object,type="response")
         sum(dnorm(x=object@y,mean=mu,sd=object@parStruct@parameters$sd,log=TRUE))
       },
       binomial = {
@@ -144,14 +146,20 @@ setMethod("simulate",signature(object="GlmResponse"),
 
 setMethod("lFr",signature(x="LearningModel",y="GlmResponse"),
   function(x,y,...) {
-    assign(y@LearnModPredName,predict(x,type="link",...))
-    y@x <- model.matrix(object=y@formula,data=y@data,...)
+    if(y@covariate) {
+      assign(as.character(y@LearnModPredName),predict(x,type="link",...))
+      form <- y@formula
+      form[[2]] <- NULL
+      y@x <- model.matrix(object=form,data=y@data,...)
+    } else {
+      y@x <- predict(x,type="link",...)
+    }
     #y@x <- eval(y@x.call,envir=list(parent.frame(),y@data)) #predict(x,type="link",...)
     y
   }
 )
 
-GlmResponse <- function(formula,learnpredname,data,family=gaussian(),parameters=list(),ntimes=NULL,replicate=TRUE,fixed,base=NULL,
+GlmResponse <- function(formula,data,family=gaussian(),learnpredname=NULL,parameters=list(),ntimes=NULL,replicate=TRUE,fixed,base=NULL,
                         parStruct,subset) {
   mf <- match.call(expand.dots = FALSE)
   m <- match(c("formula", "data", "subset"), names(mf), 0)
@@ -165,6 +173,8 @@ GlmResponse <- function(formula,learnpredname,data,family=gaussian(),parameters=
     dat <- mcpl.prepare(formula=formula,data=data,base=base)
   y <- dat$y
   x <- dat$x
+  
+  data <- as.data.frame(mf[,colnames(mf)!=learnpredname])
   
   parfill <- function(parameters) {
     if(family$family=="gaussian") if(is.null(parameters$sd)) parameters$sd <- 1 else parameters$sd <- parameters$sd
@@ -199,6 +209,12 @@ GlmResponse <- function(formula,learnpredname,data,family=gaussian(),parameters=
   if(is.null(ntimes)) ntimes <- nrow(y)
   nTimes <- nTimes(ntimes)
 
+  if(is.null(learnpredname)) {
+    covariate <- FALSE
+    learnpredname <- ""
+  } else {
+    covariate <- TRUE
+  }
   mod <- new("GlmResponse",
     x = x,
     y = y,
@@ -207,7 +223,8 @@ GlmResponse <- function(formula,learnpredname,data,family=gaussian(),parameters=
     family=family,
     formula=formula,
     LearnModPredName=learnpredname,
-    data=as.data.frame(mf[,colnames(mf)!=learnpredname])
+    covariate=covariate,
+    data=data
   )
   mod <- runm(mod)
   mod

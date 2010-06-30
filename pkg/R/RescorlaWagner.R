@@ -186,9 +186,13 @@ setMethod("predict",signature(object="RescorlaWagner"),
     ny <- ncol(object@y)
     nt <- nrow(object@y)
     nx <- ncol(object@x)
-    cid <- matrix(1:(nx*ny),nrow=nx)
-    pred <- matrix(nrow=nt,ncol=ny)
-    if(!is.matrix(object@weights)) for(i in 1:ny) pred[,i] <- colSums(t(object@x)*object@weights[,i,]) else pred <- colSums(t(object@x)*object@weights)
+    pred <- matrix(0.0,ncol=ny,nrow=nt)
+    for(i in 1:ny) {
+      pred[,i] <- rowSums(t(object@weights[,i,])*object@x)
+    }
+    #cid <- matrix(1:(nx*ny),nrow=nx)
+    #pred <- matrix(nrow=nt,ncol=ny)
+    #if(!is.matrix(object@weights)) for(i in 1:ny) pred[,i] <- colSums(t(object@x)*object@weights[,i,]) else pred <- colSums(t(object@x)*object@weights)
     return(pred)
   }
 )

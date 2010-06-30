@@ -16,7 +16,13 @@ setMethod("getPars",signature(object="McplBaseModel"),
 )
 setMethod("setPars",signature(object="McplBaseModel"),
   function(object,pars,...,rval=c("object","parameters")) {
-    setPars(object=object@parStruct,pars=pars,...,rval=rval)
+    rval <- match.arg(rval)
+    if(rval == "object") {
+      object@parStruct@parameters <- setPars(object=object@parStruct,pars=pars,...,rval="parameters")
+      return(object)
+    } else {
+      return(setPars(object=object@parStruct,pars=pars,...,rval="parameters"))
+    }
   }
 )
 setMethod("AIC",signature(object="McplBaseModel"),
