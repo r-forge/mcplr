@@ -1,6 +1,7 @@
 setClass("GaussianResponse",
   contains="ResponseModel"
 )
+
 setMethod("fit",signature(object="GaussianResponse"),
   function(object,...) {
     pars <- object@parStruct@parameters

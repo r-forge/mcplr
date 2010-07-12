@@ -4,7 +4,7 @@
 \usepackage{dcolumn}
 \usepackage{tikz}
 
-\title{mcplR: An R package for multiple cue learning models}
+\title{mcplR: An R-package for multiple cue learning models}
 \author{Maarten Speekenbrink}
 \affiliation{Department of Cognitive, Perceptual and Brain Sciences \\ University College London}
 
@@ -210,62 +210,56 @@ The mcplR package has an object-oriented design. MCPL models are defined by the 
 
 %At the heart of the \coded{mcplR} package is the class \code{McplModel}. An \code{McplModel} contains of two submodels, namely a \code{LearningModel} and a \code{ResponseModel}. Both these are derived from a general \code{McplBaseModel}, which contains a slot for a dependent variable ($y$), a slot for predictor variables ($x$), and a slot for a list with parameters. For a \code{LearningModel}, the criterion will usually be the dependent variable, and the cues the predictor variables. For a \code{ResponseModel}, the dependent variable will usually be the response variable, and the predictor variables (some function of) the predictions of the learning model. Both learning and response model can contain free variables.
 
-In addition to class definitions, the \code{mcplR} package defines a number of methods which operate on these classes. The most important from the users viewpoint is probably the \code{fit} method, by which to obtain (ML) estimates of the model parameters $\greekv{\theta} = (\greekv{\theta}_L,\greekv{\theta}_R)$. By default, estimation relies on the the \code{optim} function of \code{R} to numerically minimize the negative log-likelihood of the model. If the \code{logLik} method is unavailable for the response model, least squares estimation will be attempted. Another important method is the \code{runm} method, which when applied to a learning model computes the representations $\greekv{\psi}_t$, and when applied to an MCPL model, computes both representations $\greekv{\psi}_t$ and $\greekv{\eta}_t$. By default, the latter values are computed by calling the \code{predict} method on the learning model, with argument \code{type="link"} (this terminology is borrowed from Generalized Linear Models and indicates that the prediction is not on the scale of the criterion $y_t$, but on the scale of the internal representation $\greekv{\eta}_t$). The \code{lFr} method then passes this prediction on to the \code{x} slot of the response model. Usually, the \code{runm} method need not perform any further action on a response model\footnote{To save unneccesary computions, the \code{has.runm} method is called to check whether the \code{runm} method performs any computation. By default, this method returns FALSE.}.
-
-The mechanics of the fit method are as follows:
-\begin{enumerate}
-\item Call \code{runm} method on the MCPL model:
-\begin{enumerate}
-\item Call \code{runm} on the learning model to compute $\greekv{\psi}_t$
-\item Call the \code{lFr} method on the MCPL model. By default, this method calls the \code{predict(...,type="link")} method on the learning model, and copies the result to the \code{x} slot of the response model
-\item If required, call the \code{runm} method on the response model to compute $\greekv{\eta}_t$
-\item If required, call the \code{rFl} method on the MCPL model to pass the result back to the learning model
-\end{enumerate}
-\item Call the \code{logLik} method on the MCPL model to compute the negative log likelihood (of the responses)
-\end{enumerate}
-Starting with initial parameters, the optim routine loops through these steps until a (local) minimum in the negative log-likelihood is found. Users should be warned that there may multiple local minima, and it is good practice to try a number of different starting values to increase the chance of finding the global minimum.
+In addition to class definitions, the \code{mcplR} package defines a number of methods which operate on these classes. The most important from the users viewpoint is probably the \code{fit} method, by which to obtain (ML) estimates of the model parameters $\greekv{\theta} = (\greekv{\theta}_L,\greekv{\theta}_R)$. By default, estimation relies on the the \code{optim} function of \code{R} to numerically minimize the negative log-likelihood of the model. If the \code{logLik} method is unavailable for the response model, least squares estimation will be attempted. Another important method is the \code{runm} method, which when applied to a learning model computes the representations $\greekv{\psi}_t$, and when applied to an MCPL model, computes both representations $\greekv{\psi}_t$ and $\greekv{\eta}_t$. 
 
 In the following section, we will illustrate the various options with an example 
 
 \section{Example: the Rescorla-Wagner model}
 
-The Rescorla-Wagner model \cite{Rescorla72} is a well-known associative learning model. It describes the strengthening of associative links between unconditioned stimuli $Y$ and conditioned stimuli $X$. On a given trial, a number of conditioned stimuli are presented and associated with an unconditioned stimulus. From these paired presentations, a (human) animal learns to expect the unconditioned stimulus when encountering the conditioned stimulus, and as a result shows a conditioned response. The expectation is due to the formation of associative links between conditioned and unconditioned stimulus, resulting in a link between the conditioned stimulus and the conditioned response. 
+The Rescorla-Wagner model \cite{Rescorla72} is a well-known associative learning model. It describes the strengthening of associative links between unconditioned and conditioned stimuli over paired presentations. On a given trial, a number of conditioned stimuli are presented and associated with an unconditioned stimulus. From these paired presentations, a (human) animal learns to expect the unconditioned stimulus when encountering the conditioned stimulus, and as a result shows a conditioned response. The expectation is due to the formation of associative links between conditioned and unconditioned stimulus, resulting in a link between the conditioned stimulus and the conditioned response. 
 
-From trial $t$ to $t+1$, the associative strength between a CS (cue) $j$ and US (criterion) $k$ is updated as
+From trial $t$ to $t+1$, the associative strength between a CS (cue) $X_j$ and US (criterion) $Y_k$ is updated as
 \begin{equation}
 \psi_{j,k}(t+1) = \begin{cases} \psi_{j,k}(t) + \alpha_j \beta_{k,1} [\lambda_k - \sum_j x_j(t) \psi_{i,k}(t)] \quad \text{when US $k$ is present at trial $t$} \\
 \psi_{j,k}(t) + \alpha_j \beta_{k,2} [0 - \sum_j x_j(t) \psi_{i,k}(t)] \quad \text{when US $k$ is absent on trial $t$} \\
 \end{cases}
 \end{equation}
-where $\lambda_k$ is the maximum level of associative strength of US $k$ at trial $t$ (this should be 0 when US $k$ is absent on trial $t$), $x_j(t)$ the value of the CS $j$ at trial $t$ (0 when CS $j$ is not present at $t$), $\alpha_j$ the salience of CS $j$, and $\beta_k$ the salience of the US $k$, which can be dependent on the presence or absence of $y_k(t)$.
+where $\lambda_k$ is the maximum level of associative strength of US $k$, $x_j(t)$ the value of the CS $j$ at trial $t$ (0 when CS $j$ is not present at $t$), $\alpha_j$ the salience of CS $j$, and $\beta_k$ the salience of the US $k$, which can be dependent on the presence or absence of $y_k(t)$.
 
-Let $\vec{y}_t = (y_k(t)$ be a variable with value 0 when US $k$ is absent on trial $t$, and $\lambda$ when US $k$ is present (note that this does not have to be a single value, e.g., US $k$ can be present in different magnitudes). Similarly, let 
-
-As responses will usually be dependent on the expectancies, we let $\eta_k(t) = \sum_j \psi_{j,k} x_j$
+%Let $\vec{y}_t = (y_k(t)$ be a variable with value 0 when US $k$ is absent on trial $t$, and $\lambda$ when US $k$ is present (note that this does not have to be a single value, e.g., US $k$ can be present in different magnitudes). Similarly, let 
 
 \subsection{Creating a Rescorla-Wagner learning model}
 
-A Rescorla-Wagner model can be created by calling \code{RescorlaWagner(formula,data,...)}. For instance, for an event $y$ with two levels, and four cues $x_j$, we can use 
-
-\code{lMod <- RescorlaWagner(y \textasciitilde x1+x2+x3+x4,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)}
-
-which will create a Rescorla-Wagner model with default parameters. We can view the default parameter values by calling \code{getPars(lMod)}, which shows the contents of the model's parameter list. By default, the model has a single $\alpha$ parameter, identical for each cue, initialized at $\alpha = 0.1$ All $\beta$ parameters are initialized to 1, while the associative strength of each cue is initialized at 0. The \code{ntimes} argument is used to indicate that the dataset contains data of two participants, each consisting of 200 learning trials. The \code{remove.intercept} argument is used to force removal of the intercept that R includes in the design matrix by default. 
+A Rescorla-Wagner model can be created by calling \code{RescorlaWagner(formula,data,...)}. In the example in Figure, a model with four cues is constructed, using % For instance, for an event $y$ with two levels, and four cues $x_j$, we can use 
+%\code{lMod <- RescorlaWagner(y \textasciitilde x1+x2+x3+x4,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)}
+which will create a Rescorla-Wagner model with 
+default parameters. We can view the default parameter values by calling \code{getPars(lMod)}, which shows the contents of the model's parameter list. By default, the model has a single $\alpha$ parameter, identical for each cue, initialized at $\alpha = 0.1$ All $\beta$ parameters are initialized to 1, while the associative strength of each cue is initialized at 1. The \code{ntimes} argument is used to indicate that the dataset contains data of two participants, each consisting of 200 learning trials. The \code{remove.intercept} argument is used to force removal of the intercept that R includes in the design matrix by default. 
 
 \subsection{Creating a response model}
 
+As responses will usually be dependent on the expectancies, we let 
+\begin{equation}
+\eta_k(t) = \sum_j \psi_{j,k} x_j
+\label{eq:eta_RW}
+\end{equation}
+
+In order to estimate the parameters of the model, the 
 A common choice is the (exponentiated) ratio response rule:
 \begin{equation}
-P(R=j) = \frac{\exp ( \beta \psi_j)} { \sum_k \exp (\beta \psi_k) }
+P(R_t=k) = \frac{\exp ( \beta \eta_k(t))} { \sum_j \exp (\beta \eta_j(t)) }
 \end{equation}
-which we can create by calling
-\code{rMod <- RatioRuleResponse(r \textasciitilde 1,data=WPT)}
+which we can create by calling \code{RatioRuleResponse(formula, data, \ldots)}. For this model, the right hand side of the formula is ignored, as the predictors are computed from the learning model by Equation~\ref{eq:eta_RW}.
 
 \subsection{Estimating the model parameters}
 
-After creating a learning and response model, we can combine them into an \code{McplModel}. We can then estimate the learning and response model parameters simultaneously.
+After creating a learning and response model, we can combine them into an \code{McplModel}. We can then estimate the learning and response model parameters simultaneously, by calling the \code{fit} method for the McplModel. By default, this will use R's built-in optimization routine to minimize the negative log likelihood of the model by a Nelder-Mead simplex method.  
 
 \begin{figure}
 \begin{verbatim}
+# load the mcplR package
+library(mcplR)
+# load the Weather Prediction Task example data
+data(WPT)
 # create a learning model
 lMod <- RescorlaWagner(y ~ x1+x2+x3+x4,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)
 # create a response model
@@ -273,14 +267,28 @@ rMod <- RatioRuleResponse(r~1,data=WPT,ntimes=c(200,200))
 # combine in an McplModel
 mMod <- McplModel(lMod,rMod)
 # estimate the free parameters
-mMod <- fit(mMod)
+fMod <- fit(mMod)
 # summary
-summary(mMod)
+summary(fMod)
+# plot the associative weights
+plot(fMod)
 \end{verbatim}
-\caption{Example code to create and estimate a Rescorla Wagner model with a ratio response rule.} 
+\caption{Example code to construct and estimate a Rescorla-Wagner model with a ratio response rule.} 
 \end{figure}
 
-\section{Other learning models currently implemented in \code{mcplR}}
+\section{Defining new models}
+
+The ratio rule response model assumes that on each trial, a choice is made from the same set. However, associative learning experiments often use a design in which the choice set changes at different stages. To implement this, we can define a new response model which identifies between which options a choice is made. The full code is given in Appendix A. Here, we will briefly comment on the various steps in defining new classes and methods. 
+
+The first step is to define a new class. As the model need a ratio rule model with varying choice sets, we let the \code{ChoiceSetResponse} class inherit from the \code{RatioRuleResponse} class. To be able to estimate the parameters of the model, the model minimally needs a \code{logLik} or \code{predict} method. For a completely new class, these won't be defined, but in this case the methods are inherited from the \code{RatioRuleResponse} class. 
+
+While not strictly necessary, it is also convenient to define a constructor function to construct new members of the class (see Appendix A).
+
+To define new learning models, the steps are essentially the same. However, there is generally no need to define \code{logLik} methods for learning models. Instead, learning models require \code{predict} methods, which are used to compute the values of $\eta_k(t)$ in the response model.
+
+\section{Other models currently implemented in \code{mcplR}}
+
+\subsection{Learning models}
 
 \subsection{Single Layer Feedforward Network (SLFN)}
 
@@ -341,7 +349,63 @@ In the future versions of \code{mcplR}, we plan to:
 
 \bibliography{bibliography}
 
+\appendix
 
+\section{Code to implement a \code{ChoiceSetResponse} model}
+
+\begin{verbatim}
+
+# define the class to extend RatioRuleResponse models
+setClass("ChoiceSetResponse",
+  contains="RatioRuleResponse",
+  representation(
+    choiceset = "matrix"
+  )
+)
+
+# Most RatioRuleResponse methods can be used directly
+# apart from the predict method ...
+  
+setMethod("predict",signature(object="ChoiceSetResponse"),
+  function(object,...) {
+    out <- object@transformation(object,...)
+    out <- (out*object@choiceset)/rowSums(out*object@choiceset)
+    if(!is.matrix(out)) out <- matrix(out,ncol=1)
+    out
+  }
+)
+
+# Define a constructor function
+
+ChoiceSetResponse <- function(formula,choiceset,parameters=list(beta=1),
+  transformation=c("exponential","none"),data,ntimes=NULL,replicate=TRUE,fixed,
+  parStruct,subset) {
+
+    # construct a RatioRuleResponse model to extend
+    call <- match.call()
+    call[[1]] <- as.name("RatioRuleResponse")
+    md <- eval(call,parent.frame())
+  
+    # check if choiceset is valid
+    if(!all(dim(object@y) == dim(choiceset))) {
+     stop("choiceset must have samedimension as response matrix")
+    }
+    if(!all(unique(choiceset) %in% c(0,1))) {
+     stop("choiceset must be an indicator matrix")
+    }
+    
+    # construct a ChoiceSetResponse
+    mod <- new("ChoiceSetResponse",
+      x = md@x,
+      y = md@y,
+      parStruct=md@parStruct,
+      nTimes=md@nTimes,
+      transformation=md@transformation,
+      choiceset=choiceset)
+    mod <- runm(mod)
+    mod            
+}
+\end{verbatim}
 
 \end{document}
 
@@ -366,3 +430,19 @@ Note that that the value of $V_j$ is given by the learning model. The response m
 \subsection{Estimation}
 
 The freely estimable parameters of the GCM are collected in the parameter vector $\greekv{\theta} = (,\lambda)$. Maximum likelihood estimates of these parameters are obtained by numerical maximisation of the likelihood $P(R|\greekv{\theta})$, specified in the response model. By default, numerical optimization is done by the Nelder-Mead simplex algorithm as implemented in the \code{optim} function of \code{R}. Other estimation procedures can be specified at the level of specific classes deriving from \code{McplModel}. There is also a switch to allow conditional maximisation of the response model parameters. In some cases, maximum likelihood estimates of the response model parameters can be derived in closed form (conditional on the learning model parameters), so that conditional estimation can decrease the computation required.
+
+By default, the latter values are computed by calling the \code{predict} method on the learning model, with argument \code{type="link"} (this terminology is borrowed from Generalized Linear Models and indicates that the prediction is not on the scale of the criterion $y_t$, but on the scale of the internal representation $\greekv{\eta}_t$). The \code{lFr} method then passes this prediction on to the \code{x} slot of the response model. Usually, the \code{runm} method need not perform any further action on a response model\footnote{To save unneccesary computions, the \code{has.runm} method is called to check whether the \code{runm} method performs any computation. By default, this method returns FALSE.}.
+
+The mechanics of the fit method are as follows:
+\begin{enumerate}
+\item Call \code{runm} method on the MCPL model:
+\begin{enumerate}
+\item Call \code{runm} on the learning model to compute $\greekv{\psi}_t$
+\item Call the \code{lFr} method on the MCPL model. By default, this method calls the \code{predict(...,type="link")} method on the learning model, and copies the result to the \code{x} slot of the response model
+\item If required, call the \code{runm} method on the response model to compute $\greekv{\eta}_t$
+\item If required, call the \code{rFl} method on the MCPL model to pass the result back to the learning model
+\end{enumerate}
+\item Call the \code{logLik} method on the MCPL model to compute the negative log likelihood (of the responses)
+\end{enumerate}
+Starting with initial parameters, the optim routine loops through these steps until a (local) minimum in the negative log-likelihood is found. Users should be warned that there may multiple local minima, and it is good practice to try a number of different starting values to increase the chance of finding the global minimum.
+

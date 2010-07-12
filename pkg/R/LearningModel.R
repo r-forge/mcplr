@@ -21,3 +21,9 @@ setMethod("has.lFr",signature(object="LearningModel"),
     TRUE
   }
 )
+
+setMethod("has.runm",signature(object="LearningModel"),
+  function(object,...) {
+    TRUE
+  }
+)

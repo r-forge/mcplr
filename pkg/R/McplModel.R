@@ -40,8 +40,8 @@ setMethod("setPars",signature(object="McplModel"),
       parl <- relist(pars)
     }
     if(length(parl)==1) {
-      warning("length of parlist set to 2")
-      length(parl) <- 2 # WATCH ME!
+      warning("assuming no free parameters in ResponseModel")
+      length(parl) <- 2 # SHOULD BE OK...BUT WATCH THIS
     }
     switch(rval,
       object = {
@@ -266,8 +266,8 @@ setMethod("summary",signature(object="McplModel"),
     cat("Model fit:\n")
     print(unlist(mf))
     cat("\n Submodels:\n")
-    summary(object@learningModel,fits=FALSE,...)
-    summary(object@responseModel,fits=FALSE,...)
+    print(summary(object@learningModel,fits=FALSE,...))
+    print(summary(object@responseModel,fits=FALSE,...))
   }
 )
 
