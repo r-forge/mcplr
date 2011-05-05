@@ -4,6 +4,7 @@
 \alias{fit,SLFN-method}
 \alias{runm,SLFN-method}
 \alias{getPars,SLFN-method}
+\alias{getPars,SLFN,ANY-method}
 \alias{predict,SLFN-method}
 \alias{setPars,SLFN-method}
 

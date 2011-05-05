@@ -1,5 +1,5 @@
 \name{AICc}
-\docType{genericFunction}
+%\docType{genericFunction}
 \alias{AICc}
 \alias{AICc,ANY-method}
 \alias{AICc,missing-method}
@@ -35,7 +35,7 @@ AICc(object, \dots)
 }
 \author{Maarten Speekenbrink}
 %\note{}
-\seealso{\code{\link[stats:logLik]{logLik}}, \code{\link[stats4:AIC-methods]{AIC}}}
+\seealso{\code{\link[stats:logLik]{logLik}}, \code{\link[stats:AIC]{AIC}}}
 \examples{
 
 }

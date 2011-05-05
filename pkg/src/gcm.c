@@ -17,10 +17,7 @@ void gcm_nominal(int *y, int *ny, double *x, int *nx, int *bt, int *et, int *lt,
   for(int k=0; k < *lt; k++) {   
 	  for(int t=bt[k]; t < et[k]; t++) 
 	  {
-	    for(int j=0; j < *ny; j++)
-	    { 
-	      sim[j] = 0.0;
-	    }
+	    for(int j=0; j < *ny; j++) sim[j] = 0.0;
 	    for(int tt=bt[k]-1; tt < t; tt++)
 	    {
 	      // compute distance
@@ -33,7 +30,7 @@ void gcm_nominal(int *y, int *ny, double *x, int *nx, int *bt, int *et, int *lt,
 	      // compute similarity and add to sim
 	      for(int j=0; j < *ny; j++)
 	      {
-	        if(y[j + tt * *ny] == 1) sim[j] += exp(*lambda * dist[tt]);
+	        if(y[j + tt * *ny] == 1) sim[j] += exp(-1 * *lambda * dist[tt]);
 	      }
 	    }
 	    // make prediction

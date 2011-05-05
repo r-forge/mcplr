@@ -1,4 +1,7 @@
 setClass("ALCOVE",
+  contains="McplModel")
+
+setClass("ALCOVElearning",
   contains="LearningModel",
   representation(
     weights="list",
@@ -8,7 +11,7 @@ setClass("ALCOVE",
   )
 )
 
-setMethod("setPars",signature(object="ALCOVE"),
+setMethod("setPars",signature(object="ALCOVElearning"),
   function(object,pars,internal=FALSE,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
     sP.u <- function(pars,fixl) {
@@ -40,7 +43,7 @@ setMethod("setPars",signature(object="ALCOVE"),
   }
 )
 
-setMethod("getPars",signature(object="ALCOVE"),
+setMethod("getPars",signature(object="ALCOVElearning"),
   function(object,which="all",internal=FALSE,...) {
     gP.u <- function(pars) {
       pars$eta_a <- log(pars$eta_a)
@@ -71,7 +74,7 @@ setMethod("getPars",signature(object="ALCOVE"),
   }
 )
 
-setMethod("runm",signature(object="ALCOVE"),
+setMethod("runm",signature(object="ALCOVElearning"),
   function(object,...) {
     if(object@nTimes@cases>1) {
       outp <- vector()
@@ -160,7 +163,7 @@ train.min=-1,...) {
   return(list(call=call,response=y,predictor=x,output=pred,a=a,weights=w,control=list(eta_w=eta_w,eta_a=eta_a,specificity=spf)))   
 }
 
-setMethod("predict",signature(object="ALCOVE"),
+setMethod("predict",signature(object="ALCOVElearning"),
   function(object,type=c("link","response"),...) {
     type <- match.arg(type)
     pred <- object@output
@@ -169,7 +172,7 @@ setMethod("predict",signature(object="ALCOVE"),
   }
 )
 
-ALCOVE <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),humble=TRUE,exemplar.locations,data,subset,fixed=list(r=TRUE,q=TRUE),parStruct,random.locations=FALSE,n.locations=10,base=NULL,ntimes=NULL,replicate=TRUE) {
+ALCOVElearning <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),humble=TRUE,exemplar.locations,data,subset,fixed=list(r=TRUE,q=TRUE),parStruct,random.locations=FALSE,n.locations=10,base=NULL,ntimes=NULL,replicate=TRUE) {
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=TRUE)
   x <- dat$x
   y <- dat$y
@@ -233,7 +236,7 @@ ALCOVE <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),hu
     }
   }
   
-  mod <- new("ALCOVE",
+  mod <- new("ALCOVElearning",
     x = x,
     y = y,
     weights = list(length=nTimes@cases),
@@ -243,4 +246,134 @@ ALCOVE <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),hu
     nTimes=nTimes)
   mod <- runm(mod)
   mod
+}
+
+ALCOVE <- function(learning,response,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),humble=TRUE,exemplar.locations,data,subset,fixed=list(r=TRUE,q=TRUE),random.locations=FALSE,n.locations=10,base=NULL,ntimes=NULL,replicate=TRUE) {
+  
+  if(!missing(subset)) {
+    dat <- mcpl.prepare(learning,data,subset,base=base,remove.intercept=TRUE) 
+    rdat <- mcpl.prepare(response,data,subset,base=base,remove.intercept=TRUE) 
+  } else {
+    dat <- mcpl.prepare(learning,data,base=base,remove.intercept=TRUE)
+    rdat <- mcpl.prepare(response,data,base=base,remove.intercept=TRUE)
+  }
+  x <- dat$x
+  y <- dat$y
+  resp <- rdat$y
+  
+  parfill <- function(parameters) {
+    if(is.null(parameters$eta_w)) parameters$eta_w <- .05
+    if(is.null(parameters$eta_a)) parameters$eta_a <- .05
+    if(is.null(parameters$r)) parameters$r <- 1
+    if(is.null(parameters$q)) parameters$q <- 1
+    if(is.null(parameters$spf)) parameters$spf <- 1
+    if(is.null(parameters$beta)) parameters$beta <- 1
+    # TODO: validate parameters
+    parameters
+  }
+  if(is.null(ntimes) | replicate) {
+    lpars <- parfill(parameters)
+    rpars <- list(beta = lpars$beta)
+    lpars$beta <- NULL
+  } else {
+    nrep <- length(ntimes)
+    lpars <- rpars <- list()
+    # check structure of supplied list
+    if(all(lapply(parameters,is.list)) && length(parameters)==nrep) {
+      for(i in 1:nrep) {
+        lpars[[i]] <- parfill(parameters[[i]])
+        rpars[[i]] <- list(beta = lpars[[i]]$beta)
+        lpars[[i]]$beta <- NULL
+      }
+    } else {
+      lpars <- parfill(parameters)
+      rpars <- list(beta = lpars$beta)
+      lpars$beta <- NULL
+      lpars <- rep(list(lpars),nrep)
+      rpars <- rep(list(rpars),nrep)
+    }
+  }
+  
+  if(!missing(fixed)) {
+    if(is.list(fixed)) {
+      lfixed <- fixed[which(names(fixed) %in% names(lpars))]
+      rfixed <- fixed[which(names(fixed) %in% names(rpars))]
+    } else {
+      if(length(fixed) != unlist(c(rpars,lpars))) stop("argument fixed does not have the correct length")
+      lfixed <- fixed[1:length(unlist(lfixed))]
+      rfixed <- fixed[(length(lfixed) + 1):(length(lfixed) + length(rfixed))]
+    }
+  } else {
+    lfixed <- rep(FALSE,length(unlist(lpars)))
+    rfixed <- rep(FALSE,length(unlist(rpars)))
+  }
+  
+  if(is.null(ntimes)) nTimes <- nTimes(nrow(y)) else nTimes <- nTimes(ntimes)
+  
+  #if(missing(parStruct)) {
+  lParStruct <- ParStruct(parameters=lpars,replicate=replicate,
+      fixed = lfixed,
+      ntimes = if(missing(ntimes)) NULL else ntimes)
+  rParStruct <- ParStruct(parameters=rpars,replicate=replicate,
+      fixed = rfixed,
+      ntimes = if(missing(ntimes)) NULL else ntimes)
+  #}
+
+  if(missing(exemplar.locations)) {
+    exemplar.locations <- list()
+    if(random.locations) {
+      # randomly generate exemplar locations
+      if(replicate) {
+        tmp <- matrix(,nrow=n.locations,ncol=ncol(x))
+        for(i in 1:ncol(tmp)) {
+          tmp[,i] <- runif(n.locations,min=min(x[,i]),max=max(x[,i]))
+        }
+        for(case in 1:nTimes@cases) exemplar.locations[[case]] <- tmp
+      } else {
+        for(case in 1:nTimes@cases) {
+          tmp <- matrix(,nrow=n.locations,ncol=ncol(x))
+          for(i in 1:ncol(tmp)) {
+            tmp[,i] <- runif(n.locations,min=min(x[nTimes@bt[case]:nTimes@et[case],i]),
+              max=max(x[nTimes@bt[case]:nTimes@et[case],i]))
+          }
+          exemplar.locations[[case]] <- tmp
+        }
+      }
+    } else {
+      for(case in 1:nTimes@cases) {
+        exemplar.locations[[case]] <- unique(x[nTimes@bt[case]:nTimes@et[case],])
+      }
+    }
+  }
+  
+  lmod <- new("ALCOVElearning",
+    x = x,
+    y = y,
+    weights = list(length=nTimes@cases),
+    humble = humble,
+    exemplar.locations = exemplar.locations,
+    parStruct=lParStruct,
+    nTimes=nTimes)
+  lmod <- runm(lmod)
+  
+  rmod <- new("RatioRuleResponse",
+    x = predict(lmod),
+    y = resp,
+    transformation = function(object,...) {
+      if(object@parStruct@replicate) {
+        return(object@x^object@parStruct@parameters$beta)
+      } else {
+        beta <- getPars(object,"beta")
+        beta <- rep(beta,each=object@nTimes@n)
+        return(object@x^beta)
+      }
+    },
+    parStruct=rParStruct,
+    nTimes=nTimes
+  )
+  
+  tmod <- new("ALCOVE",
+    learningModel = lmod,
+    responseModel = rmod)
+  tmod
 }

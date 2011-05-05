@@ -1,29 +1,26 @@
-\name{ALCOVE}
-\alias{ALCOVE}
-\alias{ALCOVE-class}
-\alias{runm,ALCOVE-method}
-\alias{fit,ALCOVE-method}
-\alias{getPars,ALCOVE-method}
-\alias{getPars,ALCOVE,ANY-method}
-\alias{predict,ALCOVE-method}
-\alias{setPars,ALCOVE-method}
+\name{ALCOVElearning}
+\alias{ALCOVElearning}
+\alias{ALCOVElearning-class}
+\alias{runm,ALCOVElearning-method}
+\alias{fit,ALCOVElearning-method}
+\alias{getPars,ALCOVElearning-method}
+\alias{getPars,ALCOVElearning,ANY-method}
+\alias{predict,ALCOVElearning-method}
+\alias{setPars,ALCOVElearning-method}
 
 \title{Attention Learning COVEring map model (ALCOVE)}
 \description{
-Constructs an Attention Learning COVEring map model.
+Constructs the learning submodel of an Attention Learning COVEring map model.
 }
 \usage{
-ALCOVE(learning,response,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),humble=TRUE,
-exemplar.locations,data,subset,fixed=list(r=TRUE,q=TRUE),
+ALCOVElearning(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),humble=TRUE,
+exemplar.locations,data,subset,fixed=list(r=TRUE,q=TRUE),parStruct,
 random.locations=FALSE,n.locations=10,base=NULL,ntimes=NULL,replicate=TRUE)
 }
 \arguments{
-\item{learning}{an object of class \code{formula} (or one that can be coerced to
- that class): a symbolic description of the learning model to be fitted. For more details
- of model specification, see \code{\link{lm}} or \code{\link{glm}}.}
- \item{response}{an object of class \code{formula} (or one that can be coerced to
- that class): a symbolic description of the response model to be fitted. For more details
- of model specification, see \code{\link{lm}} or \code{\link{glm}}.}
+\item{formula}{an object of class \code{formula} (or one that can be coerced to
+ that class): a symbolic description of the model to be fitted. For more details
+ of model speecification, see \code{\link{lm}} or \code{\link{glm}}.}
 \item{parameters}{an (optional) list with (starting) values of the parameters.
  If no values are supplied, defaults are used. }
 \item{humble}{logical. If TRUE, humble teaching signal is used.}
@@ -33,6 +30,8 @@ details.}
 \item{subset}{(optional) subset of the data.}
 \item{fixed}{(optional) logical vector indicating whether parameters are fixed 
 (TRUE) or freely estimable (FALSE).}
+\item{parStruct}{(optional) ParStruct object. Note that if parStruct is given, 
+the `fixed' argument above will be ignored.}
 \item{random.locations}{If no exemplar.locations are given, should they be 
 determined randomly? If FALSE (default), then unique values of training cues 
 are used as exemplar locations.}
@@ -49,7 +48,7 @@ parameters considered identical for each series?}
 \details{ALCOVE (Kruschke, 1992) is based on the \code{\link{GCM}} model, but
 has a mechanism to learn the attention weights. It is formulated as an ANN.
 }
-\value{A (fitted) object of class \code{ALCOVE}}
+\value{A (fitted) object of class \code{ALCOVElearning}}
 \references{
 Kruschke, J. K. (1992). ALCOVE: An exemplar-based connectionist model of 
 category learning. \emph{Psychological Review}, \emph{99}, 22-44.
@@ -59,7 +58,7 @@ category learning. \emph{Psychological Review}, \emph{99}, 22-44.
 ## open weather prediction data
 data(WPT)
 ## initialize model
-mod <- ALCOVE(learning=y~x1+x2+x3+x4,response=r~1,data=WPT,ntimes=c(200,200))
+mod <- ALCOVElearning(y~x1+x2+x3+x4,data=WPT,ntimes=c(200,200))
 ## estimate free parameters
 \dontrun{mod <- fit(mod)}
 summary(mod)

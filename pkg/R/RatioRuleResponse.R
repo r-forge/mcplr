@@ -106,7 +106,13 @@ setMethod("simulate",signature(object="RatioRuleResponse"),
 )
 
 RatioRuleResponse.trans.exp <- function(object,...) {
-  exp(object@parStruct@parameters$beta*object@x)
+  if(object@parStruct@replicate) {
+    return(exp(object@parStruct@parameters$beta*object@x))
+  } else {
+    beta <- getPars(object,"beta")
+    beta <- rep(beta,each=object@nTimes@n)
+    return(exp(beta*object@x))
+  }
 }
 
 RatioRuleResponse.trans.none <- function(object,...) {

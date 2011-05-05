@@ -266,8 +266,10 @@ setMethod("summary",signature(object="McplModel"),
     cat("Model fit:\n")
     print(unlist(mf))
     cat("\n Submodels:\n")
-    print(summary(object@learningModel,fits=FALSE,...))
-    print(summary(object@responseModel,fits=FALSE,...))
+    cat("\n ************** \n")
+    summary(object@learningModel,fits=FALSE,...)
+    cat("\n ************** \n")
+    summary(object@responseModel,fits=FALSE,...)
   }
 )
 

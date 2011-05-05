@@ -9,27 +9,37 @@
 ### (c) 2007, M. Speekenbrink
 ################################################################################
 
+# TODO:
+# set discount in logLik
+
 setClass("GCM",
-  contains="LearningModel",
-  representation(
-    weights="list", # each element is a lower triangular matrix with (normalized) weight of each y[t]
-    distance="function", # returns an nt*nt matrix with distances
-    similarity="function", # computes similarities from distance matrix
-    sampling="function" # computes nt*nt matrix with sampling weights (column wise!)
-  )
-)
-setClass("GCMnominal",
-  contains="GCM"
-)
-setClass("GCMinterval",
-  contains="GCM"
+  contains="McplModel")
+
+setClass("GCMlearning",
+  contains="LearningModel")
+  
+setClass("GCMresponse",
+  contains="ResponseModel")
+  
+
+setMethod("is.unconstrained",signature(object="GCM"),
+  function(object,...) {
+    chck <- TRUE
+    if(is(object@learningModel@parStruct@constraints,"LinConstraintsList") || is(object@learningModel@parStruct@constraints,"BoxConstraintsList")) {
+      chck <- FALSE
+    }
+    if(is(object@responseModel@parStruct@constraints,"LinConstraintsList") || is(object@responseModel@parStruct@constraints,"BoxConstraintsList")) {
+      chck <- FALSE
+    }
+    return(chck)
+  }
 )
 
-setMethod("canRepar",signature(object="GCM"),
+setMethod("canRepar",signature(object="GCMlearning"),
   function(object,...) {
     repar <- TRUE
     if(is(object@parStruct@constraints,"LinConstraintsList") || is(object@parStruct@constraints,"BoxConstraintsList")) {
-      res <- FALSE
+      repar <- FALSE
     }
     # TODO: check whether \lambda is fixed
     return(repar)
@@ -38,62 +48,12 @@ setMethod("canRepar",signature(object="GCM"),
 
 setMethod("runm",signature(object="GCM"),
   function(object,...) {
-    if(object@nTimes@cases>1) {
-      for(case in 1:object@nTimes@cases) {
-        repl <- getReplication(object,case=case,...)
-        x <- repl$x
-        y <- repl$y
-        pars <- repl$parameters
-        runm <- gcm.runm(x=x,y=y,parameters=pars,distance=object@distance,similarity=object@similarity,sampling=object@sampling)
-        object@weights[[case]] <- runm$weights
-      }
-    } else {
-      runm <- gcm.runm(x=object@x,y=object@y,parameters=object@parStruct@parameters,distance=object@distance,similarity=object@similarity,sampling=object@sampling)
-      object@weights[[1]] <- runm$weights
-    }
-    return(object)    
+    object@responseModel@x <- predict(object,...)
+    object
   }
 )
 
-gcm.runm <- gcm.cont.runm <- gcm.discr.runm <- function(x,y,parameters,distance,similarity,sampling,...) {
-  dis <- distance(x=x,parameters=parameters,...)
-  sim <- similarity(distance=dis,parameters=parameters,...)
-  sam <- sampling(nt=nrow(x),parameters=parameters,...)
-  w <- sim*sam
-  w <- apply(w,2,function(x) x/sum(x))
-  w[is.nan(w)] <- 0 # FIX ME!
-#  if(!all(colSums(w[,-1])==1)) {
-#    warning("problem in mixture weights: do not all sum to 1")
-#    ids <- which(colSums(w[,-1])==0)+1
-#    w[,ids] <- 1
-#    w[lower.tri(w,diag=TRUE)] <- 0
-#    w[,ids] <- apply(as.matrix(w[,ids]),2,function(x) x/sum(x))
-#    w[is.nan(w)] <- 0 # FIX ME!!
-#    if(!all(colSums(w[,-1])==1)) warning("problem remains")
-#  }
-#  w[,colSums(w)==0]
-  return(list(weights=w))
-}
-
-gcm.runm.unconstrained <- function(x,y,parameters,distance,similarity,sampling,...) {
-  parameters$lambda <- sum(parameters$w)
-  parameters$w <- parameters$w/parameters$lambda
-  if(is.null(parameters$r)) {
-    if(attr(distance,"name") == "euclidian") parameters$r <- 2 else parameters$r <- 1
-  }
-  if(is.null(parameters$q)) {
-    if(attr(similarity,"name") == "gaussian") parameters$q <- 2 else parameters$q <- 1
-  }
-  parameters$lambda <- parameters$lambda^(parameters$r/parameters$q)
-    dis <- distance(x=x,parameters=parameters,...)
-  sim <- similarity(distance=dis,parameters=parameters,...)
-  sam <- sampling(nt=nrow(x),parameters=parameters,...)
-  w <- sim*sam
-  w <- apply(w,2,function(x) x/sum(x))
-  return(list(weights=w))
-}
-
-setMethod("setTransPars",signature(object="GCM"),
+setMethod("setTransPars",signature(object="GCMlearning"),
   function(object,pars,internal=FALSE,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
       # use reparametrization
@@ -140,7 +100,7 @@ setMethod("setTransPars",signature(object="GCM"),
 )
 
 
-setMethod("getTransPars",signature(object="GCM"),
+setMethod("getTransPars",signature(object="GCMlearning"),
   function(object,which="all",...) {
     gP.u <- function(pars) {
           pr <- pars$r
@@ -180,321 +140,169 @@ setMethod("getTransPars",signature(object="GCM"),
     return(pars)
   }
 )
+
+
 setMethod("predict",signature(object="GCM"),
   function(object,...) {
-    pred <- vector()
-    for(case in 1:object@nTimes@cases) {
-      pred <- rbind(pred,apply(as.matrix(object@y[object@nTimes@bt[case]:object@nTimes@et[case],]),2,function(x,weights) {
-        colSums(x*weights)
-      },weights=object@weights[[case]]))
-    }
-    pred
+    x <- t(object@learningModel@x)
+    y <- t(object@learningModel@y)
+    ny <- nrow(y)
+    nx <- nrow(x)
+    bt <- object@learningModel@nTimes@bt
+    lt <- object@learningModel@nTimes@cases
+    et <- object@learningModel@nTimes@et
+    nt <- sum(object@learningModel@nTimes@n)
+    parameters <- object@learningModel@parStruct@parameters
+    w <- parameters$w
+    r <- parameters$r
+    q <- parameters$q
+    lambda <- parameters$lambda
+    gamma <- object@responseModel@parStruct@parameters$gamma
+    dist <- vector("double",length=nt)
+    sim <- vector("double",length=ny)
+    ypred <- vector("double",length=ny*nt)
+    
+    out <- .C("gcm_nominal",
+      y = as.integer(y),
+      ny = as.integer(ny),
+      x = as.double(x),
+      nx = as.integer(nx),
+      bt = as.integer(bt),
+      et = as.integer(et),
+      lt = as.integer(lt),
+      w = as.double(w),
+      r = as.double(r),
+      q = as.double(q),
+      lambda = as.double(lambda),
+      gamma = as.double(gamma),
+      dist = as.double(dist),
+      sim = as.double(sim),
+      ypred = as.double(ypred)
+    )
+    return(matrix(out$ypred,nrow=nt,ncol=ny,byrow=TRUE))
   }
 )
 
-setMethod("logLik",signature(object="GCMnominal"),
-  function(object,discount=1,eps=.Machine$double.eps,...) {
-    discount <- unlist(lapply(object@nTimes@bt-1,"+",discount))
-    discount <- discount[discount>0]
-    pred <- predict(object,type="response",...)
-    pred <- rowSums(object@y*pred)[-discount]
-    pred[pred > 1-eps] <- 1-eps
-    pred[pred < eps] <- eps
-    LL <- sum(log(pred))
-    out <- LL
-    nobs <- length(pred)
-    attr(out,"nobs") <- nobs
-    attr(out,"df") <- length(getPars(object,which="free"))
-    class(out) <- "logLik"
-    out
-  }
-)
-
-setMethod("logLik",signature(object="GCMinterval"),
+setMethod("logLik",signature=(object="GCM"),
   function(object,discount=1,...) {
-    LL <- vector("double")
-    nobs <- 0
-    for(case in 1:object@nTimes@cases) {
-      L <- outer(as.vector(object@y[object@nTimes@bt[case]:object@nTimes@et[case],]),as.vector(object@y[object@nTimes@bt[case]:object@nTimes@et[case],]),dnorm,sd=object@parStruct@parameters$sdy)
-      weights <- object@weights[[case]]
-      zw <- which(colSums(weights)==0)
-      LL[case] <- sum(log(colSums(weights*L)[-discount]))
-      nobs <- nobs + ncol(weights) - length(zw[,-discount]) - length(discount)
-      #zwt <- zwt + length(zw)
-    }
-    out <- sum(LL)
+    discount <- unlist(lapply(object@learningModel@nTimes@bt-1,"+",discount))
+    discount <- discount[discount>0]
+    out <- sum(log(rowSums(object@responseModel@x[-discount,]*object@responseModel@y[-discount,])))
+    nobs <- sum(object@learningModel@nTimes@n) - length(discount)
     attr(out,"nobs") <- nobs
     attr(out,"df") <- length(getPars(object,which="free"))
     class(out) <- "logLik"
-    out
+    out   
   }
 )
 
 setMethod("fit",signature(object="GCM"),
   function(object,method="Nelder-Mead",...) {
-    optfun <- function(pars,object,repar,...) {
+    optfun <- function(pars,object,...) {
       #object <- setPars(object,pars,unconstrained=unconstrained)
-      object@parStruct@parameters <- setPars(object,pars,repar=repar,...,rval="parameters")
+      if(canRepar(object,...)) object <- setTransPars(object,pars,...) else object <- setPars(object,pars,...)
       object <- runm(object,...)
       -logLik(object)
     }
     if(!is.unconstrained(object,...)) {
-      pars <- getPars(object,which="free",internal=TRUE,,...)
-      object@parStruct@parameters <- switch(is(object@parStruct@constraints)[1],
-        "LinConstraintsList" = {
-          A <- object@parStruct@constraints@Amat
-          b <- object@parStruct@constraints@bvec
-          opt <- constrOptim(theta=pars,f=optfun,grad=NULL,ui=A,ci=b,object=object,repar=FALSE,...)
-          setPars(object,opt$par,internal=TRUE,...,rval="parameters")
-        },
-        "BoxConstraintsList" = {
-          opt <- optim(pars,fn=optfun,method="L-BFGS-B",object=object,min=object@parStruct@constraints@min,max=object@parStruct@constraints@min,repar=FALSE,...)
-          setPars(object,opt$par,internal=TRUE,...,rval="parameters")
-        },
-        {
-          warning("This extension of ConstraintsList is not implemented; using default optimisation.")
-          opt <- optim(pars,fn=optfun,method=method,object=object,repar=FALSE,...)
-          setPars(object,opt$par,internal=TRUE,...,rval="parameters")
-        }
-      )
+      stop("Constraints are not (yet) implemented for GCM; use gGCM for (partial) support of parameter constraints")  
     } else {
-      pars <- getPars(object,which="free",repar=TRUE,...)
-      opt <- optim(pars,fn=optfun,method=method,object=object,repar=TRUE,...)
-      object@parStruct@parameters <- setPars(object,opt$par,internal=TRUE,...,rval="parameters")
+      if(canRepar(object,...)) pars <- getTransPars(object,which="free",...) else pars <- getPars(object,which="free",...) 
+      opt <- optim(pars,fn=optfun,method=method,object=object,...)
+      if(canRepar(object,...)) object <- setTransPars(object,opt$par,...) else object <- setPars(object,opt$par,...) 
     }
     object <- runm(object,...)
     object
   }
 )
 
-gcm.distance <- function(type="cityblock") {
-  dis.city <- function(x,parameters,...) {
-    nc <- ncol(x)
-    nr <- nrow(x)
-    w <- parameters$w
-    dis <- matrix(0,ncol=nr,nrow=nr)
-    for(i in 1:nc) {
-      dis <- dis + w[i]*abs(outer(x[,i],x[,i],"-"))
-    }
-    dis
-  }
-  dis.eucl <- function(x,parameters,...) {
-    nc <- ncol(x)
-    nr <- nrow(x)
-    w <- parameters$w
-    dis <- matrix(0,ncol=nr,nrow=nr)
-    for(i in 1:nc) {
-      dis <- dis + w[i]*abs(outer(x[,i],x[,i],"-"))^2
-    }
-    dis^(1/2)
-  }
-  dis.mink <- function(x,parameters,...) {
-    nc <- ncol(x)
-    nr <- nrow(x)
-    r <- parameters$r
-    w <- parameters$w
-    dis <- matrix(0,ncol=nr,nrow=nr)
-    for(i in 1:nc) {
-      dis <- dis + w[i]*abs(outer(x[,i],x[,i],"-"))^r
-    }
-    dis^(1/r)
-  }
-  fun <- switch(type,
-    cityblock = dis.city,
-    euclidian = dis.eucl,
-    minkowski = dis.mink,
-    dis.city
-  )
-  attr(fun,"name") <- type
-  fun
-}
+GCM <- function(learning,response,parameters=list(w=NULL, lambda=1,r=1,q=1,gamma=NULL),fixed,data,subset,ntimes=NULL,replicate=TRUE,remove.intercept=FALSE) {
 
-gcm.similarity <- function(type="exponential") {
-  sim.exp <- function(distance,parameters,...) {
-    lambda <- parameters$lambda
-    sim <- exp(-lambda*distance)
-    sim
+  if(!missing(subset)) {
+    dat <- mcpl.prepare(learning,data,subset,base=NULL,remove.intercept=remove.intercept)
+    rdat <- mcpl.prepare(response,data,subset,base=NULL,remove.intercept=remove.intercept)
+  } else {
+    dat <- mcpl.prepare(learning,data,base=NULL,remove.intercept=remove.intercept)
+    rdat <- mcpl.prepare(response,data,base=NULL,remove.intercept=remove.intercept)
   }
-  sim.gauss <- function(distance,parameters,...) {
-    lambda <- parameters$lambda
-    sim <- exp(-lambda*distance^2)
-    sim
-  }
-  sim.gen <- function(distance,parameters,...) {
-    lambda <- parameters$lambda
-    q <- parameters$q
-    sim <- exp(-lambda*distance^q)
-    sim
-  }
-  fun <- switch(type,
-    exponential = sim.exp,
-    gaussian = sim.gauss,
-    general = sim.gen,
-    sim.exp
-  )
-  attr(fun,"name") <- type
-  fun
-}
-
-gcm.sampling <- function(type="uniform") {
-  sam.exp <- function(nt,parameters,...) {
-    k <- 1:nt
-    gamma <- parameters$gamma
-    sam <- exp(outer(k,k-1,"-")*gamma)
-    sam[lower.tri(sam,diag=TRUE)] <- 0
-#    sam <- apply(sam,2,function(x) x/sum(x)) # normalize
-#    sam[is.nan(sam)] <- 0
-    sam
-  }
-  sam.pow <- function(nt,parameters,...) {
-    k <- 1:nt
-    gamma <- parameters$gamma
-    sam <- (-outer(k,k,"-"))^(-gamma)
-    sam[lower.tri(sam,diag=TRUE)] <- 0
-#    sam <- apply(sam,2,function(x) x/sum(x)) # normalize
-#    sam[is.nan(sam)] <- 0
-    sam
-  }
-  sam.unif <- function(nt,parameters,...) {
-    sam <- matrix(1,ncol=nt,nrow=nt)
-    sam[lower.tri(sam,diag=TRUE)] <- 0
-#    sam <- apply(sam,2,function(x) x/sum(x)) # normalize
-#    sam[is.nan(sam)] <- 0
-    sam
-  }
-  fun <- switch(type,
-    exponential = sam.exp,
-    power = sam.pow,
-    uniform = sam.unif,
-    sam.unif
-  )
-  attr(fun,"name") <- type
-  fun
-}
-
-GCM <- function(formula,level=c("nominal","interval"),distance=c("cityblock","euclidian","minkowski"),similarity=c("exponential","gaussian","general"),sampling=c("uniform","power","exponential"),parameters=list(w=NULL,lambda=1,r=1,q=1),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE,base=NULL,remove.intercept=FALSE) {
-  level <- match.arg(level)
-  if(!is.function(distance)) {
-  	distance <- match.arg(distance)
-  	if(!is.null(parameters$r)) {
-  		dist <- switch(parameters$r,
-  		  "cityblock",
-  		  "euclidian")
-  		if(is.null(dist)) dist <- "minkowski"
-  		if(dist != distance) warning("mismatch between distance argument and parameter r; will use",dist,"distance function")
-  		distance <- dist
-  	}
-  	distance <- gcm.distance(distance)
-  }
-  if(!is.function(similarity)) {
-    similarity <- match.arg(similarity)
-  	if(!is.null(parameters$q)) {
-  		sim <- switch(parameters$q,
-  		  "exponential",
-  		  "gaussian")
-  		if(is.null(sim)) sim <- "general"
-  		if(sim != similarity) warning("mismatch between similarity argument and parameter q; will use",sim,"similarity function")
-  		similarity <- sim
-  	}
-  	similarity <- gcm.similarity(similarity)
-  }
-  if(!is.function(sampling)) sampling <- gcm.sampling(match.arg(sampling))
-  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remove.intercept) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remove.intercept)
   x <- dat$x
   y <- dat$y
+  resp <- rdat$y
   nw <- ncol(x)
+  lpars <- list()
+  rpars <- list()
   if(is.null(ntimes) | replicate) {
     if(is.null(parameters$w)) {
-      parameters$w <- rep(1,nw)
-      parameters$w <- parameters$w/sum(parameters$w)
+      lpars$w <- rep(1,nw)
+      lpars$w <- lpars$w/sum(lpars$w)
     } else {
       if(length(parameters$w) < nw) stop("w must have length of at least",ncol(x))
       if(length(parameters$w) > nw) warning("supplied w has more elements than required",ncol(x))
-      parameters$w <- parameters$w[1:nw]
+      lpars$w <- parameters$w[1:nw]
+      if(sum(lpars$w)!=1) lpars$w <- lpars$w/sum(lpars$w)
     }
-    if(is.null(parameters$lambda)) parameters$lambda <- 1
-    if(is.null(parameters$r)) {
-      if(attr(distance,"name") == "minkowski") {
-        parameters$r <- 1
-      }
-    }
-    if(is.null(parameters$q)) {
-      if(attr(distance,"name")=="minkowski") {
-          parameters$q <- 1
-      }
-    }
-    if(is.null(parameters$gamma)) {
-      if(attr(sampling,"name") != "uniform") {
-        if(is.null(parameters$gamma)) parameters$gamma <- 1
-      }
-    }
-    if(level=="interval") {
-      if(is.null(parameters$sdy)) parameters$sdy <- 1
-    }
+    if(is.null(parameters$lambda)) lpars$lambda <- 1 else lpars$lambda <- parameters$lambda
+    if(is.null(parameters$r)) lpars$r <- 1 else lpars$r <- parameters$r
+    if(is.null(parameters$q)) lpars$q <- 1 else lpars$q <- parameters$q
+    if(is.null(parameters$gamma)) rpars$gamma <- 1 else rpars$gamma <- parameters$gamma
   } else {
     # setup a parlist
     if(length(parameters)==0) {
       nrep <- length(ntimes)
-      parameters$w <- rep(1,nw)
-      parameters$w <- parameters$w/sum(parameters$w)
-      parameters$lambda <- 1
-      if(attr(distance,"name") == "minkowski") {
-        parameters$r <- 1
-      }
-      if(attr(distance,"name")=="general") {
-          parameters$q <- 1
-      }
-      if(attr(sampling,"name") != "uniform") {
-        if(is.null(parameters$gamma)) parameters$gamma <- 1
-      }
-      if(level=="interval") {
-        if(is.null(parameters$sdy)) parameters$sdy <- 1
-      }
-      parameters <- rep(list(parameters),nrep)
-    } else warning("there is no validity check for the given parameters when combined with ntimes and replicate=FALSE \n Please make sure the supplied list is valid")
+      lpars$w <- rep(1,nw)
+      lpars$w <- lpars$w/sum(lpars$w)
+      lpars$lambda <- 1
+      lpars$r <- 1
+      lpars$q <- 1
+      rpars$gamma <- 1 
+      lpars <- rep(list(lpars),nrep)
+      rpars <- rep(list(rpars),nrep)
+    } else {
+      warning("there is no validity check for the given parameters when combined with ntimes and replicate=FALSE \n Please make sure the supplied list is valid")
+      lpars <- parameters[["learning"]]
+      rpars <- parameters[["response"]]
+    }
   }
   
   if(is.null(ntimes)) nTimes <- nTimes(nrow(y)) else nTimes <- nTimes(ntimes)
-  
-  if(missing(parStruct)) {
-    parStruct <- ParStruct(parameters=parameters,replicate=replicate,
-        fixed = if(missing(fixed)) NULL else fixed,
+  if(!missing(fixed)) {
+    if(is.list(fixed)) {
+      lfixed <- fixed[which(names(fixed) %in% names(lpars))]
+      rfixed <- fixed[which(names(fixed) %in% names(rpars))]
+    } else {
+      if(length(fixed) != unlist(c(rpars,lpars))) stop("argument fixed does not have the correct length")
+      lfixed <- fixed[1:length(unlist(lfixed))]
+      rfixed <- fixed[(length(lfixed) + 1):(length(lfixed) + length(rfixed))]
+    }
+  } else {
+    lfixed <- rep(FALSE,length(unlist(lpars)))
+    rfixed <- rep(FALSE,length(unlist(rpars)))
+  }
+  lParStruct <- ParStruct(parameters=lpars,replicate=replicate,
+        fixed = if(missing(lfixed)) NULL else lfixed,
         ntimes = if(missing(ntimes)) NULL else ntimes
-      )
-  }
-  
-  if(level=="nominal") {
-    mod <- new("GCMnominal",
-      x=x,
-      y=y,
-      parStruct=parStruct,
-      nTimes=nTimes,
-      distance=distance,
-      similarity=similarity,
-      sampling=sampling
-    )
-  }
-  if(level=="interval") {
-    mod <- new("GCMinterval",
-      x=x,
-      y=y,
-      parStruct=parStruct,
-      nTimes=nTimes,
-      distance=distance,
-      similarity=similarity,
-      sampling=sampling
-    )
-  }
-  mod <- runm(mod)
-  mod
+  )
+  rParStruct <- ParStruct(parameters=rpars,replicate=replicate,
+        fixed = if(missing(rfixed)) NULL else rfixed,
+        ntimes = if(missing(ntimes)) NULL else ntimes
+  )
+  lmod <- new("GCMlearning",
+    x=x,
+    y=y,
+    parStruct=lParStruct,
+    nTimes=nTimes
+  )
+  #lmod <- runm(lmod)
+  rmod <- new("GCMresponse",
+    #x = predict(lmod),
+    y = resp,
+    parStruct=rParStruct,
+    nTimes=nTimes
+  )
+  tmod <- new("GCM",
+  learningModel = lmod,
+  responseModel = rmod)
+  tmod <- runm(tmod)
+  tmod
 }
 
-setMethod("lFr",signature(x="GCMinterval",y="GaussianMixtureResponse"), 
-  function(x,y,...) {
-    for(case in 1:x@nTimes@cases) {
-      y@weights[[case]] <- x@weights[[case]]
-      y@means[[case]] <- t(matrix(x@y[x@nTimes@bt[case]:x@nTimes@et[case],],nrow=nrow(as.matrix(x@y[x@nTimes@bt[case]:x@nTimes@et[case],])),ncol=ncol(as.matrix(x@y[x@nTimes@bt[case]:x@nTimes@et[case],]))))
-    }
-    y
-  }
-)

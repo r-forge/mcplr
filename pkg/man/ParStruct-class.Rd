@@ -2,12 +2,13 @@
 
 \docType{class}
 
+
 \alias{ParStruct-class}
 \alias{getPars,ParStruct-method}
+\alias{getPars,ParStruct,character-method}
+\alias{getPars,ParStruct,missing-method}
 \alias{setPars,ParStruct-method}
 \alias{rep,ParStruct-method}
-
-
 
 \title{Class "ParStruct"}
 
@@ -19,8 +20,8 @@
 
 	\item{\code{parameters}:}{A (named) list with parameter values.}
 
-	\item{\code{id}:}{A numerical vector with indexes for each parameter, used
-  to set equality constraints for parameters}
+	\item{\code{id}:}{A numerical vector with indices for each parameter, used
+  to set equality constraints for parameters.}
   
 	\item{\code{fix}:}{A logical vector indicating whether each parameter is
   fixed (TRUE) or estimable (FALSE) }
@@ -30,12 +31,6 @@
   \item{\code{replicate}}{Logical, indicates whether parameter values are 
   replicated for each replication in NTimes (TRUE), or not (FALSE)}
   
-  \item{\code{transform}}{Function to transform parameters to a more suitable 
-  metric for optimisation}
-  
-  \item{\code{inv.transform}}{Function implementing the inverse transformation
-  to put parameters back to the normal metric}
-
 	}
 }
 

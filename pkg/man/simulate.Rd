@@ -1,5 +1,5 @@
 \name{simulate}
-\docType{genericFunction}
+%\docType{genericFunction}
 \alias{simulate}
 \alias{simulate,ANY-method}
 \title{simulate}

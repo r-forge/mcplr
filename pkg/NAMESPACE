@@ -5,14 +5,17 @@ importFrom(stats4, AIC, BIC, logLik)
 importFrom(lattice, xyplot)
 
 export(
-	ALCOVE,	
+	ALCOVE,
+	ALCOVElearning,
 	GCM,
+	gGCM,
 	RescorlaWagner,
 	SLFN,
 	GaussianMixtureResponse,
 	GaussianResponse,
 	GlmResponse,
 	RatioRuleResponse,
+	MaxResponse,
 	McplModel
 )
 
@@ -21,15 +24,18 @@ exportClasses(
 	ResponseModel,
 	McplModel,
 	ALCOVE,
+	ALCOVElearning,
 	GCM,
-	GCMinterval,
-	GCMnominal,
+	gGCM,
+	gGCMinterval,
+	gGCMnominal,
 	GlmResponse,
 	RescorlaWagner,
 	SLFN,
 	GaussianMixtureResponse,
 	GaussianResponse,
-	RatioRuleResponse
+	RatioRuleResponse,
+	MaxResponse
 )
 
 exportMethods(
@@ -39,12 +45,15 @@ exportMethods(
 	BIC,
 	fit,
 	getPars,
+	getTransPars,
 	lFr,
 	predict,
 	rFl,
 	Rsq,
 	runm,
 	setPars,
+	setTransPars,
+	canRepar,
 	show,
 	summary
 )

@@ -50,7 +50,7 @@ ParStruct <- function(parameters,replicate=TRUE,fixed=NULL,ntimes=NULL,
   parStruct
 }
 
-setMethod("getPars",signature(object="ParStruct"),
+setMethod("getPars",signature(object="ParStruct",name="missing"),
   # Note:
   # if one element in parameters corresponding to id[i] is free, so
   #   is this parameter!
@@ -81,6 +81,21 @@ setMethod("getPars",signature(object="ParStruct"),
     return(pars)
   }
 )
+
+setMethod("getPars",signature(object="ParStruct",name="character"),
+  # Note:
+  # if one element in parameters corresponding to id[i] is free, so
+  #   is this parameter!
+  function(object,name=name,which="all",internal=FALSE,...) {
+    if(which=="all") {
+      return(unlist(object@parameters[name]))
+    } else {
+      stop("getPars should not both have a name and which argument")
+    }
+  }
+)
+
+
 setMethod("setPars",signature(object="ParStruct"),
   function(object,pars,internal=FALSE,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)

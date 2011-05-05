@@ -14,7 +14,7 @@
 Constructs a Rescorla-Wagner learning model.
 }
 \usage{
-RescorlaWagner(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=1,ws=0),data,subset,
+RescorlaWagner(formula,parameters=list(alpha=.1,beta=1,lambda=1,ws=0),data,subset,
 fixed=list(alpha=FALSE,beta=TRUE,lambda=TRUE,ws=TRUE),parStruct,remove.intercept=FALSE,
 base=NULL,ntimes=NULL,replicate=TRUE)
 }
@@ -61,19 +61,38 @@ Appleton-Century-Crofts. pp. 64-99.
 }
 \author{Maarten Speekenbrink}
 \examples{
-## open weather prediction data
+## Open weather prediction data
 data(WPT)
-## initialize model
-mod <- RescorlaWagner(y~x1+x2+x3+x4,data=WPT,ntimes=c(200,200),
+## Initialize model
+lMod <- RescorlaWagner(y~x1+x2+x3+x4,data=WPT,ntimes=c(200,200),
 remove.intercept=TRUE)
-## compute associative strengths
-mod <- runm(mod)
-## estimate free parameters
-\dontrun{mod <-fit(mod)}
-summary(mod)
-## now include a response model
+## Compute associative strengths
+lMod <- runm(lMod)
+## Estimate free parameters
+\dontrun{lMod <-fit(lMod)}
+summary(lMod)
 \dontrun{
+## Now include a response model
 rMod <- RatioRuleResponse(r~1,data=WPT)
+mMod <- McplModel(lMod,rMod)
+fMod <- fit(mMod)
+summary(fMod)
 }
+## The following model only learns to expect the presence/absence of the second 
+## outcome, which completely determines the presence/absence of the first 
+## outcome.
+lMod2 <- RescorlaWagner(as.numeric(y==1)~x1+x2+x3+x4,data=WPT,ntimes=c(200,200),
+remove.intercept=TRUE)
+# compute associative strengths
+lMod2 <- runm(lMod2)
+\dontrun{
+## Now include a response model. Note that the response in the model should 
+## have the same format as the outcome in the learning model. 
+rMod2 <- GlmResponse(as.numeric(r==1)~predict(lMod2)-1,family=binomial(),data=WPT)
+mMod2 <- McplModel(lMod2,rMod2)
+fMod2 <- fit(mMod2)
+summary(fMod2)
+}
+
 
 }

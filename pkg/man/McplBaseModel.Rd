@@ -18,6 +18,7 @@
 \alias{runm,LearningModel-method}
 \alias{getPars}
 \alias{getPars,McplBaseModel-method}
+\alias{getPars,McplBaseModel,ANY-method}
 \alias{getReplication,McplBaseModel-method}
 \alias{logLik,McplBaseModel-method}
 \alias{ntimes,McplBaseModel-method}

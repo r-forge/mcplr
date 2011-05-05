@@ -218,7 +218,7 @@ setMethod("plot",signature(x="RescorlaWagner",y="missing"),
   }
 )
 
-RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=1,ws=0),data,subset,fixed=list(alpha=FALSE,beta=TRUE,lambda=TRUE,ws=TRUE),parStruct,remove.intercept=FALSE,base=NULL,ntimes=NULL,replicate=TRUE) {
+RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=1,lambda=1,ws=0),data,subset,fixed=list(alpha=FALSE,beta=TRUE,lambda=TRUE,ws=TRUE),parStruct,remove.intercept=FALSE,base=NULL,ntimes=NULL,replicate=TRUE) {
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remove.intercept) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remove.intercept)
   x <- dat$x
   y <- dat$y
@@ -232,7 +232,8 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=1
   parfill <- function(parameters) {
     if(is.null(parameters$alpha)) parameters$alpha <- .1
     if(is.null(parameters$beta)) {
-    	if(!cont) parameters$beta <- c(1,1) else parameters$beta <- 1
+    	#if(!cont) parameters$beta <- c(1,1) else parameters$beta <- 1
+    	parameters$beta <- 1
     }
     if(is.null(parameters$lambda)) parameters$lambda <- 1
     if(is.null(parameters$ws)) parameters$ws <- 0
@@ -241,8 +242,8 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=c(1,1),lambda=1
     # initialize beta
     if(!cont) {
 		  if(!is.matrix(parameters$beta)) {
-		    if(length(parameters$beta)!=2 && length(parameters$beta)!=2*ny) stop("beta should have length 2 or 2*ny")
-		    parameters$beta <- matrix(parameters$beta,ncol=2,nrow=ny,byrow=T)
+		    if(!(length(parameters$beta) %in%c(1,2)) && length(parameters$beta)!=2*ny) stop("beta should have length 1, 2 or 2*ny")
+		    if(length(parameters$beta) > 1) parameters$beta <- matrix(parameters$beta,ncol=2,nrow=ny,byrow=T)
 		  } else {
 		    if(ncol(parameters$beta)!=2) stop("beta should be an ny*2 matrix")
 		    if(nrow(parameters$beta)==1) parameters$beta <- matrix(parameters$beta,ncol=2,nrow=ny,byrow=T)

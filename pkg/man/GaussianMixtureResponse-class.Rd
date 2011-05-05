@@ -7,6 +7,7 @@
 \alias{predict,GaussianMixtureResponse-method}
 \alias{fit,GaussianMixtureResponse-method}
 \alias{getPars,GaussianMixtureResponse-method}
+\alias{getPars,GaussianMixtureResponse,ANY-method}
 \alias{setPars,GaussianMixtureResponse-method}
 
 \title{Class "GaussianMixtureResponse"}

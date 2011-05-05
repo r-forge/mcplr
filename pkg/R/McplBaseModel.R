@@ -14,6 +14,7 @@ setMethod("getPars",signature(object="McplBaseModel"),
     getPars(object=object@parStruct,...)
   }
 )
+
 setMethod("setPars",signature(object="McplBaseModel"),
   function(object,pars,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
@@ -95,7 +96,8 @@ setMethod("summary",signature(object="McplBaseModel"),
     pars <- getPars(x,which="all",...)
     attr(pars,"skeleton") <- NULL
     fx <- x@parStruct@fix
-    if(length(fx)>0) {
+    if(sum(fx)>0) {
+    #if(length(fx)>0) {
       frpars <- pars[!fx]
       fxpars <- pars[fx]
     } else {

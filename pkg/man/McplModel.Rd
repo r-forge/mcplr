@@ -1,5 +1,6 @@
 \name{McplModel}
 \alias{McplModel}
+\alias{getPars,McplModel,ANY-method}
 
 \title{McplModel}
 \description{
@@ -21,7 +22,7 @@ McplModel(learningModel,responseModel)
 data(WPT)
 ## first specify a learning model, then a response model, and then combine
 ##   them into an McplModel.
-lMod <- GCM(y~x1+x2+x3+x4,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)
+lMod <- RescorlaWagner(y~x1+x2+x3+x4,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)
 rMod <- RatioRuleResponse(r~predict(lMod)-1,data=WPT,ntimes=c(200,200))
 mMod <- McplModel(lMod,rMod)
 ## estimate free parameters

@@ -9,7 +9,7 @@
 setGeneric("fit",function(object,...) standardGeneric("fit"))
 setGeneric("runm",function(object,...) standardGeneric("runm"))
 #setGeneric("estimate",function(object,...) standardGeneric("estimate"))
-setGeneric("getPars",function(object,...) standardGeneric("getPars"))
+setGeneric("getPars",function(object,name,...) standardGeneric("getPars"))
 setGeneric("setPars",function(object,pars,...,rval=c("object","parameters")) standardGeneric("setPars"))
 setGeneric("getReplication",function(object,case,...) standardGeneric("getReplication"))
 setGeneric("lFr",function(x,y,...) standardGeneric("lFr"))

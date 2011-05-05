@@ -1,5 +1,5 @@
 \name{Rsq}
-\docType{genericFunction}
+%\docType{genericFunction}
 \alias{Rsq}
 \alias{Rsq,ANY-method}
 \title{R-Squared}

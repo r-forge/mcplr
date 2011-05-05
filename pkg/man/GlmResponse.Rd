@@ -6,18 +6,23 @@
 Constructs a \code{\linkS4class{GlmResponse}} object.
 }
 \usage{
-GlmResponse(formula,learnpredname,data,family=gaussian(),parameters=list(),
-  ntimes=NULL,replicate=TRUE,fixed,base=NULL,parStruct,subset)
+GlmResponse(formula,family=gaussian(),data,covariate,
+combine=function(x,z) { cbind(x,z) },parameters=list(),ntimes=NULL,
+replicate=TRUE,fixed,base=NULL,parStruct,subset)
 }
 \arguments{
 \item{formula}{an object of class \code{formula} (or one that can be coerced to
  that class): a symbolic description of the model to be fitted. For more details
  of model specification, see \code{\link{lm}} or \code{\link{glm}}.}
-\item{learnpredname}{a character vector specifying the name of the learning 
- model predictions in the formula. See details.}
-\item{data}{(optional) data frame.}
 \item{family}{a \code{\link{family}} object. For more details, see 
  \code{\link{glm}}.}
+\item{data}{(optional) data frame.}
+\item{covariate}{(optional) a matrix or a formula specifying additional 
+covariates. See details.}
+\item{combine}{a function taking two arguments which produces a new predictor
+matrix for the GlmModel. The first argument is the prediction from a 
+LearningModel and the second argument is matrix specified through the covariate
+argument.}
 \item{parameters}{an (optional) named list with (starting) values of the 
 parameters. If no values are supplied, defaults are used. }
 \item{ntimes}{an optional vector with, for each repetition in the data, the
@@ -46,3 +51,5 @@ by \code{data}.}
 \value{A (fitted) object of class \code{\linkS4class{GlmResponse}}.}
 
 \keyword{models}
+
+\author{Maarten Speekenbrink}
