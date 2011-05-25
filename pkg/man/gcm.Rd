@@ -38,12 +38,20 @@ the x matrix of the model?}
 }
 \details{The Generalized Context Model (Nosofsky, 1986) is an exemplar model.
 It predicts the value of a criterion at t based on the similarity of a probe cue 
-x[t] to stored cues x[t-k], k = 1,...,t-1.
+\eqn{x_t}{x[t]} to stored cues \eqn{x_{t-k}}{x[t-k]}, \eqn{k = 1,\ldots,t-1}{k=1,...,t-1}.
+
+The similarity between two cues is computed as
+\deqn{s(x_t,x_k) = e^(-\lambda d(x_t,x_k)^{q}}{s(x[t],x[k]) = exp(-lambda * d(x[t],x[k])^(q) )
+where \eqn{d(x_t,x_k)}{d(x[t],x[k])} is the generalized Minkowski distance
+\deqn{d(x_t,x_k) = (\sum_{j} w_j | x_{jt} - x_{jk} |^{r})^{\frac{1}{r}}}{d(x[t],x[k]) = (sum[j] w[j] | x[jt] - x[jk] |^(r))^(1/r)}
+When making a response to cue \eqn{x_t}{x[t]}, first the overall similarity to each of the previously encountered exemplars of each of the levels of outcome y is determined as
+\deqn{S(j) = \sum s}{} 
 
 The GCM can be seen as a mixture model. Each encountered exemplar adds a
 new component to the mixture. The mixture proportions are defined by the
 similarities. See the package manual for more information.
 
+A more general version of the GCM is implemented by \code{\link{gGCM}}.
 }
 \value{An object of class \code{GCM}.}
 

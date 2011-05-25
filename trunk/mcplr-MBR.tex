@@ -76,7 +76,7 @@ Address correspondence to M. Speekenbrink, Department of Psychology, University 
 
 In Multiple Cue Probability Learning (MCPL) tasks, the objective is to predict a criterion variable from a number of cues which are probabilistically related to the criterion. This is an ubiquitous task in daily life. For instance, a stockbroker predicts share price from market indicators, and a doctor diagnoses diseases from multiple symptoms. Understandably, MCPL has received much attention in (cognitive) psychology. When the criterion is a nominal variable, it is commonly referred to as (probabilistic) category learning. When the criterion is a metric variable, it is often described as function learning or Social Judgement. Over the years, a large number of formal models have been proposed to describe how people learn to perform MCPL tasks. We describe here an \code{R} package which implements a number of these. Although formal modelling of learning processes has become more mainstream, it is still . Fitting these models to data By designing this package, I hope that researchers will find it more easy to estimate these models in their research. Although the number of models implemented is still limited, we plan to add more in the future. Moreover, the package has been designed such that users can relatively easily add their own preferred models. 
 
-In the remainder of this article, we will first describe the general structure of MCPL models, and then discuss their implementation in \code{mcplR}. Basic features of the package are introduced through the implementation of the Rescorla-Wagner model. After an overview of the other models and methods implemented in the package, we end by briefly illustrating how to specify a new model. 
+In the remainder of this article, I will first describe the general structure of MCPL models, and then discuss their implementation in \code{mcplR}. Basic features of the package are introduced through the implementation of the Rescorla-Wagner model. After an overview of the other models and methods implemented in the package, we end by briefly illustrating how to specify a new model. 
 
 \section{The general structure of MCPL models}
 
@@ -230,7 +230,7 @@ where $\lambda_k$ is the maximum level of associative strength of US $k$, $x_j(t
 
 %Let $\vec{y}_t = (y_k(t)$ be a variable with value 0 when US $k$ is absent on trial $t$, and $\lambda$ when US $k$ is present (note that this does not have to be a single value, e.g., US $k$ can be present in different magnitudes). Similarly, let 
 
-Complete code for the example can be found in Figure~\ref{fig:R-W}. 
+As can be seen in Figure~\ref{fig:R-W}, fitting the Rescorla Wagner model in \code{mcplR} requires a few steps. These are discussed in more detail in the following sections.
 
 
 \begin{figure}
@@ -260,7 +260,7 @@ plot(fMod)
 
 \subsection{Creating a Rescorla-Wagner learning model}
 
-A Rescorla-Wagner model can be created by calling the \code{RescorlaWagner()} function. The first argument of the function is a \code{formula} object describing the learning environment. The left hand side of the formula specifies the criterion (\code{y}) and the right hand side specifies the cues. Evaluation of the formulas in mcplR is similar to how formulas are evaluated in R's \code{lm()} and \code{glm()} function; thus, one can easily specify a model which also includes interactions between the cues. In the example in Figure~\ref{fig:R-W}, a simple model with four cues is constructed.  The \code{data} argument gives the name of the data frame that contains the values of the cues and criterion. In the example, the \code{WPT} dataset is used, which comes with \code{mcplR} and contains data from a control and amnesic participant in the study reported by \cite{Speekenbrink08}. The \code{ntimes} argument is used to indicate that the dataset contains data of multiple participants; it is a list with, for each participant in the data, the number of trials. The WPT data contains two participants, who each completed 200 learning trials. The \code{remove.intercept} argument is used to force removal of the intercept that is included in the design matrix (i.e., slot ``x'') by default. In the example, no parameter argument is given. As a result, default parameter values are used. By default, the model has a single $\alpha$ parameter, identical for each cue, initialized at $\alpha = 0.1$. All $\beta$ parameters are initialized to 1, while the associative strength of each cue is initialized at 1. We can view the parameter values by calling \code{getPars(lMod)}, which returns shows the contents the model's parameter list.  % For instance, for an event $y$ with two levels, and four cues $x_j$, we can use 
+A Rescorla-Wagner model can be created by calling the \code{RescorlaWagner()} function. The first argument of the function is a \code{formula} object describing the learning environment. The left hand side of the formula specifies the criterion (\code{y}) and the right hand side specifies the cues. Evaluation of the formulas in mcplR is similar to how formulas are evaluated in R's \code{lm()} and \code{glm()} function; thus, one can easily specify a model which also includes interactions between the cues. In the example in Figure~\ref{fig:R-W}, a simple model with four cues is constructed.  The \code{data} argument gives the name of the data frame that contains the values of the cues and criterion. In the example, the \code{WPT} dataset is used, which comes with \code{mcplR} and contains data from a control and amnesic participant in the study reported by \cite{Speekenbrink08}. The \code{ntimes} argument is used to indicate that the dataset contains data of multiple participants; it is a numeric vector with, for each participant in the data set, the number of trials. The WPT data contains two participants, who each completed 200 learning trials. The \code{remove.intercept} argument is used to force removal of the intercept that is included in the design matrix (i.e., slot ``x'') by default. In the example, no parameter argument is given. As a result, default parameter values are used. By default, the model has a single $\alpha$ parameter, identical for each cue, initialized at $\alpha = 0.1$. All $\beta$ parameters are initialized to 1, while the associative strength of each cue is initialized at 1. We can view the parameter values by calling \code{getPars(lMod)}, which returns shows the contents the model's parameter list.  % For instance, for an event $y$ with two levels, and four cues $x_j$, we can use 
 %\code{lMod <- RescorlaWagner(y \textasciitilde x1+x2+x3+x4,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)}
 %which will create a Rescorla-Wagner model with 
  
@@ -281,10 +281,11 @@ A ratio response rule can be created by calling the \code{RatioRuleResponse()} f
 
 After creating a learning and response model, they can be combined into an \code{McplModel}. We can then estimate the learning and response model parameters simultaneously, by calling the \code{fit} method for the McplModel. By default, this will minimize the negative log-likelihood of the response model by using R's built-in optimization routine, defaulting to the Nelder-Mead simplex method.  
 
+In addition to the \code{fit} method, there are default methods for model evaluation. In particular, standard model selection criteria, such as the AIC, BIC, and (pseudo-) $R^2$ are defined. In addition, many models have default plotting methods. For instance, calling \code{plot()} on the model estimated estimated in the example, we obtain the plot of Figure XXX. 
 
 \section{Other models and functions currently implemented in \code{mcplR}}
 
-The package contains implementations of a number of learning and response models. The models currently included are listed in Table~\ref{tab:other_models}. Some of the models are complete MCPL models. For instance, the Generalized Context Model (GCM)  while others 
+The package contains implementations of a number of learning and response models. The models currently included are listed in Table~\ref{tab:other_models}. Some of the models, such as the Generalized Context Model (GCM), are complete MCPL models, while others are learning or response submodels.
 
 \begin{table}
 \begin{tabular}{lll} \hline
@@ -304,9 +305,13 @@ SLFN & learning model & Single Layer Feedforward Network \\ \hline
 
 %\section{Useful methods and functions}
 
-In addition to the \code{fit} method, there are default methods for model evaluation. In particular, standard model selection criteria, such as the AIC, BIC, and (pseudo-) $R^2$ are defined. In addition, many models have default plotting methods. For instance, calling \code{plot()}, where \code{tMod} is the one estimated in the example, we obtain the plot of Figure XXX. 
 
-\section{Defining new models}
+
+\section{Extending \code{mcplR}}
+
+The \code{mcplR} package was designed with the objective of being relatively easily extendable. To add a new learning model, users must define a new class which inherits from the \code{LearningModel} class. Then, they should minimally define a \code{predict} method. Ideally, other methods, such as \code{logLik}, would also be defined, but these are not required to estimate the models parameters when incorporated into an \code{McplModel}. In many cases, users can rely on the default methods. To add a response model, users must again define a new class which inherits from the \code{ResponseModel} class. In addition, they must also minimally define either the \code{logLik} method or the \code{predict} method. If only the latter is defined, the model parameters will be estimated by least squares, while if the former is defined, maximum likelihood estimates can be obtained. 
+
+
 
 The ratio rule response model assumes that on each trial, a choice is made from the same set. However, associative learning experiments often use a design in which the choice set changes at different stages. To implement this, we can define a new response model which identifies between which options a choice is made. The full code is given in Appendix A. Here, we will briefly comment on the various steps in defining new classes and methods. 
 
@@ -317,14 +322,7 @@ While not strictly necessary, it is also convenient to define a constructor func
 To define new learning models, the steps are essentially the same. However, there is generally no need to define \code{logLik} methods for learning models. Instead, learning models require \code{predict} methods, which are used to compute the values of $\eta_k(t)$ in the response model.
 
 
-\section{Extending \code{mcplR}}
-
-The \code{mcplR} package was designed with the objective of being relatively easily extendable. 
-
-To add a new learning model, users must define a new class which inherits from the \code{LearningModel} class. Then, they should minimally define a \code{predict} method. Ideally, other methods, such as \code{logLik}, would also be defined, but these are not required to estimate the models parameters when incorporated into an \code{McplModel}. In many cases, users can rely on the default methods.
-
-To add a response model, users must again define a new class which inherits from the \code{ResponseModel} class. In addition, they must also minimally define either the \code{logLik} method or the \code{predict} method. If only the latter is defined, the model parameters will be estimated by OLS, while if the former is defined, ML estimates can be obtained. 
-
+%\section{Extending \code{mcplR}}
 
 
 \section{Conclusion}

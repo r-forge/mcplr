@@ -270,7 +270,7 @@ GlmResponse <- function(formula,family=gaussian(),data,covariate,combine=functio
   mod <- new("GlmResponse",
     x = x,
     y = y,
-    z = z,
+    z = if(exists("z")) z else matrix(ncol=0,nrow=0),
     parStruct=parStruct,
     nTimes=nTimes,
     family=family,
