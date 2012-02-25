@@ -294,7 +294,7 @@ ALCOVE <- function(learning,response,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1
     }
   }
   
-  if(!missing(fixed)) {
+  if(!is.null(fixed)) {
     if(is.list(fixed)) {
       lfixed <- fixed[which(names(fixed) %in% names(lpars))]
       rfixed <- fixed[which(names(fixed) %in% names(rpars))]
@@ -359,15 +359,7 @@ ALCOVE <- function(learning,response,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1
   rmod <- new("RatioRuleResponse",
     x = predict(lmod),
     y = resp,
-    transformation = function(object,...) {
-      if(object@parStruct@replicate) {
-        return(object@x^object@parStruct@parameters$beta)
-      } else {
-        beta <- getPars(object,"beta")
-        beta <- rep(beta,each=object@nTimes@n)
-        return(object@x^beta)
-      }
-    },
+    transformation = RatioRuleResponse.trans.exp,
     parStruct=rParStruct,
     nTimes=nTimes
   )

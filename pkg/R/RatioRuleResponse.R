@@ -115,11 +115,21 @@ RatioRuleResponse.trans.exp <- function(object,...) {
   }
 }
 
+RatioRuleResponse.trans.pow <- function(object,...) {
+    if(object@parStruct@replicate) {
+      return(object@x^object@parStruct@parameters$beta)
+    } else {
+      beta <- getPars(object,"beta")
+      beta <- rep(beta,each=object@nTimes@n)
+      return(object@x^beta)
+    }
+}
+
 RatioRuleResponse.trans.none <- function(object,...) {
   object@x
 }
 
-RatioRuleResponse <- function(formula,parameters=list(beta=1),transformation=c("exponential","none"),
+RatioRuleResponse <- function(formula,parameters=list(beta=1),transformation=c("exponential","power","none"),
                         data,ntimes=NULL,replicate=TRUE,fixed,
                         parStruct,subset) {
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset) else 
@@ -132,6 +142,7 @@ RatioRuleResponse <- function(formula,parameters=list(beta=1),transformation=c("
     transformation <- match.arg(transformation)
     trans <- switch(transformation,
       exponential = RatioRuleResponse.trans.exp,
+      power = RatioRuleResonse.trans.pow,
       none = RatioRuleResponse.trans.none)
   } else {
     trans <- transformation
