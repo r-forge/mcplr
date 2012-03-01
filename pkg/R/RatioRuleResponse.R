@@ -142,7 +142,7 @@ RatioRuleResponse <- function(formula,parameters=list(beta=1),transformation=c("
     transformation <- match.arg(transformation)
     trans <- switch(transformation,
       exponential = RatioRuleResponse.trans.exp,
-      power = RatioRuleResonse.trans.pow,
+      power = RatioRuleResponse.trans.pow,
       none = RatioRuleResponse.trans.none)
   } else {
     trans <- transformation

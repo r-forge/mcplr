@@ -1,8 +1,8 @@
-.First.lib <- function(lib, pkg) {
-  require(stats4)
-}
+#.First.lib <- function(lib, pkg) {
+#  require(stats4)
+#}
 
-.Last.lib <- function(libpath) {}
+#.Last.lib <- function(libpath) {}
 
 # Guess what: all generics
 

@@ -1,9 +1,30 @@
 \name{canRepar-methods}
 \docType{methods}
-\alias{canRepar-methods}
 \alias{canRepar}
+\alias{canRepar-methods}
+\alias{canRepar,ANY-method}
+\alias{getTransPars}
+\alias{getTransPars-methods}
+\alias{setTransPars}
+\alias{setTransPars-methods}
+\alias{getTransPars,ANY-method}
+\alias{canRepar,McplBaseModel-method}
+\alias{canRepar,McplModel-method}
+\alias{canRepar,LearningModel-method}
+\alias{canRepar,ResponseModel-method}
+\alias{setTransPars,ANY,ANY-method}
 
-\title{Can a model be reparametrized?}
+\alias{canRepar,GCMlearning-method}
+\alias{canRepar,RescorlaWagner-method}
+\alias{getTransPars,GCMlearning-method}
+\alias{getTransPars,RescorlaWagner-method}
+\alias{setTransPars,GCMlearning-method}
+\alias{setTransPars,McplModel-method}
+\alias{setTransPars,RescorlaWagner-method}
+
+
+
+\title{Reparametrization methods}
 \description{
 The \code{canRepar} method is used to check whether a model can be 
 reparametrized. For certain models, reparametrization can be useful to speed up 
