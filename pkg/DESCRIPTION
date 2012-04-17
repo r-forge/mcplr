@@ -1,6 +1,6 @@
 Package: mcplR
-Version: 0.1-7
-Date: 2012-02-25
+Version: 0.1-8
+Date: 2012-04-17
 Title: Multiple Cue Probability Learning in R
 Author: Maarten Speekenbrink <m.speekenbrink@ucl.ac.uk>
 Maintainer: Maarten Speekenbrink <m.speekenbrink@ucl.ac.uk>

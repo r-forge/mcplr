@@ -1,7 +1,7 @@
 import(methods)
 importFrom(graphics, plot)
 importFrom(stats, predict)
-importFrom(stats4, AIC, BIC, logLik)
+importFrom(stats4, AIC, BIC, logLik, summary)
 importFrom(lattice, xyplot)
 
 export(
