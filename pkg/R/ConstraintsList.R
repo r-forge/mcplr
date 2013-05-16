@@ -1,5 +1,5 @@
 setClass("ConstraintsList",
-#  contains="list"
+  contains="VIRTUAL"
 )
 
 setClass("BoxConstraintsList",

@@ -66,8 +66,11 @@ data(WPT)
 ## initialize model, use remove.intercept=TRUE so that the x matrix will contain
 ##   four columns.
 mod <- GCM(y~x1+x2+x3+x4,response=r~1,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)
+
+\dontrun{
 ## estimate free parameters
-\dontrun{mod <- fit(mod)}
+mod <- fit(mod)
+}
 summary(mod)
 }
 \keyword{models}

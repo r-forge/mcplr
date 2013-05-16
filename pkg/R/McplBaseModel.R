@@ -158,7 +158,7 @@ setMethod("fit",signature(object="McplBaseModel"),
           object@parameters <- setPars(object,opt$par,...,rval="parameters",internal=TRUE)
         },
         {
-          warning("This extension of ConstraintsList is not implemented; using default optimisation.")
+          warning("This extension of ConstraintsList is not implemented; using unconstrained optimisation.")
           opt <- optim(pars,fn=optfun,method=method,object=object,...)
           object@parameters <- setPars(object,opt$par,...,rval="parameters",internal=TRUE)
         }

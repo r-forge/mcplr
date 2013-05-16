@@ -1,4 +1,6 @@
 # Single Layer Feedforward Network
+# TODO: use c function
+
 setClass("SLFN",
   contains="LearningModel",
   representation(

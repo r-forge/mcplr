@@ -19,9 +19,10 @@ setClass("ContinuousRescorlaWagner",
 setMethod("canRepar",signature(object="RescorlaWagner"),
   function(object,...) {
     repar <- TRUE
-    if(is(object@parStruct@constraints,"LinConstraintsList") || is(object@parStruct@constraints,"BoxConstraintsList")) {
-      res <- FALSE
-    }
+    if(!is(object@parStruct@constraints,"S4")) repar <- FALSE # returns "S4" when it is a virtual class
+    #if(is(object@parStruct@constraints,"LinConstraintsList") || is(object@parStruct@constraints,"BoxConstraintsList")) {
+    #  res <- FALSE
+    #}
     # TODO: check whether \lambda is fixed
     return(repar)
   }
@@ -258,6 +259,7 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=1,lambda=1,ws=0
     # intialize ws
     if(length(parameters$lambda) != ny && length(parameters$lambda) != 1) stop("lambda should have length 1 or ny")
     if(length(parameters$ws)!=1 && length(parameters$ws)!=nx*ny) stop("ws must have length 1 or nx*ny")
+    parameters <- parameters[c("alpha","beta","lambda","ws")] # put in correct order
     parameters
   }
   if(is.null(ntimes) | length(ntimes)==1 | replicate) {
@@ -280,7 +282,9 @@ RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=1,lambda=1,ws=0
   if(is.null(ntimes)) nTimes <- nTimes(nrow(y)) else nTimes <- nTimes(ntimes)
   
   if(missing(parStruct)) {
-    parStruct <- ParStruct(parameters=parameters,replicate=replicate,
+    parStruct <- ParStruct(
+      parameters=parameters,
+      replicate=replicate,
       fixed = fixed,
       ntimes = {if(missing(ntimes)) NULL else ntimes})
   }

@@ -38,12 +38,27 @@ setMethod("is.unconstrained",signature(object="GCM"),
 setMethod("canRepar",signature(object="GCMlearning"),
   function(object,...) {
     repar <- TRUE
-    if(is(object@parStruct@constraints,"LinConstraintsList") || is(object@parStruct@constraints,"BoxConstraintsList")) {
-      repar <- FALSE
-    }
+    if(!is(object@parStruct@constraints,"S4")) repar <- FALSE
+    #if(is(object@parStruct@constraints,"LinConstraintsList") || is(object@parStruct@constraints,"BoxConstraintsList")) {
+    #  repar <- FALSE
+    #}
     # TODO: check whether \lambda is fixed
     return(repar)
   }
+)
+
+setMethod("canRepar",signature(object="GCMresponse"),
+          function(object,...) {
+            repar <- TRUE
+            if(!is(object@parStruct@constraints,"S4")) repar <- FALSE
+            return(repar)
+          }
+)
+
+setMethod("canRepar",signature(object="GCM"),
+          function(object,...){
+            return(all(canRepar(object@learningModel),canRepar(object@responseModel)))
+          }
 )
 
 setMethod("runm",signature(object="GCM"),
@@ -99,6 +114,28 @@ setMethod("setTransPars",signature(object="GCMlearning"),
   }
 )
 
+setMethod("setTransPars",signature(object="GCMresponse"),
+          function(object,pars,...,rval=c("object","parameters")) {
+            sP.u <- function(pars,fixl) {
+              if(!is.null(pars$gamma) && !fixl$gamma) pars$gamma <- exp(pars$gamma)
+              pars
+            }
+            parl <- getPars(object=object,pars=pars,rval="parameters",...)
+            if(length(object@parStruct@fix)>0) fixl <- relist(object@parStruct@fix,skeleton=object@parStruct@parameters) else fixl <- relist(rep(FALSE,length(unlist(object@parStruct@parameters))),skeleton=object@parStruct@parameters)
+            if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
+              for(case in 1:object@nTimes@cases) parl[[case]] <- sP.u(parl[[case]],fixl[[case]])
+            } else {
+              parl <- sP.u(parl,fixl)
+            }
+            switch(rval,
+                   object = {
+                     object@parStruct@parameters <- parl
+                     object
+                   },
+                   parameters = parl)
+          }
+)
+
 
 setMethod("getTransPars",signature(object="GCMlearning"),
   function(object,which="all",...) {
@@ -142,6 +179,46 @@ setMethod("getTransPars",signature(object="GCMlearning"),
 )
 
 
+setMethod("getTransPars",signature(object="GCMresponse"),
+          function(object,which="all",...) {
+            gP.u <- function(pars) {
+              pars$gamma <- log(pars$gamma)
+              pars
+            }
+            pars <- object@parStruct@parameters
+            if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
+              for(case in 1:object@nTimes@cases) pars[[case]] <- gP.u(pars[[case]])
+            } else {
+              pars <- gP.u(pars)
+            }
+            pars <- unlist(pars)
+            if(which=="free") {
+              if(length(object@parStruct@fix)>0) {
+                pars <- pars[!object@parStruct@fix]
+              }
+            }
+            return(pars)
+          }
+)
+
+setMethod("setTransPars",signature(object="GCM"),
+  function(object,pars,...) {
+    object@learningModel <- setTransPars(object@learningModel,pars,...)
+    object@responseModel <- setTransPars(object@responseModel,pars,...)
+    object
+  }
+)
+
+setMethod("getTransPars",signature(object="GCM"),
+          function(object,which="all",...) {
+            pars <- list()
+            pars[[1]] <- getTransPars(object@learningModel,which=which,...)
+            pars[[2]] <- getTransPars(object@responseModel,which=which,...)
+            pars <- as.relistable(pars)
+            unlist(pars)
+          }
+)
+
 setMethod("predict",signature(object="GCM"),
   function(object,...) {
     x <- t(object@learningModel@x)
@@ -177,7 +254,8 @@ setMethod("predict",signature(object="GCM"),
       gamma = as.double(gamma),
       dist = as.double(dist),
       sim = as.double(sim),
-      ypred = as.double(ypred)
+      ypred = as.double(ypred),
+      PACKAGE="mcplR"
     )
     return(matrix(out$ypred,nrow=nt,ncol=ny,byrow=TRUE))
   }

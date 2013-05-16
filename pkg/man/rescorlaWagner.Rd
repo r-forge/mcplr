@@ -73,7 +73,7 @@ lMod <- runm(lMod)
 summary(lMod)
 \dontrun{
 ## Now include a response model
-rMod <- RatioRuleResponse(r~1,data=WPT)
+rMod <- RatioRuleResponse(r~1,data=WPT,ntimes=c(200,200))
 mMod <- McplModel(lMod,rMod)
 fMod <- fit(mMod)
 summary(fMod)
@@ -88,7 +88,7 @@ lMod2 <- runm(lMod2)
 \dontrun{
 ## Now include a response model. Note that the response in the model should 
 ## have the same format as the outcome in the learning model. 
-rMod2 <- GlmResponse(as.numeric(r==1)~predict(lMod2)-1,family=binomial(),data=WPT)
+rMod2 <- GlmResponse(as.numeric(r==1)~predict(lMod2)-1,family=binomial(),data=WPT,ntimes=c(200,200))
 mMod2 <- McplModel(lMod2,rMod2)
 fMod2 <- fit(mMod2)
 summary(fMod2)
