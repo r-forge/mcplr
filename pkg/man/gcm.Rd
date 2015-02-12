@@ -65,10 +65,12 @@ Psychology: General}, \emph{115}, 39-57.}
 \examples{
 ## open weather prediction data
 data(WPT)
+controls <- subset(WPT,id \%in\% paste("C",1:16,sep=""))
 ## initialize model, use remove.intercept=TRUE so that the x matrix will contain
 ##   four columns.
-mod <- GCM(y~x1+x2+x3+x4,response=r~1,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)
-
+mod <- GCM(y~x1+x2+x3+x4,response=r~1,data=controls,
+   fix=list(r=TRUE,q=TRUE),ntimes=rep(200,16),
+   remove.intercept=TRUE)
 \dontrun{
 ## estimate free parameters
 mod <- fit(mod)

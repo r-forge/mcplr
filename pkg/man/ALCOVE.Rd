@@ -57,10 +57,12 @@ category learning. \emph{Psychological Review}, \emph{99}, 22-44.
 \examples{
 ## open weather prediction data
 data(WPT)
+controls <- subset(WPT,id \%in\% paste("C",1:16,sep=""))
 ## initialize model
-mod <- ALCOVE(learning=y~x1+x2+x3+x4,response=r~1,data=WPT,ntimes=c(200,200))
-## estimate free parameters
-\dontrun{mod <- fit(mod)}
+mod <- ALCOVE(learning=y~x1+x2+x3+x4,response=r~1,data=controls,
+  fix=list(r=TRUE,q=TRUE),ntimes=rep(200,16))
+## estimate free parameters (discounting first 5 trials)
+\dontrun{mod <- fit(mod,discount=5)}
 summary(mod)
 }
 

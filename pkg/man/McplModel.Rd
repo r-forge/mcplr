@@ -22,8 +22,8 @@ McplModel(learningModel,responseModel)
 data(WPT)
 ## first specify a learning model, then a response model, and then combine
 ##   them into an McplModel.
-lMod <- RescorlaWagner(y~x1+x2+x3+x4,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)
-rMod <- RatioRuleResponse(r~predict(lMod)-1,data=WPT,ntimes=c(200,200))
+lMod <- RescorlaWagner(y~x1+x2+x3+x4,data=WPT,ntimes=rep(200,25),remove.intercept=TRUE)
+rMod <- RatioRuleResponse(r~predict(lMod)-1,data=WPT,ntimes=rep(200,25))
 mMod <- McplModel(lMod,rMod)
 ## estimate free parameters
 \dontrun{mMod <- fit(mMod)}

@@ -62,7 +62,7 @@ An adaptive network model. \emph{Journal of Experimental Psychology: General},
 ## open weather prediction data
 data(WPT)
 ## initialize model
-mod <- SLFN(y~x1+x2+x3+x4,type="logistic",data=WPT,ntimes=c(200,200),parameters=list(eta=.1,alpha=.001),fix=list(beta=TRUE,ws=TRUE),remove.intercept=TRUE)
+mod <- SLFN(y~x1+x2+x3+x4,type="logistic",data=WPT,ntimes=rep(200,25),parameters=list(eta=.1,alpha=.001),fix=list(beta=TRUE,ws=TRUE),remove.intercept=TRUE)
 ## estimate free parameters
 \dontrun{mod <- fit(mod)}
 summary(mod)

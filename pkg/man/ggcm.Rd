@@ -84,9 +84,10 @@ Journal of Experimental Psychology: General.}
 \examples{
 ## open weather prediction data
 data(WPT)
+controls <- subset(WPT,id \%in\% paste("C",1:16,sep=""))
 ## initialize model, use remove.intercept=TRUE so that the x matrix will contain
 ##   four columns.
-mod <- gGCM(y~x1+x2+x3+x4,response=r~1,data=WPT,ntimes=c(200,200),remove.intercept=TRUE)
+mod <- gGCM(y~x1+x2+x3+x4,response=r~1,data=controls,ntimes=rep(200,16),remove.intercept=TRUE)
 ## estimate free parameters
 \dontrun{mod <- fit(mod)}
 summary(mod)
@@ -95,8 +96,8 @@ summary(mod)
 #    memory decay. Using numerical predictors and removing the intercept (-1) in
 #    the model formula removes the need for the remove.intercept argument.
 mod <- gGCM(y~as.numeric(x1==1)+as.numeric(x2==1)+as.numeric(x3==1)+
-as.numeric(x4==1)-1,response=r~1,distance="minkowski",sampling="uniform",data=WPT,
-ntimes=c(200,200))
+as.numeric(x4==1)-1,response=r~1,distance="minkowski",sampling="uniform",data=controls,
+ntimes=rep(200,16))
 
 }
 \keyword{models}
