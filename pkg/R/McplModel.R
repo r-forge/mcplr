@@ -237,6 +237,7 @@ setMethod("summary",signature(object="McplModel"),
     npar <- length(unlist(getPars(object,which="free",...)))
     mf$logLik=logLik(object,...)
     mf$BIC=BIC(logL=mf$logLik,npar=npar,nobs=nobs,...)
+    mf$AIC=AIC(logL=mf$logLik,npar=npar,nobs=nobs,...)
     mf$AICc=AICc(logL=mf$logLik,npar=npar,nobs=nobs,...)
     cat("Model fit:\n")
     print(unlist(mf))

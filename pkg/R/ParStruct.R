@@ -176,14 +176,15 @@ setMethod("print",signature(x="SimpleConstraintsParStruct"),
             fix <- x@fix
             if(sum(!fix) > 0) {
               cat("Free parameters\n")
-              print(getPars(x,...)[!fix])
+              print(unlist(getPars(x,...)[!fix]))
+              cat("\n")
             }
             if(sum(fix) > 0) {
             #cat("\n")
-              cat("Fixed parameters")
-              print(getPars(x,...)[fix])
+              cat("Fixed parameters\n")
+              print(unlist(getPars(x,...)[fix]))
             }
-            #cat("\n")
+            cat("\n")
           }
 )
 
