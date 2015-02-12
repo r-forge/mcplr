@@ -16,13 +16,23 @@ setMethod("predict","GaussianResponse",
     object@x
   }
 )
-setMethod("logLik","GaussianResponse",
-  function(object) {
-    mu <- predict(object,type=response)
-    sum(dnorm(x=object@y,mean=mu,sd=object@parStruct@parameters$sd,log=TRUE))
+
+setMethod("dens","GaussianResponse",
+  function(object,...) {
+    sd <- getPars(object,...)$sd
+    mu <- predict(object,type="response",...)
+    dnorm(x=object@y,mean=mu,sd=sd)
     #sum(pnorm(x=object@y+.5,mean=mu,sd=object@parStruct@parameters$sd) - pnorm(x=object@y+.5,mean=mu,sd=object@parStruct@parameters$sd))
   }
 )
+
+# setMethod("logLik","GaussianResponse",
+#   function(object) {
+#     mu <- predict(object,type=response)
+#     sum(dnorm(x=object@y,mean=mu,sd=object@parStruct@parameters$sd,log=TRUE))
+#     #sum(pnorm(x=object@y+.5,mean=mu,sd=object@parStruct@parameters$sd) - pnorm(x=object@y+.5,mean=mu,sd=object@parStruct@parameters$sd))
+#   }
+# )
 
 setMethod("simulate",signature(object="GaussianResponse"),
 	function(object,nsim=1,seed=NULL,times) {

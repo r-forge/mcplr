@@ -6,41 +6,78 @@ setClass("McplBaseModel",
     nTimes="NTimes"
   )
 )
+
 setMethod("getPars",signature(object="McplBaseModel"),
-  # Note:
-  # if one element in parameters corresponding to id[i] is free, so
-  #   is this parameter!
   function(object,...) {
     getPars(object=object@parStruct,...)
   }
+)
+
+setMethod("getFreePars",signature(object="McplBaseModel"),
+ function(object,...) {
+   getFreePars(object=object@parStruct,...)
+ }
 )
 
 setMethod("setPars",signature(object="McplBaseModel"),
   function(object,pars,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
     if(rval == "object") {
-      object@parStruct@parameters <- setPars(object=object@parStruct,pars=pars,...,rval="parameters")
+      object@parStruct <- setPars(object=object@parStruct,pars=pars,...,rval=rval)
       return(object)
     } else {
-      return(setPars(object=object@parStruct,pars=pars,...,rval="parameters"))
+      return(setPars(object=object@parStruct,pars=pars,...,rval=rval))
     }
   }
 )
+
+setMethod("setFreePars",signature(object="McplBaseModel",pars="numeric"),
+  function(object,pars,...,rval=c("object","parameters")) {
+    rval <- match.arg(rval)
+    if(rval == "object") {
+      object@parStruct <- setFreePars(object=object@parStruct,pars=pars,...,rval=rval)
+      return(object)
+    } else {
+      return(setFreePars(object=object@parStruct,pars=pars,...,rval=rval))
+    }
+  }
+)
+
+setMethod("getConstraints",signature(object="McplBaseModel"),
+  function(object,...) {
+    getConstraints(object@parStruct,...) 
+  }
+)
+
+setMethod("logLik",signature=(object="McplBaseModel"),
+  function(object,discount=0,...) {
+    if(discount > 0) {
+      discount <- as.numeric(mapply(seq,from=object@nTimes@bt,to=object@nTimes@bt-1 + discount))
+      out <- sum(log(dens(object)[-discount]))
+      nobs <- sum(object@nTimes@n) - length(discount)
+    } else {
+      out <- sum(log(dens(object)))
+      nobs <- sum(object@nTimes@n)
+    }
+    attr(out,"nobs") <- nobs
+    attr(out,"df") <- length(getFreePars(object,...))
+    class(out) <- "logLik"
+    out   
+  }
+)
+
 setMethod("AIC",signature(object="McplBaseModel"),
   function(object,npar,...,k=2) {
     logL <- logLik(object,...)
-    if(missing(npar)) return(AIC(logL,...,k=k)) else {
-      nobs <- attr(logL,"nobs")
-      if(is.null(nobs)) nobs <- nrow(object@y)
-      return(-2*logL + k*npar)
-    }
+    if(missing(npar)) npar <- length(getFreePars(object,...))#return(AIC(logL,...,k=k)) else {
+    return(-2*logL + k*npar)
   }
 )
 
 setMethod("AICc",signature(object="McplBaseModel"),
   function(object,npar,...) {
     logL <- logLik(object,...)
-    if(missing(npar)) npar <- length(getPars(object,which="free",...))
+    if(missing(npar)) npar <- length(getFreePars(object,...))
     nobs <- attr(logL,"nobs")
     if(is.null(nobs)) nobs <- nrow(object@y)
     -2*logL + (2*nobs*npar)/(nobs-npar-1)
@@ -79,48 +116,61 @@ setMethod("getReplication",signature(object="McplBaseModel"),
     y <- object@y[bt[case]:et[case],]
     if(!is.matrix(x)) x <- as.matrix(x)
     if(!is.matrix(y)) y <- as.matrix(y)
-    if(!object@parStruct@replicate) parameters <- object@parStruct@parameters[[case]] else parameters <- object@parStruct@parameters
+    #if(!object@parStruct@replicate) parameters <- object@parStruct@parameters[[case]] else parameters <- object@parStruct@parameters
+    parameters <- getPars(object@parStruct,replication=case)
     return(list(x=x,y=y,parameters=parameters))
   }
 )
+
 setMethod("show",signature(object="McplBaseModel"),
   function(object) {
+    print(object)
+  }       
+)
 
+setMethod("print",signature(x="McplBaseModel"),
+  function(x,...) {
+    cat("Parameters:\n")
+    print(x@parStruct)
   }
 )
 
 setMethod("summary",signature(object="McplBaseModel"),
   function(object,fits=TRUE,...) {
-    x <- object
-    #cat("ResponseModel, class:",is(x),"\n\n")
-    pars <- getPars(x,which="all",...)
-    attr(pars,"skeleton") <- NULL
-    fx <- x@parStruct@fix
-    if(sum(fx)>0) {
-    #if(length(fx)>0) {
-      frpars <- pars[!fx]
-      fxpars <- pars[fx]
-    } else {
-      frpars <- pars
-      fxpars <- NULL
-    }
-    if(length(frpars)>0) {
-      cat("Estimated parameters:\n")
-      print(frpars)
-      cat("\n")
-    }
-    if(length(fxpars>0)) {
-      cat("Fixed parameters:\n")
-      fpars <- getPars(x,which="all",...)
-      print(fpars[x@parStruct@fix])
-      cat("\n")
-    }
+    #cat("Parameters:\n")
+    print(object@parStruct)
+    #cat("\n")
+#     x <- object
+#     #cat("ResponseModel, class:",is(x),"\n\n")
+#     pars <- getPars(x,which="all",...)
+#     attr(pars,"skeleton") <- NULL
+#     fx <- x@parStruct@fix
+#     if(sum(fx)>0) {
+#     #if(length(fx)>0) {
+#       frpars <- pars[!fx]
+#       fxpars <- pars[fx]
+#     } else {
+#       frpars <- pars
+#       fxpars <- NULL
+#     }
+#     if(length(frpars)>0) {
+#       cat("Estimated parameters:\n")
+#       print(frpars)
+#       cat("\n")
+#     }
+#     if(length(fxpars>0)) {
+#       cat("Fixed parameters:\n")
+#       fpars <- getPars(x,which="all",...)
+#       print(fpars[x@parStruct@fix])
+#       cat("\n")
+#     }
     if(fits) {
       mf <- list()
       try({
         mf$logLik=logLik(x,...)
+        mf$AIC=AIC(x,...)
         mf$BIC=BIC(x,...)
-        mf$AICc=AICc(x,...)
+        #mf$AICc=AICc(x,...)
       },silent=TRUE)
       if(length(mf>0)) {
         cat("Model fit:\n")
@@ -134,39 +184,29 @@ setMethod("summary",signature(object="McplBaseModel"),
 setMethod("fit",signature(object="McplBaseModel"),
   function(object,method="Nelder-Mead",...) {
     MLoptfun <- function(pars,object,...) {
-      object@parStruct@parameters <- setPars(object,pars,...,rval="parameters",internal=TRUE)
+      object <- setFreePars(object,pars,...,rval="object")
       object <- runm(object,...)
       -logLik(object)
     }
     LSoptfun <- function(pars,object,...) {
-      object@parStruct@parameters <- setPars(object,pars,...,rval="parameters",internal=TRUE)
+      object <- setFreePars(object,pars,...,rval="object")
       object <- runm(object,...)
       sum((predict(object,type="response",...)-object@y)^2)
     }
-    pars <- getPars(object,which="free",...,internal=TRUE)
+    pars <- getFreePars(object,...)
     if(hasMethod("logLik",is(object))) optfun <- MLoptfun else optfun <- LSoptfun
-    if(!is.null(object@parStruct@constraints)) {
-      switch(is(object@parStruct@constraints),
-        "LinConstraintsList" = {
-          A <- object@parStruct@constraints@Amat
-          b <- object@parStruct@constraints@bvec
-          opt <- constrOptim(theta=pars,f=optfun,grad=NULL,ui=A,ci=b,object=object,...)
-          object@parameters <- setPars(object,opt$par,...,rval="parameters",internal=TRUE)
-        },
-        "BoxConstraintsList" = {
-          opt <- optim(pars,fn=optfun,method="L-BFGS-B",object=object,min=object@parStruct@constraints@min,max=object@parStruct@constraints@min,...)
-          object@parameters <- setPars(object,opt$par,...,rval="parameters",internal=TRUE)
-        },
-        {
-          warning("This extension of ConstraintsList is not implemented; using unconstrained optimisation.")
-          opt <- optim(pars,fn=optfun,method=method,object=object,...)
-          object@parameters <- setPars(object,opt$par,...,rval="parameters",internal=TRUE)
-        }
-       )
+    constraints <- getConstraints(object,...)
+    if(is(constraints,"Unconstrained")) {
+      if(length(pars) == 1 & method=="Nelder-Mead") method <- "BFGS"
+      opt <- optim(par=pars,fn=optfun,object=object,method=method,...)  
+    } else if(is(constraints,"BoxContraints")) {
+      opt <- optim(par=pars,fn=optfun,object=object,method="L-BFGS-B",min=constraints@min,max=constraints@max,...)  
+    } else if(is(constraints,"LinearConstraints")) {
+      opt <- constrOptim(theta=pars,f=optfun,grad=NULL,ui=constraints@Amat,ci=constraints@bvec,...)
     } else {
-      opt <- optim(pars,fn=optfun,method=method,object=object,...)
-      object@parStruct@parameters <- setPars(object,opt$par,...,rval="parameters",internal=TRUE)
+      stop("Cannot determine constraints of this MCPL model")
     }
+    object <- setFreePars(object,opt$par,...,rval="object")
     object <- runm(object,...)
     object
   }
@@ -185,12 +225,6 @@ setMethod("has.lFr",signature(object="McplBaseModel"),
 )
 
 setMethod("has.rFl",signature(object="McplBaseModel"),
-  function(object,...) {
-    FALSE
-  }
-)
-
-setMethod("canRepar",signature(object="McplBaseModel"),
   function(object,...) {
     FALSE
   }

@@ -6,12 +6,13 @@ setMethod("predict",signature(object="MaxResponse"),
   function(object,...) {
     #beta <- object@parStruct@parameters$beta
     #out <- object@transformation(object,...)
-    p <- 1/(1+exp(-object@parStruct@parameters$beta))
-    if(length(beta) > 1) {
-      N <- object@parStruct@n
-      if(length(p) == length(n)) p <- rep(p,each=n) else stop("parameter beta should have length 1 or number of replications") 
+    epsilon <- getPars(object,...)$epsilon
+    #p <- 1/(1+exp(-object@parStruct@parameters$beta))
+    if(length(epsilon) > 1) {
+      n <- object@parStruct@n
+      if(length(epsilon) == length(n)) epsilon <- rep(epsilon,each=n) else stop("parameter epsilon should have length 1 or number of replications") 
     }
-    out <- (object@x==apply(object@x,1,max))*(1-p) + (1-(object@x==apply(object@x,1,max)))*p
+    out <- (object@x==apply(object@x,1,max))*(1-epsilon) + (1-(object@x==apply(object@x,1,max)))*epsilon
     #out <- out/rowSums(out)
     #out <- apply(object@x,1,function(x) exp(x)/sum(exp(x)))
     if(!is.matrix(out)) out <- matrix(out,ncol=1)
@@ -19,8 +20,8 @@ setMethod("predict",signature(object="MaxResponse"),
   }
 )
 
-setMethod("logLik",signature(object="MaxResponse"),
-  function(object,eps=.Machine$double.eps,...) {
+setMethod("dens",signature(object="MaxResponse"),
+  function(object,eps=.Machine$double.eps,....) {
     pred <- predict(object,type="response",...)
     nt <- NROW(pred)
     if(ncol(as.matrix(pred))==1) {
@@ -30,13 +31,19 @@ setMethod("logLik",signature(object="MaxResponse"),
     }
     pred[pred > 1-eps] <- 1-eps
     pred[pred < eps] <- eps
-    LL <- sum(log(pred))
-    attr(LL,"nobs") <- nt
-    attr(LL,"df") <- length(getPars(object,which="free"))
-    class(LL) <- "logLik"
-    LL
+    pred
   }
 )
+
+# setMethod("logLik",signature(object="MaxResponse"),
+#   function(object,...) {
+#     LL <- sum(log(dens(object,...)))
+#     attr(LL,"nobs") <- nt
+#     attr(LL,"df") <- length(getFreePars(object,...))
+#     class(LL) <- "logLik"
+#     LL
+#   }
+# )
 
 MaxResponse <- function(formula,data,parameters=list(beta=2.944439),
                         ntimes=NULL,replicate=TRUE,fixed,

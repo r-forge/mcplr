@@ -1,40 +1,94 @@
 setClass("RatioRuleResponse",
-  contains="ResponseModel",
+  contains="ResponseModel"
+)
+
+setClass("PowRatioRuleResponse",
+  contains="RatioRuleResponse"
+)
+
+setClass("ExpRatioRuleResponse",
+ contains="RatioRuleResponse"
+)
+
+setClass("GenRatioRuleResponse",
+  contains="RatioRuleResponse",
   representation(
-    transformation = "function"
+    transformation="function"
   )
 )
 
-setMethod("fit",signature(object="RatioRuleResponse"),
+# setMethod("fit",signature(object="RatioRuleResponse"),
+#   function(object,...) {
+#     optfun <- function(par,object,...) {
+#       object@parStruct@parameters <- setFreePars(object,par,rval="parameters",...)
+#       -sum(logLik(object,...))
+#     }
+#     mf <- match.call()
+#     pstart <- unlist(object@parStruct@parameters)
+#     #if(length(pstart)!=1) stop("Ratio Rule response must have a single parameter")
+#     if(!is.null(mf$CML.method) || !is.null(mf$method)) {
+#       if(!is.null(mf$CML.method)) mf$method <- mf$CML.method
+#       mf$par <- pstart
+#       mf$fn <- optfun
+#       mf$object <- object
+#       mf[[1]] <- as.name("optim")
+#       opt <- eval(mf,parent.frame())
+#       #opt <- optim(log(pstart),fn=optfun,object=object,...) else
+#     } else {
+#       opt <- optim(pstart,fn=optfun,object=object,...)
+#     }
+#     #object <- setPars(object,exp(opt$par))
+#     object@parStruct@parameters <- setPars(object,opt$par,rval="parameters",...)
+#     object <- runm(object,...)
+#     object
+#   }
+# )
+
+setMethod("predict",signature(object="PowRatioRuleResponse"),
   function(object,...) {
-    optfun <- function(par,object,...) {
-      object@parStruct@parameters <- setPars(object,par,rval="parameters",...)
-      -sum(logLik(object,...))
-    }
-    mf <- match.call()
-    pstart <- unlist(object@parStruct@parameters)
-    #if(length(pstart)!=1) stop("Ratio Rule response must have a single parameter")
-    if(!is.null(mf$CML.method) || !is.null(mf$method)) {
-      if(!is.null(mf$CML.method)) mf$method <- mf$CML.method
-      mf$par <- pstart
-      mf$fn <- optfun
-      mf$object <- object
-      mf[[1]] <- as.name("optim")
-      opt <- eval(mf,parent.frame())
-      #opt <- optim(log(pstart),fn=optfun,object=object,...) else
+    beta <- getPars(object,...)$beta
+    if(object@parStruct@repeated) {
+      beta <- rep(beta,each=object@nTimes@n)
     } else {
-      opt <- optim(pstart,fn=optfun,object=object,...)
+      if(length(beta) > 1) warning("beta parameters has length > 1; using first value only")
+      beta <- beta[1]
     }
-    #object <- setPars(object,exp(opt$par))
-    object@parStruct@parameters <- setPars(object,opt$par,rval="parameters",...)
-    object <- runm(object,...)
-    object
+    out <- object@x^beta
+    #out <- object@transformation(object,...)
+    out <- out/rowSums(out)
+    #out <- apply(object@x,1,function(x) exp(x)/sum(exp(x)))
+    if(!is.matrix(out)) out <- matrix(out,ncol=1)
+    out
   }
 )
 
-setMethod("predict",signature(object="RatioRuleResponse"),
+setMethod("predict",signature(object="ExpRatioRuleResponse"),
   function(object,...) {
-    #beta <- object@parStruct@parameters$beta
+    beta <- getPars(object,...)$beta
+    if(object@parStruct@repeated) {
+      beta <- rep(beta,each=object@nTimes@n)
+    } else {
+      if(length(beta) > 1) warning("beta parameters has length > 1; using first value only")
+      beta <- beta[1]
+    }
+    out <- exp(beta*object@x)
+    #out <- object@transformation(object,...)
+    out <- out/rowSums(out)
+    #out <- apply(object@x,1,function(x) exp(x)/sum(exp(x)))
+    if(!is.matrix(out)) out <- matrix(out,ncol=1)
+    out
+  }
+)
+
+setMethod("predict",signature(object="GenRatioRuleResponse"),
+  function(object,...) {
+    beta <- getPars(object,...)$beta
+    if(object@parStruct@repeated) {
+      beta <- rep(beta,each=object@nTimes@n)
+    } else {
+      if(length(beta) > 1) warning("beta parameters has length > 1; using first value only")
+      beta <- beta[1]
+    }
     out <- object@transformation(object,...)
     out <- out/rowSums(out)
     #out <- apply(object@x,1,function(x) exp(x)/sum(exp(x)))
@@ -43,7 +97,7 @@ setMethod("predict",signature(object="RatioRuleResponse"),
   }
 )
 
-setMethod("logLik",signature(object="RatioRuleResponse"),
+setMethod("dens",signature(object="RatioRuleResponse"),
   function(object,eps=.Machine$double.eps,...) {
     pred <- predict(object,type="response",...)
     nt <- NROW(pred)
@@ -59,12 +113,13 @@ setMethod("logLik",signature(object="RatioRuleResponse"),
     #  LL <- sum(log(pred[-discount]))
     #  attr(LL,"nobs") <- length(pred)-length(discount)
     #} else {
-      LL <- sum(log(pred))
+    #  LL <- sum(log(pred))
     #}
-    attr(LL,"nobs") <- nt
-    attr(LL,"df") <- length(getPars(object,which="free"))
-    class(LL) <- "logLik"
-    LL
+    #attr(LL,"nobs") <- nt
+    #attr(LL,"df") <- length(getPars(object,which="free"))
+    #class(LL) <- "logLik"
+    #LL
+    pred
   }
 )
 
@@ -105,54 +160,58 @@ setMethod("simulate",signature(object="RatioRuleResponse"),
 	}
 )
 
-RatioRuleResponse.trans.exp <- function(object,...) {
-  if(object@parStruct@replicate) {
-    return(exp(object@parStruct@parameters$beta*object@x))
-  } else {
-    beta <- getPars(object,"beta")
-    beta <- rep(beta,each=object@nTimes@n)
-    return(exp(beta*object@x))
-  }
-}
+# RatioRuleResponse.trans.exp <- function(object,...) {
+#   beta <- getPars(object,name="beta")$beta
+#   if(object@parStruct@repeated) {
+#     beta <- rep(beta,each=object@nTimes@n)
+#   } else {
+#     if(length(beta) > 1) warning("beta parameters has length > 1; using first value only")
+#     beta <- beta[1]
+#   }
+#   return(exp(beta*object@x))
+# }
+# 
+# 
+# RatioRuleResponse.trans.pow <- function(object,...) {
+#   beta <- getPars(object,name="beta")$beta
+#   if(object@parStruct@repeated) {
+#     beta <- rep(beta,each=object@nTimes@n)
+#   } else {
+#     if(length(beta) > 1) warning("beta parameters has length > 1; using first value only")
+#     beta <- beta[1]
+#   }
+#   return(object@x^beta)
+# }
+# 
+# RatioRuleResponse.trans.none <- function(object,...) {
+#   object@x
+# }
 
-RatioRuleResponse.trans.pow <- function(object,...) {
-    if(object@parStruct@replicate) {
-      return(object@x^object@parStruct@parameters$beta)
-    } else {
-      beta <- getPars(object,"beta")
-      beta <- rep(beta,each=object@nTimes@n)
-      return(object@x^beta)
-    }
-}
-
-RatioRuleResponse.trans.none <- function(object,...) {
-  object@x
-}
-
-RatioRuleResponse <- function(formula,parameters=list(beta=1),transformation=c("exponential","power","none"),
+RatioRuleResponse <- function(formula,parameters=list(beta=1),type=c("exponential","power"),
                         data,ntimes=NULL,replicate=TRUE,fixed,
                         parStruct,subset) {
+  type <- match.arg(type)
   if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset) else 
     dat <- mcpl.prepare(formula,data)
 
   y <- dat$y
   x <- dat$x
   
-  if(!is.function(transformation)) {
-    transformation <- match.arg(transformation)
-    trans <- switch(transformation,
-      exponential = RatioRuleResponse.trans.exp,
-      power = RatioRuleResponse.trans.pow,
-      none = RatioRuleResponse.trans.none)
-  } else {
-    trans <- transformation
-  }
+#   if(!is.function(transformation)) {
+#     transformation <- match.arg(transformation)
+#     trans <- switch(transformation,
+#       exponential = RatioRuleResponse.trans.exp,
+#       power = RatioRuleResponse.trans.pow,
+#       none = RatioRuleResponse.trans.none)
+#   } else {
+#     trans <- transformation
+#   }
   
   parfill <- function(parameters) {
     #pars <- list()
     if(!is.list(parameters)) parameters <- as.list(parameters)
     if(is.null(parameters$beta)) parameters$beta <- 1
-    parameters
+    parameters[c("beta")]
   }
 
   if(is.null(ntimes) | replicate) {
@@ -186,8 +245,11 @@ RatioRuleResponse <- function(formula,parameters=list(beta=1),transformation=c("
     x = x,
     y = y,
     parStruct=parStruct,
-    nTimes=nTimes,
-    transformation=trans)
+    nTimes=nTimes)#,
+    #transformation=trans)
+ 
+  if(type == "power") mod <- as(mod,"PowRatioRuleResponse")
+  if(type == "exponential") mod <- as(mod,"ExpRatioRuleResponse")
   mod <- runm(mod)
   mod                     
                         

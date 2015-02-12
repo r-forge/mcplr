@@ -1,7 +1,9 @@
 bdiag <- function(x){
      if(!is.list(x)) stop("x not a list")
+     # remove zero-length components
+     x <- x[unlist(lapply(x,function(y) length(y) > 0))]
      n <- length(x)
-     if(n==0) return(NULL)
+     if(n==0) return(NULL)     
      x <- lapply(x, function(y) if(length(y)) as.matrix(y) else stop("Zero-length component in x"))
      d <- array(unlist(lapply(x, dim)), c(2, n))
      rr <- d[1,]

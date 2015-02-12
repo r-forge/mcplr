@@ -1,6 +1,8 @@
 \name{RatioRuleResponse}
 \docType{class}
 \alias{RatioRuleResponse}
+\alias{ExpRatioRuleResponse}
+\alias{PowRatioRuleResponse}
 \alias{RatioRuleResponse-class}
 \alias{fit,RatioRuleResponse-method}
 \alias{logLik,RatioRuleResponse-method}
@@ -14,7 +16,6 @@ or by \code{new("RatioRuleResponse", ...)}.
 }
 \section{Slots}{
 	 \describe{
-    \item{\code{transformation}:}{The transformation function.}
     \item{\code{x}:}{A \code{"matrix"}, containing values of the response options.}
     \item{\code{y}:}{Object of class \code{"matrix"}, containing dummy coded response variable.}
     \item{\code{parStruct}:}{Object of class \code{"ParStruct"}, specifying parameters and (optional) constraints.}

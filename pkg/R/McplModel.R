@@ -1,7 +1,8 @@
 setClass("McplModel",
   representation(
     learningModel="LearningModel",
-    responseModel="ResponseModel"
+    responseModel="ResponseModel"#,
+    #constraints="Constraints"
   )
 )
 
@@ -13,14 +14,24 @@ McplModel <- function(learningModel,responseModel) {
 }
 
 setMethod("getPars",signature(object="McplModel"),
-  function(object,which="all",internal=FALSE,...) {
+  function(object,...) {
     pars <- list()
-    pars[[1]] <- getPars(object@learningModel,which=which,internal=internal,...)
-    pars[[2]] <- getPars(object@responseModel,which=which,internal=internal,...)
+    pars[["learning"]] <- getPars(object@learningModel,...)
+    pars[["response"]] <- getPars(object@responseModel,...)
+    as.relistable(pars)
+  }
+)
+
+setMethod("getFreePars",signature(object="McplModel"),
+  function(object,...) {
+    pars <- list()
+    pars[["learning"]] <- getFreePars(object@learningModel,...)
+    pars[["response"]] <- getFreePars(object@responseModel,...)
     pars <- as.relistable(pars)
     unlist(pars)
   }
 )
+
 setMethod("setPars",signature(object="McplModel"),
   function(object,pars,parid=NULL,internal=FALSE,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
@@ -39,95 +50,57 @@ setMethod("setPars",signature(object="McplModel"),
     } else {
       parl <- relist(pars)
     }
-    if(length(parl)==1) {
-      warning("assuming no free parameters in ResponseModel")
-      length(parl) <- 2 # SHOULD BE OK...BUT WATCH THIS
-    }
     switch(rval,
       object = {
-        if(!is.null(parl[[1]])) object@learningModel <- setPars(object@learningModel,parl[[1]],internal=internal,rval=rval,...)
-        if(!is.null(parl[[2]])) object@responseModel <- setPars(object@responseModel,parl[[2]],internal=internal,rval=rval,...)
+        if(!is.null(parl[["learning"]])) object@learningModel <- setPars(object@learningModel,parl[["learning"]],internal=internal,rval=rval,...)
+        if(!is.null(parl[["response"]])) object@responseModel <- setPars(object@responseModel,parl[["response"]],internal=internal,rval=rval,...)
         object
       },
       parameters = {
-        outpar <- vector(mode="list",length=2)
-        if(!is.null(parl[[1]])) outpar[[1]] <- setPars(object@learningModel,parl[[1]],internal=internal,rval=rval,...)
-        if(!is.null(parl[[1]])) outpar[[2]] <- setPars(object@responseModel,parl[[2]],internal=internal,rval=rval,...)
+        outpar <- vector(mode="list")#,length=2)
+        if(!is.null(parl[["learning"]])) outpar[["learning"]] <- setPars(object@learningModel,parl[["learning"]],internal=internal,rval=rval,...)
+        if(!is.null(parl[["response"]])) outpar[["response"]] <- setPars(object@responseModel,parl[["response"]],internal=internal,rval=rval,...)
         outpar
-      })
-    #object@learningModel <- setPars(object@learningModel,parl[[1]],rval="object",...)
-    #object@responseModel <- setPars(object@responseModel,parl[[2]],...)
-    #object
-    #outpar <- list()
-    #outpar[[1]] <- setPars(object@learningModel,parl[[1]],...)
-    #outpar[[2]] <- setPars(object@responseModel,parl[[2]],...)
-    #outpar
-    #if(!is.relistable(object@learningModel@parameters)) stop("parameters in learning model not relistable")
-    #if(!is.relistable(object@responseModel@parameters)) stop("parameters in response model not relistable")
-#    oldpars <- list()
-#    oldpars[[1]] <- unlist(object@learningModel@parameters)
-#    oldpars[[2]] <- unlist(object@responseModel@parameters)
-#    newpars <- unlist(as.relistable(oldpars))
-#    if(length(pars)!=length(oldpars)) {
-#      if(!is.null(parid)) {
-#        if(length(parid)!=length(pars)) stop("length of parid does not match length of pars")
-#        newpars[parid] <- pars
-#      } else {
-#        fix <- c(object@learningModel@parStruct@fix,object@responseModel@parStruct@fix)
-#        if(sum(!fix)!=length(pars)) stop("parid not given and length of pars does not equal number of nonfixed parameters")
-#        newpars[!fix] <- pars
-#      }
-#    } else {
-#      skel <- attr(oldpars,"skeleton")
-#      newpars <- pars
-#      attr(newpars,"skeleton") <- skel
-#    }
-#    newpars <- relist(newpars)
-#    attr(newpars[[1]],"skeleton") <- attr(oldpars[[1]],"skeleton")
-#    attr(newpars[[2]],"skeleton") <- attr(oldpars[[2]],"skeleton")
-#    object@learningModel@parameters <- relist(newpars[[1]])
-#    object@responseModel@parameters <- relist(newpars[[2]])
+      }
+    )
   }
 )
 
-setMethod("setTransPars",signature(object="McplModel"),
-  function(object,pars,parid=NULL,internal=FALSE,...,rval=c("object","parameters")) {
+setMethod("setFreePars",signature(object="McplModel",pars="numeric"),
+  function(object,pars,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
     if(is.null(attr(pars,"skeleton"))) {
-      parv <- getPars(object,which="free",internal=internal,...)
-      if(length(pars)==length(parv)) {
-        parl <- relist(pars,skeleton=relist(getPars(object,which="free",internal=internal,...))) #FIX ME!!
-      } else {
-        parv <- getPars(object,which="all",...)
-        if(length(pars)==length(parv)) {
-          parl <- relist(pars,skeleton=relist(getPars(object,which="all",internal=internal,...))) #FIX ME!!
-        } else {
-          stop("cannot relist this parameter vector; please use relistable parameter vectors.")
-        }
-      }
+      parl <- relist(getFreePars(object,...))
     } else {
       parl <- relist(pars)
     }
-    if(length(parl)==1) {
-      warning("length of parlist set to 2")
-      length(parl) <- 2 # WATCH ME!
+    nparl <- length(parl[["learning"]])
+    nparr <- length(parl[["response"]])
+    if(length(pars)!=sum(c(nparl,nparr))) stop("wrong length of pars")
+    if(nparl > 0) {
+      object@learningModel <- setFreePars(object@learningModel,pars[1:nparl],...)
+    }
+    if(nparr > 0) {
+      object@responseModel <- setFreePars(object@responseModel,pars[(1+nparl):(nparl+nparr)],...) 
     }
     switch(rval,
-      object = {
-        if(!is.null(parl[[1]])) {
-          if(canRepar(object@learningModel)) object@learningModel <- setTransPars(object@learningModel,parl[[1]],internal=internal,rval=rval,...) else object@learningModel <- setPars(object@learningModel,parl[[1]],internal=internal,rval=rval,...)
-        }
-        if(!is.null(parl[[2]])) {
-          if(canRepar(object@responseModel)) object@responseModel <- setTransPars(object@responseModel,parl[[2]],internal=internal,rval=rval,...) else object@responseModel <- setPars(object@responseModel,parl[[2]],internal=internal,rval=rval,...)
-        }
-        object
-      },
-      parameters = {
-        outpar <- vector(mode="list",length=2)
-        if(!is.null(parl[[1]])) if(canRepar(object@learningModel)) outpar[[1]] <- setTransPars(object@learningModel,parl[[1]],internal=internal,rval=rval,...) else outpar[[1]] <- setPars(object@learningModel,parl[[1]],internal=internal,rval=rval,...)
-        if(!is.null(parl[[1]])) if(canRepar(object@responseModel)) outpar[[2]] <- setTransPars(object@responseModel,parl[[2]],internal=internal,rval=rval,...) else outpar[[2]] <- setPars(object@responseModel,parl[[2]],internal=internal,rval=rval,...)
-        outpar
-      })
+       object = {
+         object
+       },
+       parameters = {
+         object@parameters
+       }
+    )
+  }
+)
+
+setMethod("getConstraints",signature(object="McplModel"),
+  # define this for a particular McplModel to allow general constraints
+  function(object,...) {
+    lc <- getConstraints(object@learningModel,...)
+    rc <- getConstraints(object@responseModel,...)
+    ac <- combineConstraints(lc,rc)
+    return(ac)
   }
 )
 
@@ -153,30 +126,41 @@ setMethod("runm",signature(object="McplModel"),
   }
 )
 
-setMethod("logLik",signature(object="McplModel"),
-  function(object,from=c("responseModel","learningModel"),...) {
-    from <- match.arg(from)
-    LL <- switch(from,
-      responseModel = logLik(object@responseModel,...),
-      learningModel = logLik(object@learningModel,...))
-    attr(LL,"df") <- switch(from,
-      responseModel = length(getPars(object,which="free",...)),
-      learningModel = length(getPars(object@learningModel,which="free",...)))
-    return(LL)
+# setMethod("logLik",signature(object="McplModel"),
+#   function(object,from=c("responseModel","learningModel"),...) {
+#     from <- match.arg(from)
+#     LL <- switch(from,
+#       responseModel = logLik(object@responseModel,...),
+#       learningModel = logLik(object@learningModel,...))
+#     attr(LL,"df") <- switch(from,
+#       responseModel = length(getFreePars(object,...)),
+#       learningModel = length(getFreePars(object@learningModel,...)))
+#     return(LL)
+#   }
+# )
+
+setMethod("logLik",signature=(object="McplModel"),
+  function(object,discount=0,...) {
+    out <- logLik(object@responseModel,discount=discount,...) 
+    attr(out,"df") <- length(getFreePars(object,...))
+    #class(out) <- "logLik"
+    out   
   }
 )
+
+
 setMethod("AIC",signature(object="McplModel"),
   function(object,npar,...,k=2) {
     if(missing(npar)) {
       AIC(logLik(object,...,k=k))
     } else {
-      AIC(object=object@responseModel,k=k,npar=npar)
+      AIC(object=object,k=k,npar=npar)
     }
   }
 )
 setMethod("AICc",signature(object="McplModel"),
   function(object,npar,...) {
-    if(missing(npar)) npar <- length(getPars(object,which="free",...))
+    if(missing(npar)) npar <- length(getFreePars(object,...))
     AICc(object=object@responseModel,npar=npar,...)
   }
 )
@@ -194,52 +178,43 @@ setMethod("Rsq",signature(object="McplModel"),
 )
 
 setMethod("fit",signature(object="McplModel"),
-  function(object,method="Nelder-Mead",CML=FALSE,CML.method=method,...) {
-    optfun <- function(pars,object,CML,CML.method,...) {
-      if(CML) {
-        #object@learningModel <- setPars(object@learningModel,pars,...)
-        if(canRepar(object@learningModel)) {
-          object@learningModel@parStruct@parameters <- setTransPars(object@learningModel,pars,internal=TRUE,...,rval="parameters")
-        } else {
-          object@learningModel@parStruct@parameters <- setPars(object@learningModel,pars,internal=TRUE,...,rval="parameters")
-        }
-      #} else object <- setPars(object,pars,...)
-      } else {
-        parl <- setPars(object,pars,internal=TRUE,...,rval="parameters")
-        if(!is.null(parl[[1]])) object@learningModel@parStruct@parameters <- parl[[1]]
-        if(!is.null(parl[[2]])) object@responseModel@parStruct@parameters <- parl[[2]]
-      }
+  # 2013/05/20: delete CML methods; if needed, can be supplied in user-defined fit method...
+  function(object,method="Nelder-Mead",...) {
+    optfun <- function(pars,object,...) {
+      # 2013/05/20: using setPars on whole object rather than below...
+      #parl <- setPars(object,pars,internal=TRUE,calledBy="fit",...,rval="parameters")
+      #if(!is.null(parl[[1]])) object@learningModel@parStruct@parameters <- parl[[1]]
+      #if(!is.null(parl[[2]])) object@responseModel@parStruct@parameters <- parl[[2]]
+      object <- setFreePars(object,pars,rval="object",...)
       object <- runm(object,...)
       
       #object@learningModel <- runm(object@learningModel,...)
       #object@responseModel <- lFr(object,...)
-      if(CML) {
-        object@responseModel <- fit(object@responseModel,method=CML.method,...)
-      } else {
-        object@responseModel <- runm(object@responseModel,...)
-      }
-      if(has.rFl(object)) object@learningModel <- rFl(object,...)
+      #if(CML) {
+      #  object@responseModel <- fit(object@responseModel,method=CML.method,...)
+      #} else {
+      #  object@responseModel <- runm(object@responseModel,...)
+      #}
+      #if(has.rFl(object)) object@learningModel <- rFl(object,...)
       out <- -logLik(object,...)
-      if(CML) attr(out,"rPars") <- getPars(object@responseModel,internal=TRUE,...)
+      #if(CML) attr(out,"rPars") <- getPars(object@responseModel,internal=TRUE,...)
       out
     }
-    if(CML) {
-      pars <- getPars(object@learningModel,which="free",internal=TRUE,...)
-    } else pars <- getPars(object,which="free",internal=TRUE,...)
-    # TODO: get and use contraints!
-    opt <- optim(par=pars,fn=optfun,object=object,CML=CML,CML.method=CML.method,...)
-    if(CML) {
-      #object@learningModel <- setPars(object@learningModel,opt$par,...)
-      object@learningModel@parStruct@parameters <- setPars(object@learningModel,opt$par,internal=TRUE,...,rval="parameters")
-      tmp <- optfun(pars=opt$par,object=object,CML=CML,CML.method=CML.method,...)
-      #object@responseModel <- setPars(object@responseModel,attr(tmp,"rPars"),...)
-      object@responseModel@parStruct@parameters <- setPars(object@responseModel,attr(tmp,"rPars"),internal=TRUE,...,rval="parameters")
-    #} else object <- setPars(object,opt$par,...)
+    pars <- getFreePars(object,...)
+    constraints <- getConstraints(object,...)
+    if(is(constraints,"Unconstrained")) {
+      opt <- optim(par=pars,fn=optfun,object=object,method=method,...)  
+    } else if(is(constraints,"BoxContraints")) {
+      opt <- optim(par=pars,fn=optfun,object=object,method="L-BFGS-B",min=constraints@min,max=constraints@max,...)  
+    } else if(is(constraints,"LinearConstraints")) {
+      opt <- constrOptim(theta=pars,f=optfun,grad=NULL,ui=constraints@Amat,ci=constraints@bvec,...)
     } else {
-      parl <- setPars(object,opt$par,internal=TRUE,rval="parameters",...)
-      if(!is.null(parl[[1]])) object@learningModel@parStruct@parameters <- parl[[1]]
-      if(!is.null(parl[[2]])) object@responseModel@parStruct@parameters <- parl[[2]]
+      stop("Cannot determine constraints of this MCPL model")
     }
+    object <- setFreePars(object,opt$par,...,rval="object")
+    #if(!is.null(parl[[1]])) object@learningModel@parStruct@parameters <- parl[[1]]
+    #if(!is.null(parl[[2]])) object@responseModel@parStruct@parameters <- parl[[2]]
+    #}
     object <- runm(object,...)
     object
   }
@@ -265,10 +240,11 @@ setMethod("summary",signature(object="McplModel"),
     mf$AICc=AICc(logL=mf$logLik,npar=npar,nobs=nobs,...)
     cat("Model fit:\n")
     print(unlist(mf))
-    cat("\n Submodels:\n")
-    cat("\n ************** \n")
+    cat("\n")
+    #cat("\n Submodels:\n")
+    #cat("\n ************** \n")
     summary(object@learningModel,fits=FALSE,...)
-    cat("\n ************** \n")
+    #cat("\n ************** \n")
     summary(object@responseModel,fits=FALSE,...)
   }
 )
@@ -325,8 +301,4 @@ setMethod("simulate",signature(object="McplModel"),
     object
   }
 )
-setMethod("canRepar",signature(object="McplBaseModel"),
-  function(object,...) {
-    if(canRepar(object@learningModel) | canRepar(object@responseModel)) return(TRUE) else return(FALSE)
-  }
-)
+

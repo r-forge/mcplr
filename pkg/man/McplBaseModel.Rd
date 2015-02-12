@@ -16,7 +16,7 @@
 \alias{runm,McplBaseModel-method}
 \alias{runm,ResponseModel-method}
 \alias{runm,LearningModel-method}
-\alias{getPars}
+%\alias{getPars}
 \alias{getPars,McplBaseModel-method}
 \alias{getPars,McplBaseModel,ANY-method}
 \alias{getReplication,McplBaseModel-method}
@@ -26,11 +26,14 @@
 \alias{show,McplBaseModel-method}
 \alias{show,ResponseModel-method}
 \alias{show,LearningModel-method}
-\alias{setPars}
+%\alias{setPars}
 \alias{setPars,McplBaseModel-method}
 \alias{summary,McplBaseModel-method}
 \alias{summary,ResponseModel-method}
 \alias{summary,LearningModel-method}
+
+\alias{dens}
+\alias{dens,McplBaseModel-method}
 %\alias{ntimes}
 
 \title{Class "McplBaseModel"}
@@ -60,6 +63,7 @@
     \item{AICc}{\code{signature(object = "McplBaseModel")}: Corrected Akaike Information Criterion.}
     \item{BIC}{\code{signature(object = "McplBaseModel")}: Bayesian Information Criterion/Schwartz Information Criterion.}
     \item{fit}{\code{signature(object = "McplBaseModel")}: Estimate model parameters (by Maximum Likelihood).}
+    \item{dens}{\code{signature(object = "McplBaseModel")}: Density evaluated at values of \code{y}.}
     \item{runm}{\code{signature(object = "McplBaseModel")}: Run model (calculate model states using current parameters).}
     \item{getPars}{\code{signature(object = "McplBaseModel")}: Get current parameter values.}
     \item{logLik}{\code{signature(object = "McplBaseModel")}: Log-likelihood for current parameter values.}

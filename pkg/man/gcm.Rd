@@ -1,6 +1,8 @@
 \name{GCM}
 \alias{GCM}
 \alias{GCM-class}
+\alias{GCMlearning-class}
+\alias{GCMresponse-class}
 \alias{fit,GCM-method}
 \alias{getPars,GCM-method}
 \alias{predict,GCM-method}

@@ -1,13 +1,13 @@
 Package: mcplR
-Version: 0.1-8
-Date: 2012-04-17
+Version: 0.3-0
+Date: 2015-02-12
 Title: Multiple Cue Probability Learning in R
 Author: Maarten Speekenbrink <m.speekenbrink@ucl.ac.uk>
 Maintainer: Maarten Speekenbrink <m.speekenbrink@ucl.ac.uk>
-Depends: R (>= 2.8.0), stats4, methods, lattice
+Depends: R (>= 3.0.0), stats4, methods, lattice
 Description: mcplR offers a flexible (S4) framework to investigate multiple cue probability learning (MCPL). 
   mcplR incorporates a number of learning models (Rescorla-Wagner, GCM, ALCOVE, etc) in a general state-space framework, 
   where new models can be easily added.
-Collate: allGenerics.R classes.R ConstraintsList.R ParStruct.R NTimes.R AICc.R bdiag.R relist.R mcplprepare.R multinomial.R utils.R McplBaseModel.R LearningModel.R ResponseModel.R McplModel.R RatioRuleResponse.R MaxResponse.R GaussianMixtureResponse.R GaussianResponse.R GlmResponse.R GCM.R gGCM.R SLFN.R ALCOVE.R RescorlaWagner.R zzz.R
+Collate: allGenerics.R classes.R Constraints.R ParStruct.R TransParStruct.R NTimes.R AICc.R bdiag.R relist.R mcplprepare.R multinomial.R utils.R McplBaseModel.R LearningModel.R ResponseModel.R McplModel.R RatioRuleResponse.R MaxResponse.R GaussianMixtureResponse.R GaussianResponse.R GlmResponse.R GCM.R gGCM.R SLFN.R ALCOVE.R RescorlaWagner.R zzz.R
 License: GPL (>=2)
 URL: http://mcplr.r-forge.r-project.org/

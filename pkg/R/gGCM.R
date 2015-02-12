@@ -421,18 +421,19 @@ gGCM <- function(learning,response,level=c("nominal","interval"),distance=c("cit
       sampling=sampling
     )
     lmod <- runm(lmod)
-    rmod <- new("RatioRuleResponse",
+    rmod <- new("ExpRatioRuleResponse",
         x = predict(lmod),
         y = resp,
-        transformation = function(object,...) {
-            if(object@parStruct@replicate) {
-              return(object@x^object@parStruct@parameters$beta)
-            } else {
-              beta <- getPars(object,"beta")
-              beta <- rep(beta,each=object@nTimes@n)
-              return(object@x^beta)
-            }
-        },
+#         transformation = function(object,...) {
+#           beta <- getPars(object,name="beta")$beta
+#           if(object@parStruct@repeated) {
+#             beta <- rep(beta,each=object@nTimes@n)
+#           } else {
+#             if(length(beta) > 1) warning("beta parameters has length > 1; using first value only")
+#             beta <- beta[1]
+#           }
+#           return(exp(beta*object@x))
+#         },
         parStruct=rParStruct,
         nTimes=nTimes
       )

@@ -13,9 +13,7 @@
 Constructs an Attention Learning COVEring map model.
 }
 \usage{
-ALCOVE(learning,response,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),humble=TRUE,
-exemplar.locations,data,subset,fixed=list(r=TRUE,q=TRUE),
-random.locations=FALSE,n.locations=10,base=NULL,ntimes=NULL,replicate=TRUE)
+ALCOVE(learning,response,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1,beta=1),humble=TRUE,exemplar.locations,data,subset,fixed,random.locations=FALSE,n.locations=10,base=NULL,ntimes=NULL,replicate=TRUE,...)
 }
 \arguments{
 \item{learning}{an object of class \code{formula} (or one that can be coerced to
@@ -44,6 +42,7 @@ category? Defaults to the first level.}
 total number of trials.}
 \item{replicate}{are the repeated series true replications, i.e., are the model
 parameters considered identical for each series?}
+\item{...}{other arguments (currently not used)}
 }
 
 \details{ALCOVE (Kruschke, 1992) is based on the \code{\link{GCM}} model, but

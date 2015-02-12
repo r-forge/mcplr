@@ -16,65 +16,7 @@ setClass("ContinuousRescorlaWagner",
   contains="RescorlaWagner"
 )
 
-setMethod("canRepar",signature(object="RescorlaWagner"),
-  function(object,...) {
-    repar <- TRUE
-    if(!is(object@parStruct@constraints,"S4")) repar <- FALSE # returns "S4" when it is a virtual class
-    #if(is(object@parStruct@constraints,"LinConstraintsList") || is(object@parStruct@constraints,"BoxConstraintsList")) {
-    #  res <- FALSE
-    #}
-    # TODO: check whether \lambda is fixed
-    return(repar)
-  }
-)
 
-setMethod("setTransPars",signature(object="RescorlaWagner"),
-  function(object,pars,...,rval=c("object","parameters")) {
-    sP.u <- function(pars,fixl) {
-      if(!is.null(pars$alpha) && !fixl$alpha) pars$alpha <- exp(pars$alpha)
-      if(!is.null(pars$beta) && !fixl$beta) pars$beta <- exp(pars$beta)
-      pars
-    }
-    #object <- callNextMethod()
-    parl <- getPars(object=object,pars=pars,rval="parameters",...)
-    if(length(object@parStruct@fix)>0) fixl <- relist(object@parStruct@fix,skeleton=object@parStruct@parameters) else fixl <- relist(rep(FALSE,length(unlist(object@parStruct@parameters))),skeleton=object@parStruct@parameters)
-      if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
-        for(case in 1:object@nTimes@cases) parl[[case]] <- sP.u(parl[[case]],fixl[[case]])
-      } else {
-        parl <- sP.u(parl,fixl)
-      }
-    switch(rval,
-      object = {
-        object@parStruct@parameters <- parl
-        object
-      },
-      parameters = parl)
-  }
-)
-
-
-setMethod("getTransPars",signature(object="RescorlaWagner"),
-  function(object,which="all",...) {
-    gP.u <- function(pars) {
-      pars$alpha <- log(pars$alpha)
-      pars$beta <- log(pars$beta)
-      pars
-    }
-      pars <- object@parStruct@parameters
-      if(object@nTimes@cases > 1 && !object@parStruct@replicate) {
-        for(case in 1:object@nTimes@cases) pars[[case]] <- gP.u(pars[[case]])
-      } else {
-        pars <- gP.u(pars)
-      }
-      pars <- unlist(pars)
-      if(which=="free") {
-        if(length(object@parStruct@fix)>0) {
-          pars <- pars[!object@parStruct@fix]
-        }
-      }
-    return(pars)
-  }
-)
 setMethod("runm",signature(object="RescorlaWagner"),
   function(object,...) {
     if(object@nTimes@cases>1) {
