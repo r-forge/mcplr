@@ -173,7 +173,15 @@ setMethod("predict",signature(object="ALCOVElearning"),
 )
 
 ALCOVElearning <- function(formula,parameters=list(eta_w=.05,eta_a=.05,r=1,q=1,spf=1),humble=TRUE,exemplar.locations,data,subset,fixed,parStruct,random.locations=FALSE,n.locations=10,base=NULL,ntimes,replicate=TRUE) {
-  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=TRUE)
+  
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("formula", "data", "subset","base"), names(mf), 0L)
+  mf <- as.list(mf[m])
+  names(mf) <- c("formula",names(mf)[-1])
+  mf$remove.intercept <- TRUE
+  dat <- do.call("mcpl.prepare",mf)
+
+  #if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=TRUE)
   x <- dat$x
   y <- dat$y
   

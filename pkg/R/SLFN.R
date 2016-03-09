@@ -146,7 +146,13 @@ SLFN <- function(formula,parameters=list(eta=.01,alpha=0,beta=0,ws=0),type=c("li
     t(x)%*%(x%*%w - y)
   }
 
-  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remove.intercept) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remove.intercept)
+  
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("formula", "data", "subset","remove.intercept","base"), names(mf), 0L)
+  mf <- as.list(mf[m])
+  dat <- do.call("mcpl.prepare",mf)
+  
+  #if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remove.intercept) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remove.intercept)
   x <- dat$x
   y <- dat$y
   fun <- switch(type,

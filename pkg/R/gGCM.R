@@ -302,13 +302,26 @@ gGCM <- function(learning,response,level=c("nominal","interval"),distance=c("cit
   	similarity <- gcm.similarity(similarity)
   }
   if(!is.function(sampling)) sampling <- gcm.sampling(match.arg(sampling))
-  if(!missing(subset)) {
-    dat <- mcpl.prepare(learning,data,subset,base=base,remove.intercept=remove.intercept)
-    rdat <- mcpl.prepare(response,data,subset,base=base,remove.intercept=remove.intercept)
-  } else {
-    dat <- mcpl.prepare(learning,data,base=base,remove.intercept=remove.intercept)
-    rdat <- mcpl.prepare(response,data,base=base,remove.intercept=remove.intercept)
-  }
+  
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("learning", "data", "subset","base","remove.intercept"), names(mf), 0L)
+  mf <- as.list(mf[m])
+  names(mf) <- c("formula",names(mf)[-1])
+  dat <- do.call("mcpl.prepare",mf)
+  
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("response", "data", "subset","base","remove.intercept"), names(mf), 0L)
+  mf <- as.list(mf[m])
+  names(mf) <- c("formula",names(mf)[-1])
+  rdat <- do.call("mcpl.prepare",mf)
+  
+#   if(!missing(subset)) {
+#     dat <- mcpl.prepare(formula=learning,data=data,subset=subset,base=base,remove.intercept=remove.intercept)
+#     rdat <- mcpl.prepare(formula=response,data=data,subset=subset,base=base,remove.intercept=remove.intercept)
+#   } else {
+#     dat <- mcpl.prepare(formula=learning,data=data,base=base,remove.intercept=remove.intercept)
+#     rdat <- mcpl.prepare(formula=response,data=data,base=base,remove.intercept=remove.intercept)
+#   }
   x <- dat$x
   y <- dat$y
   resp <- rdat$y

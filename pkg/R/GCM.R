@@ -103,13 +103,25 @@ setMethod("logLik",signature=(object="GCM"),
 
 GCM <- function(learning,response,parameters=list(w=NULL,lambda=1,r=1,q=1,gamma=NULL),fixed,data,subset,ntimes=NULL,replicate=TRUE,remove.intercept=FALSE) {
 
-  if(!missing(subset)) {
-    dat <- mcpl.prepare(learning,data,subset,base=NULL,remove.intercept=remove.intercept)
-    rdat <- mcpl.prepare(response,data,subset,base=NULL,remove.intercept=remove.intercept)
-  } else {
-    dat <- mcpl.prepare(learning,data,base=NULL,remove.intercept=remove.intercept)
-    rdat <- mcpl.prepare(response,data,base=NULL,remove.intercept=remove.intercept)
-  }
+#   if(!missing(subset)) {
+#     dat <- mcpl.prepare(learning,data,subset,base=NULL,remove.intercept=remove.intercept)
+#     rdat <- mcpl.prepare(response,data,subset,base=NULL,remove.intercept=remove.intercept)
+#   } else {
+#     dat <- mcpl.prepare(learning,data,base=NULL,remove.intercept=remove.intercept)
+#     rdat <- mcpl.prepare(response,data,base=NULL,remove.intercept=remove.intercept)
+#   }
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("learning", "data", "subset","remove.intercept"), names(mf), 0L)
+  mf <- as.list(mf[m])
+  names(mf) <- c("formula",names(mf)[-1])
+  dat <- do.call("mcpl.prepare",mf)
+  
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("response", "data", "subset","remove.intercept"), names(mf), 0L)
+  mf <- as.list(mf[m])
+  names(mf) <- c("formula",names(mf)[-1])
+  rdat <- do.call("mcpl.prepare",mf)
+  
   x <- dat$x
   y <- dat$y
   resp <- rdat$y

@@ -72,7 +72,14 @@ setMethod("simulate",signature(object="GaussianResponse"),
 )
 
 GaussianResponse <- function(formula,parameters=list(sd=1),fixed,parStruct,data,subset,ntimes=NULL,replicate=TRUE) {
-  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,remove.intercept=TRUE)
+  
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("formula", "data", "subset"), names(mf), 0L)
+  mf <- as.list(mf[m])
+  mf$remove.intercept <- TRUE
+  dat <- do.call("mcpl.prepare",mf)
+  
+  #if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,remove.intercept=TRUE)
   y <- dat$y
   x <- dat$x
   

@@ -48,8 +48,14 @@ setMethod("dens",signature(object="MaxResponse"),
 MaxResponse <- function(formula,data,parameters=list(beta=2.944439),
                         ntimes=NULL,replicate=TRUE,fixed,
                         parStruct,subset) {
-  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset) else dat <- mcpl.prepare(formula,data)
+  #if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset) else dat <- mcpl.prepare(formula,data)
 
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("formula", "data", "subset"), names(mf), 0L)
+  mf <- as.list(mf[m])
+  #mf$remove.intercept <- TRUE
+  dat <- do.call("mcpl.prepare",mf)
+  
   y <- dat$y
   x <- dat$x
   

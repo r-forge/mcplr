@@ -191,8 +191,15 @@ RatioRuleResponse <- function(formula,parameters=list(beta=1),type=c("exponentia
                         data,ntimes=NULL,replicate=TRUE,fixed,
                         parStruct,subset) {
   type <- match.arg(type)
-  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset) else 
-    dat <- mcpl.prepare(formula,data)
+  
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("formula", "data", "subset"), names(mf), 0L)
+  mf <- as.list(mf[m])
+  #mf$remove.intercept <- TRUE
+  dat <- do.call("mcpl.prepare",mf)
+  
+  #if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset) else 
+  #  dat <- mcpl.prepare(formula,data)
 
   y <- dat$y
   x <- dat$x

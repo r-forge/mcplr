@@ -162,7 +162,14 @@ setMethod("plot",signature(x="RescorlaWagner",y="missing"),
 )
 
 RescorlaWagner <- function(formula,parameters=list(alpha=.1,beta=1,lambda=1,ws=0),data,subset,fixed=list(alpha=FALSE,beta=TRUE,lambda=TRUE,ws=TRUE),parStruct,remove.intercept=FALSE,base=NULL,ntimes=NULL,replicate=TRUE) {
-  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remove.intercept) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remove.intercept)
+  #if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,base=base,remove.intercept=remove.intercept) else dat <- mcpl.prepare(formula,data,base=base,remove.intercept=remove.intercept)
+  
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("formula", "data", "subset","base","remove.intercept"), names(mf), 0L)
+  mf <- as.list(mf[m])
+  mf$remove.intercept <- TRUE
+  dat <- do.call("mcpl.prepare",mf)
+  
   x <- dat$x
   y <- dat$y
   if(!all(y %in% c(0,1))) {

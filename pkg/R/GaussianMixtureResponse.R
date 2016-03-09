@@ -240,7 +240,14 @@ setMethod("fit",signature(object="GaussianMixtureResponse"),
 )
 
 GaussianMixtureResponse <- function(formula,ncomponent=2,fixed,parStruct,data,subset,weights,ntimes=NULL,replicate=TRUE) {
-  if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,remove.intercept=TRUE)
+  
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("formula", "data", "subset"), names(mf), 0L)
+  mf <- as.list(mf[m])
+  mf$remove.intercept <- TRUE
+  dat <- do.call("mcpl.prepare",mf)
+  
+  #if(!missing(subset)) dat <- mcpl.prepare(formula,data,subset,remove.intercept=TRUE) else dat <- mcpl.prepare(formula,data,remove.intercept=TRUE)
   x <- dat$x
   y <- dat$y
   if(ncol(x)!=0) ncomponent <- ncol(x)

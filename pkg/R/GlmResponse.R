@@ -196,15 +196,15 @@ setMethod("lFr",signature(x="LearningModel",y="GlmResponse"),
 GlmResponse <- function(formula,family=gaussian(),data,covariate,combine=function(x,z) { cbind(x,z) },parameters=list(),ntimes=NULL,replicate=TRUE,fixed,base=NULL,
                         parStruct,subset) {
   mf <- match.call(expand.dots = FALSE)
-  m <- match(c("formula", "data", "subset"), names(mf), 0)
+  m <- match(c("formula", "data", "subset","base"), names(mf), 0)
   mf <- mf[c(1, m)]
   mf$drop.unused.levels <- TRUE
   mf[[1]] <- as.name("model.frame")
   #mf[[2]] <- eval(substitute(mf$formula, list(as.name(predname) = as.name("learningModelPrediction"))))
   mf <- eval(mf, parent.frame())
   
-  if(!missing(subset)) dat <- mcpl.prepare(formula=formula,data=data,subset=subset,base=base) else
-    dat <- mcpl.prepare(formula=formula,data=data,base=base)
+  #if(!missing(subset)) dat <- mcpl.prepare(formula=formula,data=data,subset=subset,base=base) else
+  #  dat <- mcpl.prepare(formula=formula,data=data,base=base)
   y <- dat$y
   x <- dat$x
   
