@@ -106,64 +106,108 @@ setMethod("getConstraints",signature(object="ParStruct"),
 setClass("SimpleConstraintsParStruct",
   contains="ParStruct",
   representation(
-    id="integer",
+    id="integer", # This can be longer than parameters...
     fix="logical",
     min="numeric",
     max="numeric"
   )
 )
 
+setMethod("getPars",signature(object="SimpleConstraintsParStruct",name="ANY",replication="ANY"),
+  function(object,name,replication,...) {
+    object@parameters <- object@parameters[object@id]
+    callNextMethod()
+  }
+)
+
+setMethod("getConstraints",signature(object="SimpleConstraintsParStruct"),
+  function(object,...) {
+    if(length(unique(object@id)) == length(object@parameters)) {
+      ident <- FALSE
+    } else ident <- TRUE
+    if(all(object@min == -Inf) & all(object@max == Inf)) {
+      box <- FALSE
+    } else box <- TRUE
+    if(ident & box) {
+      ## need to construct a linear constraints?
+      return(new("BoxConstraints",
+                 min=object@min[!object@fix],
+                 max=object@max[!object@fix]))
+      #stop("Not implemented yet")
+    } else if(box) {
+      # need to construct an identity constraints
+      return(new("BoxConstraints",
+                 min=object@min[!object@fix],
+                 max=object@max[!object@fix]))
+    } else {
+      return(new("Unconstrained",
+                 dim=length(object@parameters)))
+    }
+    
+
+  }
+)
+
 setMethod("getFreePars",signature(object="SimpleConstraintsParStruct"),
   function(object,...) {
     pars <- object@parameters
-    parid <- object@id
+    if(length(pars)==0) return(NULL)
+    #parid <- object@id
     fix <- object@fix
-    if(length(parid)>0) {
-     # get unique parameters
-     if(length(fix)>0) parid.v <- unique(parid[!fix]) else parid.v <- unique(parid)
-     parid.n <- length(parid.v)
-     newpars <- vector()
-     for(i in 1:parid.n) newpars[i] <- pars[which(parid==parid.v[i])[1]]
-     pars <- newpars
-    } else {
-     if(length(fix)>0) {
-       if(length(fix) == length(pars)) pars <- pars[!fix] else stop("length of fix in parameterList does not match number of parameters")
-     }
-    }
-    if(length(pars)==0) pars <- NULL
-    #pars
-    #)
-    return(pars)
-  }     
+    pars[!fix]
+#     if(length(parid)>0) {
+#      # get unique parameters
+#      if(length(fix)>0) parid.v <- unique(parid[!fix]) else parid.v <- unique(parid)
+#      parid.n <- length(parid.v)
+#      newpars <- vector()
+#      for(i in 1:parid.n) newpars[i] <- pars[which(parid==parid.v[i])[1]]
+#      pars <- newpars
+#     } else {
+#      if(length(fix)>0) {
+#        if(length(fix) == length(pars)) pars <- pars[!fix] else stop("length of fix in parameterList does not match number of parameters")
+#      }
+#     }
+#     if(length(pars)==0) pars <- NULL
+#     #pars
+#     #)
+#     return(pars)
+   }     
 )
 
 setMethod("setFreePars",signature(object="SimpleConstraintsParStruct",pars="numeric"),
   function(object,pars,...,rval=c("object","parameters")) {
     rval <- match.arg(rval)
-    oldpars <- unlist(getPars(object,...))
-    if(length(pars) > 0) {
-      if(length(pars)!=length(oldpars)) {
-        #warning("This is currently buggy!")
-        parid <- object@id
-        fix <- object@fix
-        if(length(parid)>0) {
-          if(length(fix)>0) parid.v <- unique(parid[!fix]) else parid.v <- unique(parid)
-          parid.n <- length(parid.v)
-          if(length(pars)!=parid.n) stop("length of parid does not match length of pars")
-          for(i in 1:parid.n) oldpars[which(parid==parid.v[i])] <- pars[i]
-        } else {
-          if(length(fix)>0) {
-            if(sum(!fix)!=length(pars)) stop("parid not given and length of pars does not equal number of nonfixed parameters")
-            oldpars[!fix] <- pars
-          } else {
-            stop("cannot work with par of this length in setPar")
-          }
-        }
-      } else {
-        oldpars <- pars
-      }
-      object@parameters <- oldpars#relist(oldpars,skeleton=object@parameters)
+    oldpars <- getFreePars(object,...)
+    if(length(pars) == length(oldpars)) {
+     object@parameters <- pars
+    } else {
+      stop("number of parameters provided does not match the number of parameters in the object")
     }
+#     
+#     oldpars <- unlist(getPars(object,...))
+#     if(length(pars) > 0) {
+#       if(length(pars)!=length(oldpars)) {
+#         #warning("This is currently buggy!")
+#         parid <- object@id
+#         fix <- object@fix
+#         if(length(parid)>0) {
+#           if(length(fix)>0) parid.v <- unique(parid[!fix]) else parid.v <- unique(parid)
+#           parid.n <- length(parid.v)
+#           if(length(pars)!=parid.n) stop("length of parid does not match length of pars")
+#           for(i in 1:parid.n) oldpars[which(parid==parid.v[i])] <- pars[i]
+#         } else {
+#           if(length(fix)>0) {
+#             if(sum(!fix)!=length(pars)) stop("parid not given and length of pars does not equal number of nonfixed parameters")
+#             oldpars[!fix] <- pars
+#           } else {
+#             stop("cannot work with par of this length in setPar")
+#           }
+#         }
+#       } else {
+#         oldpars <- pars
+#       }
+#       object@parameters <- oldpars#relist(oldpars,skeleton=object@parameters)
+#     }
     switch(rval,
        object = object,
        parameters = object@parameters
@@ -172,20 +216,20 @@ setMethod("setFreePars",signature(object="SimpleConstraintsParStruct",pars="nume
 )
 
 setMethod("print",signature(x="SimpleConstraintsParStruct"),
-          function(x,...) {
-            fix <- x@fix
-            if(sum(!fix) > 0) {
-              cat("Free parameters\n")
-              print(unlist(getPars(x,...)[!fix]))
-              cat("\n")
-            }
-            if(sum(fix) > 0) {
-            #cat("\n")
-              cat("Fixed parameters\n")
-              print(unlist(getPars(x,...)[fix]))
-            }
-            cat("\n")
-          }
+  function(x,...) {
+    fix <- x@fix[x@id]
+    if(sum(!fix) > 0) {
+      cat("Free parameters\n")
+      print(unlist(getPars(x,...)[!fix]))
+      cat("\n")
+    }
+    if(sum(fix) > 0) {
+    #cat("\n")
+      cat("Fixed parameters\n")
+      print(unlist(getPars(x,...)[fix]))
+    }
+    cat("\n")
+  }
 )
 
 # setClass("RepSimpleConstraintsParStruct",
