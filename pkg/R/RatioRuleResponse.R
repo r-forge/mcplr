@@ -125,7 +125,10 @@ setMethod("dens",signature(object="RatioRuleResponse"),
 
 setMethod("simulate",signature(object="RatioRuleResponse"),
 	function(object,nsim=1,seed=NULL,times) {
-    if(!is.null(seed)) set.seed(seed)
+    if(!is.null(seed)) {
+      old.seed <- .Random.seed
+      set.seed(seed) 
+    }
     if(missing(times)) {
       pr <- predict(object,type=response)
     } else {

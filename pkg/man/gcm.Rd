@@ -73,7 +73,9 @@ mod <- GCM(y~x1+x2+x3+x4,response=r~1,data=controls,
    remove.intercept=TRUE)
 \dontrun{
 ## estimate free parameters
-mod <- fit(mod)
+## discount (ignore) first 5 responses in each series
+## as these can give deterministic predictions
+mod <- fit(mod,discount=5)
 }
 summary(mod)
 }

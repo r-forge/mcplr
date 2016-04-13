@@ -36,7 +36,10 @@ setMethod("dens","GaussianResponse",
 
 setMethod("simulate",signature(object="GaussianResponse"),
 	function(object,nsim=1,seed=NULL,times) {
-    if(!is.null(seed)) set.seed(seed)
+    if(!is.null(seed)) {
+      old.seed <- .Random.seed
+      set.seed(seed)
+    }
     if(missing(times)) {
       pr <- predict(object,type=response)
     } else {

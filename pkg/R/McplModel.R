@@ -74,8 +74,8 @@ setMethod("setFreePars",signature(object="McplModel",pars="numeric"),
     } else {
       parl <- relist(pars)
     }
-    nparl <- length(parl[["learning"]])
-    nparr <- length(parl[["response"]])
+    nparl <- length(unlist(parl[["learning"]]))
+    nparr <- length(unlist(parl[["response"]]))
     if(length(pars)!=sum(c(nparl,nparr))) stop("wrong length of pars")
     if(nparl > 0) {
       object@learningModel <- setFreePars(object@learningModel,pars[1:nparl],...)
@@ -177,49 +177,81 @@ setMethod("Rsq",signature(object="McplModel"),
   }
 )
 
-# setMethod("fit",signature(object="McplModel"),
-#   # 2013/05/20: delete CML methods; if needed, can be supplied in user-defined fit method...
-#   function(object,...) {
-#     constraints <- getConstraints(object,...)
-#     fit(object,constraints,...)
-#   }
-# )
-# 
-# setMethod("fit",signature(object="McplModel",constraints="Unconstrained"),
-#   function(object,constraints,method,...) {
-#     if(missing(method)) method <- "Nelder-Mead"
-#     optfun <- function(pars,object,...) {
-#       object <- setFreePars(object,pars,rval="object",...)
-#       object <- runm(object,...)
-#       out <- -logLik(object,...)
-#       out
-#     }
-#     pars <- getFreePars(object,...)
-#     opt <- optim(par=pars,fn=optfun,object=object,method=method,...)
-#   }
-# )
-# 
-# setMethod("fit",signature(object="McplModel",constraints="BoxConstraints"),
-#   function(object,constraints,method,...) {
-#     if(!missing(method) & method != "L-BFGS-B") {
-#       warning("Object has box constraints and supplied method is invalid, will use L-BFGS-B")
-#     }
-#     method <- "L-BFGS-B"
-#     optfun <- function(pars,object,...) {
-#       object <- setFreePars(object,pars,rval="object",...)
-#       object <- runm(object,...)
-#       out <- -logLik(object,...)
-#       if(out == Inf) out <- .Machine$double.xmax
-#       out
-#     }
-#     pars <- getFreePars(object,...)
-#     opt <- optim(par=pars,fn=optfun,object=object,method=method,...)
-#   }
-# )
+setMethod("fit",signature(object="McplModel",constraints="missing"),
+  # 2013/05/20: delete CML methods; if needed, can be supplied in user-defined fit method...
+  function(object,...) {
+    constraints <- getConstraints(object,...)
+    fit(object,constraints,...)
+  }
+)
 
-setMethod("fit",signature(object="McplModel"),
+setMethod("fit",signature(object="McplModel",constraints="Unconstrained"),
+  function(object,constraints,method,...) {
+    if(missing(method)) method <- "Nelder-Mead"
+    optfun <- function(pars,object,...) {
+      object <- setFreePars(object,pars,rval="object",...)
+      object <- runm(object,...)
+      out <- -logLik(object,...)
+      out
+    }
+    pars <- getFreePars(object,...)
+    opt <- optim(par=pars,fn=optfun,object=object,method=method,...)
+    
+    object <- setFreePars(object,opt$par,...,rval="object")
+    object <- runm(object,...)
+    object
+  }
+)
+
+setMethod("fit",signature(object="McplModel",constraints="BoxConstraints"),
+  function(object,constraints,method,...) {
+    if(!missing(method) & method != "L-BFGS-B") {
+      warning("Object has box constraints and supplied method is invalid, will use L-BFGS-B")
+    }
+    method <- "L-BFGS-B"
+    optfun <- function(pars,object,...) {
+      object <- setFreePars(object,pars,rval="object",...)
+      object <- runm(object,...)
+      out <- -logLik(object,...)
+      if(out == Inf) out <- .Machine$double.xmax
+      out
+    }
+    pars <- getFreePars(object,...)
+    opt <- optim(par=pars,fn=optfun,object=object,method=method,...)
+    
+    object <- setFreePars(object,opt$par,...,rval="object")
+    object <- runm(object,...)
+    object
+  }
+)
+
+setMethod("fit",signature(object="McplModel",constraints="LinearConstraints"),
+    function(object,constraints,method,...) {
+      if(!missing(method) & method != "L-BFGS-B") {
+        warning("Object has linear constraints and supplied method is invalid, will use ConstrOptim")
+      }
+      optfun <- function(pars,object,...) {
+        object <- setFreePars(object,pars,rval="object",...)
+        object <- runm(object,...)
+        out <- -logLik(object,...)
+        if(out == Inf) out <- .Machine$double.xmax
+        out
+      }
+      pars <- getFreePars(object,...)
+      #opt <- optim(par=pars,fn=optfun,object=object,method=method,...)
+      opt <- constrOptim(theta=pars,f=optfun,grad=NULL,ui=constraints@Amat,ci=constraints@bvec,...)
+      
+      object <- setFreePars(object,opt$par,...,rval="object")
+      object <- runm(object,...)
+      object
+    }
+)
+
+setMethod("fit",signature(object="McplModel",constraints="ANY"),
+          # depreciated
           # 2013/05/20: delete CML methods; if needed, can be supplied in user-defined fit method...
           function(object,method="Nelder-Mead",...) {
+            warning("This method is depreciated")
             optfun <- function(pars,object,...) {
               object <- setFreePars(object,pars,rval="object",...)
               object <- runm(object,...)

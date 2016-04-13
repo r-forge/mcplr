@@ -6,7 +6,7 @@
 
 # Guess what: all generics
 
-setGeneric("fit",function(object,...) standardGeneric("fit"))
+setGeneric("fit",function(object,constraints,...) standardGeneric("fit"))
 setGeneric("runm",function(object,...) standardGeneric("runm"))
 #setGeneric("estimate",function(object,...) standardGeneric("estimate"))
 setGeneric("getPars",function(object,name,replication,...) standardGeneric("getPars"))

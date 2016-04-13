@@ -179,7 +179,7 @@ setMethod("setFreePars",signature(object="SimpleConstraintsParStruct",pars="nume
     rval <- match.arg(rval)
     oldpars <- getFreePars(object,...)
     if(length(pars) == length(oldpars)) {
-     object@parameters <- pars
+     object@parameters[!object@fix] <- pars
     } else {
       stop("number of parameters provided does not match the number of parameters in the object")
     }
